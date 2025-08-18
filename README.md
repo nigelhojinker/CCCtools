@@ -8,8 +8,8 @@
 <!-- badges: end -->
 
 The goal of CCCtools is to provide functions to run [CellChat
-v2](https://github.com/jinworks/CellChat) and [CellPhoneDB
-v5](https://github.com/ventolab/CellphoneDB/tree/master) as well as
+(v2)](https://github.com/jinworks/CellChat) and [CellPhoneDB
+(v5)](https://github.com/ventolab/CellphoneDB/tree/master) as well as
 compare their outputs. Gokce was here to check username chnage!
 
 ## Installation
@@ -41,13 +41,6 @@ Now, you are ready to install the development version of CCCtools:
 if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 pacman::p_load_gh("nigelhojinker/CCCtools")
 ```
-
-## CellPhoneDB-to-CellChatDB Mapping
-
-Users may view this
-[webpage](https://cellphonedb-cellchatdb-mapping.vercel.app/) for full
-details on the mapping process used to map interactions across both
-databases.
 
 ## Example data
 
@@ -81,3 +74,23 @@ these tools on your dataset:
   object](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Run_CellChat.md)
 - [Running CellPhoneDB on Seurat
   object](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Run_CellPhoneDB.md)
+
+## CellPhoneDB-to-CellChatDB Mapping
+
+In order to identify interactions that map to CellChat and/or
+CellPhoneDB, the ligand-receptor pair involved have to share a common
+notation. We convert all gene and complex names to uniprot IDs for
+unbiased and clear identification of the interacting partners, and used
+that uniprot-based identifier to compare interactions from both CCC
+tools.
+
+Users may view this
+[webpage](https://cellphonedb-cellchatdb-mapping.vercel.app/) for full
+details on the mapping process used to map interactions across both
+databases.
+
+The mapped databases of CellPhoneDB (v5) and CellChat (v2) and are
+available by running `data(CPDB)` and `data(CCDB)` respectively. These
+databases will be used in the `crosscheck()` function after users have
+ran both CellPhoneDB and CellChat on their dataset, and would like to
+find out which interactions have been identified by both tools.
