@@ -39,7 +39,7 @@ A dataframe with 3233 interactions and 29 columns:
 }
 }
 \source{
-Database was adapted from the CellChat (v2) R package HUMAN database (CellChatDB.human$interaction) and worked on as described [here](https://cellphonedb-cellchatdb-mapping.vercel.app/)
+Database was adapted from the CellChat (v2) R package HUMAN database (CellChatDB.human$interaction) and worked on as described at https://cellphonedb-cellchatdb-mapping.vercel.app/
 }
 \usage{
 CCDB

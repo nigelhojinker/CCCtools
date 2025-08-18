@@ -23,7 +23,7 @@ A dataframe with 2911 interactions and 13 columns:
 }
 }
 \source{
-Database was adapted from the CellPhoneDB (v5) Python package [interaction_table](https://github.com/ventolab/cellphonedb-data/blob/master/cellphonedb.zip) and worked on as described [here](https://cellphonedb-cellchatdb-mapping.vercel.app/)
+Database was adapted from the CellPhoneDB (v5) Python package interaction_table from the zip file at: https://github.com/ventolab/cellphonedb-data/blob/master/cellphonedb.zip. It is futher worked on as described at https://cellphonedb-cellchatdb-mapping.vercel.app/
 }
 \usage{
 CPDB
