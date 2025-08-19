@@ -75,6 +75,15 @@ these tools on your dataset:
 - [Running CellPhoneDB on Seurat
   object](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Run_CellPhoneDB.md)
 
+After running BOTH CellChat and CellPhoneDB analysis, we provide the
+`crosscheck()` function to compare the results of both CCC tools and
+rank the interactions based on the significance testing conducted.
+Please refer to the link below on how to compare CellChat and
+CellPhoneDB results on your dataset:
+
+- [Comparing CellChat and CellPhoneDB
+  results](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Crosscheck.md)
+
 ## CellPhoneDB-to-CellChatDB Mapping
 
 In order to identify interactions that map to CellChat and/or

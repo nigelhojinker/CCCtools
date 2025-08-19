@@ -70,6 +70,10 @@ Please refer to the following links to the documentations on running these tools
 - [Running CellChat on Seurat object](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Run_CellChat.md)
 - [Running CellPhoneDB on Seurat object](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Run_CellPhoneDB.md)
 
+After running BOTH CellChat and CellPhoneDB analysis, we provide the `crosscheck()` function to compare the results of both CCC tools and rank the interactions based on the significance testing conducted. Please refer to the link below on how to compare CellChat and CellPhoneDB results on your dataset:
+
+- [Comparing CellChat and CellPhoneDB results](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Crosscheck.md)
+
 ## CellPhoneDB-to-CellChatDB Mapping
 
 In order to identify interactions that map to CellChat and/or CellPhoneDB, the ligand-receptor pair involved have to share a common notation. We convert all gene and complex names to uniprot IDs for unbiased and clear identification of the interacting partners, and used that uniprot-based identifier to compare interactions from both CCC tools.

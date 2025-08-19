@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Crosscheck function
 
-To proceed with the crosscheck function, users should have ran both `run_cellchat()` and `run_cellphonedb()` on their Seurat object. If these steps have not been performed, refer to tutorials to [run CellChat](../Run_CellChat.md) and [run CellPhoneDB](../Run_CellPhoneDB.md) at the respective links. 
+To proceed with the crosscheck function, users should have ran both `run_cellchat()` and `run_cellphonedb()` on their Seurat object. If these steps have not been performed, refer to tutorials to [run CellChat](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Run_CellChat.md) and [run CellPhoneDB](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Run_CellPhoneDB.md) at the respective links. 
 
 We provide a function `crosscheck()` that takes as input both CellChat and CellPhoneDB results as dataframes and an optional `threshold` argument should users wish to adjust the p-value (default: 0.05). The CellChat result is obtained by running `pull_netslot(cellchat)` and its CellPhoneDB counterpart is taken from the "pvalues" element of its output list. `crosscheck()` returns a list of four elements: (1) Combined result (2) CellChat result (3) CellPhoneDB result (4) Summary table of containing number of interactions at each confidence level.
 

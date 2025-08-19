@@ -7,8 +7,10 @@ Comparing CellChat and CellPhoneDB results
 To proceed with the crosscheck function, users should have ran both
 `run_cellchat()` and `run_cellphonedb()` on their Seurat object. If
 these steps have not been performed, refer to tutorials to [run
-CellChat](../Run_CellChat.md) and [run
-CellPhoneDB](../Run_CellPhoneDB.md) at the respective links.
+CellChat](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Run_CellChat.md)
+and [run
+CellPhoneDB](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Run_CellPhoneDB.md)
+at the respective links.
 
 We provide a function `crosscheck()` that takes as input both CellChat
 and CellPhoneDB results as dataframes and an optional `threshold`
