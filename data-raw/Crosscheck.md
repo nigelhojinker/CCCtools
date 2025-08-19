@@ -19,13 +19,17 @@ output list. `crosscheck()` returns a list of four elements: (1)
 Combined result (2) CellChat result (3) CellPhoneDB result (4) Summary
 table of containing number of interactions at each confidence level.
 
-We classify the confidence level as such: - High: Interaction is
-significant in both CellChat and CellPhoneDB - Mid CellChat: Interaction
-is found only in CellChat, and p-value \< threshold - Mid CellPhoneDB:
-Interaction is found only in CellPhoneDB, and p-value \< threshold - Low
-CellChat: Interaction is significant in CellChat but not in
-CellPhoneDB - Low CellPhoneDB: Interaction is significant in CellPhoneDB
-but not in CellChat
+We classify the confidence level as such:
+
+- High: Interaction is significant in both CellChat and CellPhoneDB
+- Mid CellChat: Interaction is found only in CellChat, and p-value \<
+  threshold
+- Mid CellPhoneDB: Interaction is found only in CellPhoneDB, and p-value
+  \< threshold
+- Low CellChat: Interaction is significant in CellChat but not in
+  CellPhoneDB
+- Low CellPhoneDB: Interaction is significant in CellPhoneDB but not in
+  CellChat
 
 ``` r
 cellchat.res <- pull_netslot(cellchat)
