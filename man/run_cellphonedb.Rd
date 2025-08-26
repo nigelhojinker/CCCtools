@@ -72,7 +72,7 @@ Runs CellPhoneDBv5 on a Seurat object
 ## Runs CellPhoneDB method 2 with all default parameters
 run_cellphonedb(
   obj = seurat_object,
-  group  = "condition",           # if seurat object contains multiple conditions to filter, input column name in metadata
+  group.by  = "condition",           # if seurat object contains multiple conditions to filter, input column name in metadata
   toKeep = "treated",             # mandatory if group is not NULL; input condition to be filtered
   labels = "celltype")
 
