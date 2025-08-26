@@ -29,6 +29,8 @@ run_cellphonedb(
 
 \item{labels}{Metadata column name of cell type annotations}
 
+\item{group.by}{Metadata column to filter by; this is for seurat objects containing cells from different disease status or time frames etc. (default = NULL)}
+
 \item{toKeep}{Value within the metadata column of interest to retain for the analysis. This field is mandatory if group is not NULL. (default = NULL)}
 
 \item{use_dir}{Input files required to run CellPhoneDB and the output files from the analysis are created and saved to a temp file (default). Should users desire to have these files be stored in their personal directories, they may input their filepath to this argument.}
@@ -56,8 +58,6 @@ run_cellphonedb(
 \item{debug}{See Value below for link to description by CellPhoneDB}
 
 \item{output_suffix}{See Value below for link to description by CellPhoneDB}
-
-\item{group}{Metadata column to filter by; this is for seurat objects containing cells from different disease status or time frames etc. (default = NULL)}
 }
 \value{
 Folder path to CellPhoneDB analysis outputs and result as a list of the outputs in the R session
