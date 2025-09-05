@@ -1,40 +1,37 @@
 #' Comparing CellChat and CellPhoneDB results
 #'
-#' @param cellchat_res Dataframe obtained from running pull_netslot() on a CellChat object.
-#' @param cellphonedb_res Dataframe of the p-value results from running run_cellphonedb on a Seurat object.
+#' @param cellchat CellChat object obtained from run_cellchat() on a Seurat object.
+#' @param cellphonedb Output list from run_cellphonedb() on a Seurat object.
 #' @param threshold p-value (default: 0.05)
 #'
-#' @returns A list of four elements: (1) Combined result (2) CellChat result (3) CellPhoneDB result (4) Summary table of containing number of interactions at each confidence level.
+#' @returns A list of five elements: (1) Combined result (2) CellChat result (3) CellPhoneDB result (4) Summary table of containing number of interactions at each confidence level (5) CellChat object filtered to containing only significant interactions in both CellChat and CellPhoneDB.
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' ## After setting up conda env
-#' cpdb <- run_cellphonedb(seurat.obj, ...)
-#' cpdb.res <- cpdb$pvalues
-#'
 #' cellchat <- run_cellchat(seurat.obj, ...)
-#' cellchat.res <- pull_netslot(cellchat)
+#' cpdb <- run_cellphonedb(seurat.obj, ...)
 #'
-#' combine <- crosscheck(cellchat_res = cellchat.res, cellphonedb_res = cpdb.res)
+#' combine <- crosscheck(cellchat = cellchat, cellphonedb = cpdb)
 #' }
 
 
-crosscheck <- function(cellchat_res, cellphonedb_res, threshold = 0.05) {
-  if (! is.data.frame(cellchat_res)) {
-    stop("Input CellChat result is not a dataframe. Run pull_netslot() on your CellChat object and set cellchat_res as the output of pull_netslot().")
-  } else if (! is.data.frame(cellphonedb_res)) {
-    stop("Input CellPhoneDB result is not a dataframe. Run run_cellphonedb() on your Seurat object and set cellphonedb_res as the pvalues dataframe from the output list of run_cellphonedb().")
+crosscheck <- function(cellchat, cellphonedb, threshold = 0.05) {
+  if (! is.data.frame(pull_netslot(cellchat))) {
+    stop("Input CellChat result is not a dataframe. Perform run_cellchat() on your Seurat object and set cellchat as your output CellChat object.")
+  } else if (! is.data.frame(cellphonedb$pvalues)) {
+    stop("Input CellPhoneDB result is not a dataframe. Run run_cellphonedb() on your Seurat object and set cellphonedb as the output list of run_cellphonedb().")
   }
 
   data(CCDB, CPDB)
 
-  cellchat_res <- cellchat_res %>%
+  cellchat_res <- pull_netslot(cellchat) %>%
     left_join(CCDB %>%
                 select(interaction_name, unique_int)) %>%
     mutate(unique_int = paste(source, target, unique_int, sep = "_"))
 
-  cellphonedb_res <- cellphonedb_res %>%
+  cellphonedb_res <- cellphonedb$pvalues %>%
     pivot_longer(cols = contains("|"),
                  names_to = "cell_type_pair",
                  values_to = "pval") %>%
@@ -81,10 +78,26 @@ crosscheck <- function(cellchat_res, cellphonedb_res, threshold = 0.05) {
 
   print(summary)
 
-  return(list(combine = combine, cellchat = cellchat_res, cellphonedb = cellphonedb_res, summary = summary))
+  rel.int <- combine %>%
+    filter(confidence == "High") %>%
+    pull(interaction_name) %>%
+    unique()
+
+  cellchat.new <- cellchat
+  cellchat.new@net$prob <- cellchat@net$prob[,, rel.int]
+  cellchat.new@net$pval <- cellchat@net$pval[,, rel.int]
+  cellchat.new@LR$LRsig <- cellchat@LR$LRsig %>%
+    filter(interaction_name %in% rel.int)
+
+  cellchat.new <- computeCommunProbPathway(cellchat.new)
+  cellchat.new <- aggregateNet(cellchat.new)
+  cellchat.new <- netAnalysis_computeCentrality(cellchat.new, slot.name = "netP")
+
+  cat("Created CellChat object with only High confidence interactions.")
+
+  return(list(combine = combine, cellchat = cellchat_res, cellphonedb = cellphonedb_res, summary = summary, cellchat.new  = cellchat.new))
 
 }
-
 
 
 

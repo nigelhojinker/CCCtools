@@ -4,17 +4,17 @@
 \alias{crosscheck}
 \title{Comparing CellChat and CellPhoneDB results}
 \usage{
-crosscheck(cellchat_res, cellphonedb_res, threshold = 0.05)
+crosscheck(cellchat, cellphonedb, threshold = 0.05)
 }
 \arguments{
-\item{cellchat_res}{Dataframe obtained from running pull_netslot() on a CellChat object.}
+\item{cellchat}{CellChat object obtained from run_cellchat() on a Seurat object.}
 
-\item{cellphonedb_res}{Dataframe of the p-value results from running run_cellphonedb on a Seurat object.}
+\item{cellphonedb}{Output list from run_cellphonedb() on a Seurat object.}
 
 \item{threshold}{p-value (default: 0.05)}
 }
 \value{
-A list of four elements: (1) Combined result (2) CellChat result (3) CellPhoneDB result (4) Summary table of containing number of interactions at each confidence level.
+A list of five elements: (1) Combined result (2) CellChat result (3) CellPhoneDB result (4) Summary table of containing number of interactions at each confidence level (5) CellChat object filtered to containing only significant interactions in both CellChat and CellPhoneDB.
 }
 \description{
 Comparing CellChat and CellPhoneDB results
@@ -22,12 +22,9 @@ Comparing CellChat and CellPhoneDB results
 \examples{
 \dontrun{
 ## After setting up conda env
-cpdb <- run_cellphonedb(seurat.obj, ...)
-cpdb.res <- cpdb$pvalues
-
 cellchat <- run_cellchat(seurat.obj, ...)
-cellchat.res <- pull_netslot(cellchat)
+cpdb <- run_cellphonedb(seurat.obj, ...)
 
-combine <- crosscheck(cellchat_res = cellchat.res, cellphonedb_res = cpdb.res)
+combine <- crosscheck(cellchat = cellchat, cellphonedb = cpdb)
 }
 }
