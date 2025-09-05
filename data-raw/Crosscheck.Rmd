@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 To proceed with the crosscheck function, users should have ran both `run_cellchat()` and `run_cellphonedb()` on their Seurat object. If these steps have not been performed, refer to tutorials to [run CellChat](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Run_CellChat.md) and [run CellPhoneDB](https://github.com/nigelhojinker/CCCtools/blob/main/data-raw/Run_CellPhoneDB.md) at the respective links. 
 
-We provide a function `crosscheck()` that takes as input both CellChat and CellPhoneDB results as dataframes and an optional `threshold` argument should users wish to adjust the p-value (default: 0.05). The CellChat result is obtained by running `pull_netslot(cellchat)` and its CellPhoneDB counterpart is taken from the "pvalues" element of its output list. `crosscheck()` returns a list of four elements: (1) Combined result (2) CellChat result (3) CellPhoneDB result (4) Summary table of containing number of interactions at each confidence level.
+We provide a function `crosscheck()` that takes as input both the CellChat object from `run_cellchat()` and the list from `run_cellphonedb()`, as well as an optional `threshold` argument should users wish to adjust the p-value (default: 0.05). `crosscheck()` returns a list of five elements: (1) Combined result (2) CellChat result (3) CellPhoneDB result (4) Summary table of containing number of interactions at each confidence level (5) CellChat object filtered to contain only significant interactions in both CellChat and CellPhoneDB.
 
 We classify the confidence level as such:
 
@@ -23,23 +23,27 @@ We classify the confidence level as such:
 - Low CellPhoneDB: Interaction is significant in CellPhoneDB but not in CellChat
 
 ```{r, eval = FALSE}
-cellchat.res <- pull_netslot(cellchat)
+data(seu.NL)
 
-cpdb.res <- cpdb$pvalues
+cellchat <- run_cellchat(seu.NL, group.by = "labels")
 
-combine <- crosscheck(cellchat_res = cellchat.res, cellphonedb_res = cpdb.res)
+## After setting up python env
+cpdb <- run_cellphonedb(seu.NL, labels = "labels")
+
+combine <- crosscheck(cellchat = cellchat, cellphonedb = cpdb)
 # Joining with `by = join_by(interaction_name)`
 # Joining with `by = join_by(id_cp_interaction)`
 # Removed interactions insignificant in both tools, and interactions only found in one tool and has a p-value >= 0.05 
 #  CCCtools result: 
-#       confidence   n percent
-#             High 221  0.1105
-#     Mid CellChat 470  0.2350
-#  Mid CellPhoneDB 586  0.2930
-#     Low CellChat  22  0.0110
-#  Low CellPhoneDB 701  0.3505
+#       confidence   n    percent
+#             High 221 0.10978639
+#     Mid CellChat 470 0.23348236
+#  Mid CellPhoneDB 585 0.29061103
+#     Low CellChat  22 0.01092896
+#  Low CellPhoneDB 715 0.35519126
+#   |++++++++++++++++++++++++++++++++++++++++++++++++++| 100% elapsed=00s  
+# Created CellChat object with only High confidence interactions.
 
 combine %>% names()
-# [1] "combine"     "cellchat"    "cellphonedb" "summary"
-
+# [1] "combine"      "cellchat"     "cellphonedb"  "summary"      "cellchat.new"
 ```

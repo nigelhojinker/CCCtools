@@ -4,7 +4,7 @@
 #' @param cellphonedb Output list from run_cellphonedb() on a Seurat object.
 #' @param threshold p-value (default: 0.05)
 #'
-#' @returns A list of five elements: (1) Combined result (2) CellChat result (3) CellPhoneDB result (4) Summary table of containing number of interactions at each confidence level (5) CellChat object filtered to containing only significant interactions in both CellChat and CellPhoneDB.
+#' @returns A list of five elements: (1) Combined result (2) CellChat result (3) CellPhoneDB result (4) Summary table of containing number of interactions at each confidence level (5) CellChat object filtered to contain only significant interactions in both CellChat and CellPhoneDB.
 #' @export
 #'
 #' @examples
