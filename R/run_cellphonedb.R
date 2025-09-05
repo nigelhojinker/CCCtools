@@ -69,7 +69,7 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, group.by = NULL, toKeep =
   dir.create(prefix %>% normalizePath(winslash = "/"), recursive = TRUE)
 
   cat("Creating input and output files to directory:", prefix, "\n",
-      "Note: Make a copy of the temp directory (if applicable) for future use if necessary. \n")
+      "Note: Make a copy of the temp directory for future use if necessary. \n")
 
   ## Convert arguments to integers for CellPhoneDB python function
   dots <- list(...)
