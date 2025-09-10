@@ -5,7 +5,7 @@
 \alias{CCDB}
 \title{Mapped CellChat (v2) interaction database}
 \format{
-A dataframe with 3233 interactions and 29 columns:
+A dataframe with 3230 interactions and 29 columns:
 \describe{
   \item{interaction_name}{CellChat interaction name}
   \item{pathway_name}{CellChat pathway name}

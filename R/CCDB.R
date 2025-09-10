@@ -4,7 +4,7 @@
 #' it contains information from the original package, but includes uniprot identifiers for
 #' comparison with CellPhoneDB results.
 #'
-#' @format A dataframe with 3233 interactions and 29 columns:
+#' @format A dataframe with 3230 interactions and 29 columns:
 #' \describe{
 #'   \item{interaction_name}{CellChat interaction name}
 #'   \item{pathway_name}{CellChat pathway name}
