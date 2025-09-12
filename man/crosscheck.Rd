@@ -14,7 +14,7 @@ crosscheck(cellchat, cellphonedb, threshold = 0.05)
 \item{threshold}{p-value (default: 0.05)}
 }
 \value{
-A list of five elements: (1) Combined result (2) CellChat result (3) CellPhoneDB result (4) Summary table of containing number of interactions at each confidence level (5) CellChat object filtered to contain only significant interactions in both CellChat and CellPhoneDB.
+A list of six elements: (1) CellChat result (2) CellPhoneDB result (3) Full combined result including non-significant interactions (4) Filtered combined result with only significant interactions in at least one tool (5) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB (6) CellChat object filtered to contain only significant interactions in both CellChat and CellPhoneDB.
 }
 \description{
 Comparing CellChat and CellPhoneDB results
