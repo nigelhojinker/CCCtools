@@ -16,12 +16,14 @@ We provide a function `crosscheck()` that takes as input both the
 CellChat object from `run_cellchat()` and the list from
 `run_cellphonedb()`, as well as an optional `threshold` argument should
 users wish to adjust the p-value (default: 0.05). `crosscheck()` returns
-a list of five elements: (1) Combined result (2) CellChat result (3)
-CellPhoneDB result (4) Summary table of containing number of
-interactions at each confidence level (5) CellChat object filtered to
-contain only significant interactions in both CellChat and CellPhoneDB.
-
-We classify the confidence level as such:
+a list of six elements: (1) CellChat result (2) CellPhoneDB result (3)
+Full combined result including non-significant interactions (4) Filtered
+combined result with only significant interactions in at least one tool
+(5) 3x3 contingency table of interaction types in both CellChat and
+CellPhoneDB (6) CellChat object filtered to contain only significant
+interactions in both CellChat and CellPhoneDB. We categorise
+interactions in the filtered result in terms of the agreement (and lack
+thereof) between CellChat and CellPhoneDB as such:
 
 - High: Interaction is significant in both CellChat and CellPhoneDB
 - Mid CellChat: Interaction is found only in CellChat, and p-value \<
@@ -43,18 +45,18 @@ cpdb <- run_cellphonedb(seu.NL, labels = "labels")
 
 combine <- crosscheck(cellchat = cellchat, cellphonedb = cpdb)
 # Joining with `by = join_by(interaction_name)`
-# Joining with `by = join_by(id_cp_interaction)`
+# Joining with `by = join_by(id_cp_interaction, classification)`
 # Removed interactions insignificant in both tools, and interactions only found in one tool and has a p-value >= 0.05 
-#  CCCtools result: 
-#       confidence   n    percent
-#             High 221 0.10978639
-#     Mid CellChat 470 0.23348236
-#  Mid CellPhoneDB 585 0.29061103
-#     Low CellChat  22 0.01092896
-#  Low CellPhoneDB 715 0.35519126
+#  CCCtools summary: 
+#            CellPhoneDB
+# CellChat      Sig Not Sig Not Found   Sum
+#   Sig         221      22       470   713
+#   Not Sig     710   31743     29763 62216
+#   Not Found   586   21294         0 21880
+#   Sum        1517   53059     30233 84809
 #   |++++++++++++++++++++++++++++++++++++++++++++++++++| 100% elapsed=00s  
 # Created CellChat object with only High confidence interactions.
 
 combine %>% names()
-# [1] "combine"      "cellchat"     "cellphonedb"  "summary"      "cellchat.new"
+# [1] "cellchat"     "cellphonedb"  "combine.all"  "combine.sig"  "summary"      "cellchat.new"
 ```
