@@ -4,7 +4,7 @@
 \alias{crosscheck}
 \title{Comparing CellChat and CellPhoneDB results}
 \usage{
-crosscheck(cellchat, cellphonedb, threshold = 0.05)
+crosscheck(cellchat, cellphonedb, threshold = 0.05, return.all = FALSE)
 }
 \arguments{
 \item{cellchat}{CellChat object obtained from run_cellchat() on a Seurat object.}
@@ -12,9 +12,11 @@ crosscheck(cellchat, cellphonedb, threshold = 0.05)
 \item{cellphonedb}{Output list from run_cellphonedb() on a Seurat object.}
 
 \item{threshold}{p-value (default: 0.05)}
+
+\item{return.all}{logical value to determine whether to return the full comparative analysis results (including non-significant interactions).}
 }
 \value{
-A list of six elements: (1) CellChat result (2) CellPhoneDB result (3) Full combined result including non-significant interactions (4) Filtered combined result with only significant interactions in at least one tool (5) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB (6) CellChat object filtered to contain only significant interactions in both CellChat and CellPhoneDB.
+A list of three elements: (1) Comparative analysis result (2) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB (3) CellChat object filtered to contain only significant interactions in both CellChat and CellPhoneDB.
 }
 \description{
 Comparing CellChat and CellPhoneDB results

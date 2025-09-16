@@ -3,8 +3,9 @@
 #' @param cellchat CellChat object obtained from run_cellchat() on a Seurat object.
 #' @param cellphonedb Output list from run_cellphonedb() on a Seurat object.
 #' @param threshold p-value (default: 0.05)
+#' @param return.all logical value to determine whether to return the full comparative analysis results (including non-significant interactions).
 #'
-#' @returns A list of six elements: (1) CellChat result (2) CellPhoneDB result (3) Full combined result including non-significant interactions (4) Filtered combined result with only significant interactions in at least one tool (5) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB (6) CellChat object filtered to contain only significant interactions in both CellChat and CellPhoneDB.
+#' @returns A list of three elements: (1) Comparative analysis result (2) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB (3) CellChat object filtered to contain only significant interactions in both CellChat and CellPhoneDB.
 #' @export
 #'
 #' @examples
@@ -17,7 +18,7 @@
 #' }
 
 
-crosscheck <- function(cellchat, cellphonedb, threshold = 0.05) {
+crosscheck <- function(cellchat, cellphonedb, threshold = 0.05, return.all = FALSE) {
   if (! is.data.frame(pull_netslot(cellchat))) {
     stop("Input CellChat result is not a dataframe. Perform run_cellchat() on your Seurat object and set cellchat as your output CellChat object.")
   } else if (! is.data.frame(cellphonedb$pvalues)) {
@@ -57,7 +58,7 @@ crosscheck <- function(cellchat, cellphonedb, threshold = 0.05) {
            unique_int = paste(source, target, ligand, receptor, sep = "_")) %>%
     relocate(id_cp_interaction, interacting_pair, source, target, ligand, from, receptor, to, unique_int, pval, everything())
 
-  levels <- c("Sig", "Not Sig", "Not Found")
+  levels <- c("Sig", "Not_Sig", "Not_Found")
 
   combine.all <- cellchat_res %>%
     full_join(cellphonedb_res %>% select(id_cp_interaction, interacting_pair, classification, source, target, ligand, from, receptor, to, unique_int, pval),
@@ -65,32 +66,38 @@ crosscheck <- function(cellchat, cellphonedb, threshold = 0.05) {
               suffix = c(".cc", ".cpdb")) %>%
     mutate(classification = ifelse(is.na(classification), from, classification),
            pathway_name   = ifelse(is.na(pathway_name), classification, pathway_name),
-           confidence = case_when(pval.cc < threshold  & pval.cpdb < threshold  ~ "High",
-                                  pval.cc < threshold  & is.na(pval.cpdb)  ~ "Mid CellChat",
-                                  is.na(pval.cc)  & pval.cpdb < threshold  ~ "Mid CellPhoneDB",
-                                  pval.cc < threshold  & pval.cpdb >= threshold ~ "Low CellChat",
-                                  pval.cc >= threshold & pval.cpdb < threshold  ~ "Low CellPhoneDB"),
+           confidence = case_when(pval.cc < threshold  & pval.cpdb < threshold  ~ "Sig_Both",
+                                  pval.cc < threshold  & is.na(pval.cpdb)  ~ "Sig_CellChat_Not_Found_CellPhoneDB",
+                                  is.na(pval.cc)  & pval.cpdb < threshold  ~ "Sig_CellPhoneDB_Not_Found_CellChat",
+                                  pval.cc < threshold  & pval.cpdb >= threshold ~ "Sig_CellChat_Not_Sig_CellPhoneDB",
+                                  pval.cc >= threshold & pval.cpdb < threshold  ~ "Sig_CellPhoneDB_Not_Sig_CellChat"),
            CellPhoneDB_status = case_when(pval.cpdb < threshold ~ "Sig",
-                                          pval.cpdb >= threshold ~ "Not Sig",
-                                          is.na(pval.cpdb) ~ "Not Found"),
+                                          pval.cpdb >= threshold ~ "Not_Sig",
+                                          is.na(pval.cpdb) ~ "Not_Found"),
            CellPhoneDB_status = factor(CellPhoneDB_status, levels = levels),
            CellChat_status = case_when(pval.cc < threshold ~ "Sig",
-                                       pval.cc >= threshold ~ "Not Sig",
-                                       is.na(pval.cc) ~ "Not Found"),
+                                       pval.cc >= threshold ~ "Not_Sig",
+                                       is.na(pval.cc) ~ "Not_Found"),
            CellChat_status = factor(CellChat_status, levels = levels))
 
   summary <- table(CellChat = combine.all$CellChat_status, CellPhoneDB = combine.all$CellPhoneDB_status) %>% addmargins()
 
-  combine.sig <- combine.all %>%
-    filter(!is.na(confidence))
+  if (!return.all) {
+    res <- combine.all %>%
+      filter(!is.na(confidence))
+  } else {
+    res <- combine.all
+  }
 
-  cat("Removed interactions insignificant in both tools, and interactions only found in one tool and has a p-value >=", threshold, "\n",
+  cat("Comparative analysis done successfully for p-value", threshold, "\n",
       "CCCtools summary: \n")
 
   print(summary)
 
-  rel.int <- combine.sig %>%
-    filter(confidence == "High") %>%
+  message("Filtering cellchat object to only interactions significant in both CellChat and CellPhoneDB.\nFiltered object can be obtained from the 'cellchat.new' element of the output.")
+
+  rel.int <- res %>%
+    filter(confidence == "Sig_Both") %>%
     pull(interaction_name) %>%
     unique()
 
@@ -104,9 +111,9 @@ crosscheck <- function(cellchat, cellphonedb, threshold = 0.05) {
   cellchat.new <- aggregateNet(cellchat.new)
   cellchat.new <- netAnalysis_computeCentrality(cellchat.new, slot.name = "netP")
 
-  cat("Created CellChat object with only High confidence interactions.")
+  cat("Created CellChat object with only interactions significant in both CellChat and CellPhoneDB.")
 
-  return(list(cellchat = cellchat_res, cellphonedb = cellphonedb_res, combine.all = combine.all, combine.sig = combine.sig, summary = summary, cellchat.new  = cellchat.new))
+  return(list(result = res, summary = summary, cellchat.new  = cellchat.new))
 
 }
 
