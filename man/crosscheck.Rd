@@ -16,7 +16,7 @@ crosscheck(cellchat, cellphonedb, threshold = 0.05, return.all = FALSE)
 \item{return.all}{logical value to determine whether to return the full comparative analysis results (including non-significant interactions).}
 }
 \value{
-A list of three elements: (1) Comparative analysis result (2) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB (3) CellChat object filtered to contain only significant interactions in both CellChat and CellPhoneDB.
+A list of two elements: (1) Comparative analysis result (2) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB.
 }
 \description{
 Comparing CellChat and CellPhoneDB results
@@ -24,8 +24,8 @@ Comparing CellChat and CellPhoneDB results
 \examples{
 \dontrun{
 ## After setting up conda env
-cellchat <- run_cellchat(seurat.obj, ...)
 cpdb <- run_cellphonedb(seurat.obj, ...)
+cellchat <- run_cellchat(seurat.obj, ...)
 
 combine <- crosscheck(cellchat = cellchat, cellphonedb = cpdb)
 }

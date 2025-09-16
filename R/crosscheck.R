@@ -5,14 +5,14 @@
 #' @param threshold p-value (default: 0.05)
 #' @param return.all logical value to determine whether to return the full comparative analysis results (including non-significant interactions).
 #'
-#' @returns A list of three elements: (1) Comparative analysis result (2) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB (3) CellChat object filtered to contain only significant interactions in both CellChat and CellPhoneDB.
+#' @returns A list of two elements: (1) Comparative analysis result (2) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB.
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' ## After setting up conda env
-#' cellchat <- run_cellchat(seurat.obj, ...)
 #' cpdb <- run_cellphonedb(seurat.obj, ...)
+#' cellchat <- run_cellchat(seurat.obj, ...)
 #'
 #' combine <- crosscheck(cellchat = cellchat, cellphonedb = cpdb)
 #' }
@@ -93,27 +93,8 @@ crosscheck <- function(cellchat, cellphonedb, threshold = 0.05, return.all = FAL
       "CCCtools summary: \n")
 
   print(summary)
-
-  message("Filtering cellchat object to only interactions significant in both CellChat and CellPhoneDB.\nFiltered object can be obtained from the 'cellchat.new' element of the output.")
-
-  rel.int <- res %>%
-    filter(confidence == "Sig_Both") %>%
-    pull(interaction_name) %>%
-    unique()
-
-  cellchat.new <- cellchat
-  cellchat.new@net$prob <- cellchat@net$prob[,, rel.int]
-  cellchat.new@net$pval <- cellchat@net$pval[,, rel.int]
-  cellchat.new@LR$LRsig <- cellchat@LR$LRsig %>%
-    filter(interaction_name %in% rel.int)
-
-  cellchat.new <- computeCommunProbPathway(cellchat.new)
-  cellchat.new <- aggregateNet(cellchat.new)
-  cellchat.new <- netAnalysis_computeCentrality(cellchat.new, slot.name = "netP")
-
-  cat("Created CellChat object with only interactions significant in both CellChat and CellPhoneDB.")
-
-  return(list(result = res, summary = summary, cellchat.new  = cellchat.new))
+  
+  return(list(result = res, summary = summary))
 
 }
 
