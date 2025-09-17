@@ -69,7 +69,7 @@ run_cellchat <- function(obj, group.by = "ident", assay = "RNA",
   cellchat <- subsetData(cellchat) %>%
     identifyOverExpressedGenes() %>%
     identifyOverExpressedInteractions() %>%
-    computeCommunProb(type = "triMean", trim = trim, LR.use = LR.use, raw.use = raw.use,
+    computeCommunProb(type = type, trim = trim, LR.use = LR.use, raw.use = raw.use,
                       population.size = population.size, distance.use = distance.use,
                       interaction.range = interaction.range, scale.distance = scale.distance,
                       k.min = k.min, contact.dependent = contact.dependent,
