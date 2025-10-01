@@ -134,5 +134,8 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, group.by = NULL, toKeep =
 
   message("CellPhoneDB analysis completed successfully.")
 
+  # Assign CellPhoneDB class to cpdb out
+  class(cpdb) <- "CellPhoneDB"
+
   return(cpdb)
 }
