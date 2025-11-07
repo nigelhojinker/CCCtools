@@ -54,6 +54,11 @@ crosscheck_CC_CPDB <- function(cellchat, cellphonedb, threshold = 0.05, return.a
 
 }
 
+#' Internal helpers for comparative analysis between CellChat objects in crosscheck()
+#'
+#' @keywords internal
+#' @noRd
+
 crosscheck_CC_CC <- function(cellchat1, cellchat2, name1, name2, threshold = 0.05, return.all = FALSE) {
 
   prob1 <- paste0("prob_", name1)
@@ -120,6 +125,11 @@ crosscheck_CC_CC <- function(cellchat1, cellchat2, name1, name2, threshold = 0.0
 
   return(list(result = res, summary = summary))
 }
+
+#' Internal helpers for comparative analysis between CellPhoneDB objects in crosscheck()
+#'
+#' @keywords internal
+#' @noRd
 
 crosscheck_CPDB_CPDB <- function(cellphonedb1, cellphonedb2, name1, name2, threshold = 0.05, return.all = FALSE) {
 
