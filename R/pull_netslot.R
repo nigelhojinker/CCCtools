@@ -40,12 +40,6 @@ pull_netslot <- function (object = NULL, thresh = 0.05) {
     net <- cbind(net, pairLR[idx, ])
   }
 
-  # Removing duplicated interactions to align with CCDB
-  to.remove <- setdiff(CellChatDB.human$interaction$interaction_name, CCDB$interaction_name)
-
-  net <- net %>%
-    filter(! interaction_name %in% to.remove)
-
   # remove interactions that do not pass criteria (min.cells) in filterCommunication()
   return(net %>% filter( !(prob == 0 & pval < 0.05)))
 }
