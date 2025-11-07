@@ -4,12 +4,20 @@
 \alias{crosscheck}
 \title{Comparing CellChat and CellPhoneDB results}
 \usage{
-crosscheck(cellchat, cellphonedb, threshold = 0.05, return.all = FALSE)
+crosscheck(
+  obj1 = NULL,
+  obj2 = NULL,
+  comp.type = c("CC_CP", "CP_CC", "CC_CC", "CP_CP"),
+  threshold = 0.05,
+  return.all = FALSE
+)
 }
 \arguments{
-\item{cellchat}{CellChat object obtained from run_cellchat() on a Seurat object.}
+\item{obj1}{CellChat object obtained from run_cellchat() on a Seurat object OR output list from run_cellphonedb() on a Seurat object.}
 
-\item{cellphonedb}{Output list from run_cellphonedb() on a Seurat object.}
+\item{obj2}{CellChat object obtained from run_cellchat() on a Seurat object OR output list from run_cellphonedb() on a Seurat object.}
+
+\item{comp.type}{Character value stating the type of comparative analysis to run; assumes a CellChat-to-CellPhoneDB comparison by default ("CC_CP").}
 
 \item{threshold}{p-value (default: 0.05)}
 
@@ -27,6 +35,6 @@ Comparing CellChat and CellPhoneDB results
 cpdb <- run_cellphonedb(seurat.obj, ...)
 cellchat <- run_cellchat(seurat.obj, ...)
 
-combine <- crosscheck(cellchat = cellchat, cellphonedb = cpdb)
+combine <- crosscheck(obj1 = cellchat, obj2 = cpdb, comp.type = "CC_CP")
 }
 }

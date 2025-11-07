@@ -40,7 +40,7 @@ run_cellchat(
 
 \item{assay}{RNA assay by default}
 
-\item{subsetDB}{set to TRUE if filtering CellChatDB.human (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)}
+\item{subsetDB}{set to TRUE if filtering CellChatDB.human.new, our customized CellChatDB.human (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)}
 
 \item{search}{taken from CellChat package, run help(subsetDB) for details}
 
