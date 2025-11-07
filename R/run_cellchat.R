@@ -11,7 +11,7 @@
 #' @param obj Seurat object
 #' @param group.by Metadata column name for the cell type labels
 #' @param assay RNA assay by default
-#' @param subsetDB set to TRUE if filtering CellChatDB.human (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)
+#' @param subsetDB set to TRUE if filtering CellChatDB.human.new, our customized CellChatDB.human (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)
 #' @param search taken from CellChat package, run help(subsetDB) for details
 #' @param key taken from CellChat package, run help(subsetDB) for details
 #' @param non_protein taken from CellChat package, run help(subsetDB) for details
@@ -60,9 +60,9 @@ run_cellchat <- function(obj, group.by = "ident", assay = "RNA",
 
   # Subset CellChat database if needed
   if (subsetDB){
-    cellchat@DB <- subsetDB(CellChatDB.human, search = search, key = key, non_protein = non_protein)
+    cellchat@DB <- subsetDB(CellChatDB.human.new, search = search, key = key, non_protein = non_protein)
   } else {
-    cellchat@DB <- CellChatDB.human
+    cellchat@DB <- CellChatDB.human.new
   }
 
   ## Run analysis
