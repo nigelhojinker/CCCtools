@@ -5,33 +5,44 @@
 \alias{CPDB}
 \title{Mapped CellPhoneDB (v5) interaction database}
 \format{
-A dataframe with 2911 interactions and 13 columns:
+A dataframe with 2911 interactions and 25 columns:
 \describe{
-  \item{id_interaction}{Interaction number from 0 to 2910; total 2911 interactions}
   \item{id_cp_interaction}{CellPhoneDB unique interaction ID}
-  \item{source}{Source of which interaction was taken from}
+  \item{classification}{Interaction classification}
+  \item{ligand_name}{Gene symbol/name of ligand}
+  \item{ligand}{Uniprot ID format of ligand}
+  \item{receptor_name}{Gene symbol/name of receptor}
+  \item{receptor}{Uniprot ID format of receptor}
+  \item{LR}{Ligand-receptor pair of interaction in Uniprot format; ligand|receptor separated by "|"}
+  \item{complex_ligand}{Logical value indicating whether ligand is a complex or not}
+  \item{complex_receptor}{Logical value indicating whether receptor is a complex or not}
+  \item{partner_a}{Uniprot ID format of ligand in original CellPhoneDB}
+  \item{partner_b}{Uniprot ID format of receptor in original CellPhoneDB}
+  \item{protein_name_a}{Gene symbol/name of ligand in original CellPhoneDB}
+  \item{protein_name_b}{Gene symbol/name of receptor in original CellPhoneDB}
   \item{annotation_strategy}{Method of collecting and annotating interaction}
+  \item{source}{Source of which interaction was taken from}
   \item{is_ppi}{TRUE if protein-protein interaction}
   \item{curator}{Curator}
+  \item{reactome_complex}{Reactome stable identifier for complex}
+  \item{reactome_reaction}{Reactome stable identifier for reaction}
+  \item{reactome_pathway}{Reactome stable identifier for pathway}
+  \item{comments}{Additional information or descriptions on the interaction}
+  \item{version}{Version history of interaction in the original CellPhoneDB}
+  \item{interactors}{Ligand-receptor pair in gene symbol format}
   \item{directionality}{Interaction type}
-  \item{classification}{Interaction classification}
-  \item{unique_int}{Uniprot-based interaction identifier}
-  \item{ligand}{Uniprot ID of ligand}
-  \item{from}{Gene symbol of ligand}
-  \item{receptor}{Uniprot ID of receptor}
-  \item{to}{Gene symbol of receptor}
+  \item{modulatory_effect}{Indicates the type of effect (activatory or inhibitory) interaction has}
 }
 }
 \source{
-Database was adapted from the CellPhoneDB (v5) Python package interaction_table from the zip file at: https://github.com/ventolab/cellphonedb-data/blob/master/cellphonedb.zip. It is futher worked on as described at https://cellphonedb-cellchatdb-mapping.vercel.app/
+Database was adapted from the CellPhoneDB (v5) Python package interaction_table from the zip file at: https://github.com/ventolab/cellphonedb-data/blob/master/cellphonedb.zip.
 }
 \usage{
 CPDB
 }
 \description{
 This database is adapted from the original CellPhoneDB (v5) database;
-it contains information from the original package, but includes uniprot identifiers for
-comparison with CellChat results.
+it contains information from the original package, but includes uniprot identifiers for comparison with CellChat results.
 }
 \examples{
 

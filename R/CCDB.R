@@ -1,15 +1,19 @@
 #' Mapped CellChat (v2) interaction database
 #'
 #' This database is adapted from the original CellChat (v2) database;
-#' it contains information from the original package, but includes uniprot identifiers for
-#' comparison with CellPhoneDB results.
+#' it contains information from the original package, but includes uniprot identifiers for comparison with CellPhoneDB results.
 #'
-#' @format A dataframe with 3230 interactions and 29 columns:
+#' @format A dataframe with 3233 interactions and 33 columns:
 #' \describe{
 #'   \item{interaction_name}{CellChat interaction name}
 #'   \item{pathway_name}{CellChat pathway name}
-#'   \item{uniprot_ligand}{Uniprot ID of ligand}
-#'   \item{uniprot_receptor}{Uniprot ID of receptor}
+#'   \item{ligand_name}{Gene symbol/name of ligand}
+#'   \item{ligand}{Uniprot ID format of ligand}
+#'   \item{receptor_name}{Gene symbol/name of receptor}
+#'   \item{receptor}{Uniprot ID format of receptor}
+#'   \item{LR}{Ligand-receptor pair of interaction in Uniprot format; ligand|receptor separated by "|"}
+#'   \item{complex_ligand}{Logical value indicating whether ligand is a complex or not}
+#'   \item{complex_receptor}{Logical value indicating whether receptor is a complex or not}
 #'   \item{agonist}{CellChat agonist - facilitates interaction}
 #'   \item{antagonist}{CellChat antagonist - inhibits interaction}
 #'   \item{co_A_receptor}{CellChat co-activation receptor}
@@ -34,7 +38,6 @@
 #'   \item{receptor.secreted_type}{Receptor class if secreted}
 #'   \item{receptor.transmembrane}{TRUE if transmembrane}
 #'   \item{version}{Version of CellChat interaction was uploaded in}
-#'   \item{unique_int}{Uniprot-based identifier concatenating both ligand and receptor uniprot IDs}
 #' }
 #'
 #' @examples
@@ -45,5 +48,5 @@
 #'
 #'
 #' @source
-#' Database was adapted from the CellChat (v2) R package HUMAN database (CellChatDB.human$interaction) and worked on as described at https://cellphonedb-cellchatdb-mapping.vercel.app/
+#' Database was adapted from the CellChat (v2) R package HUMAN database (CellChatDB.human$interaction).
 "CCDB"
