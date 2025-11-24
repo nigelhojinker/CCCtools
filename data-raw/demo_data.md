@@ -140,12 +140,15 @@ seu@meta.data %>% tabyl(labels, condition)
     ##    CD40LG+ TC  610  155
     ##           NKT   80   35
 
-Let us subset to just the non-lesional samples:
+Let us subset the non-lesional and lesional samples separately:
 
 ``` r
 seu.NL <- subset(seu, condition == "NL")
+seu.LS <- subset(seu, condition == "LS")
 
 seu.NL@meta.data <- seu.NL@meta.data %>% select(patient.id, labels)
+
+seu.LS@meta.data <- seu.LS@meta.data %>% select(patient.id, labels)
 
 seu.NL
 ```
@@ -155,11 +158,22 @@ seu.NL
     ## Active assay: RNA (10353 features, 0 variable features)
     ##  1 layer present: data
 
+``` r
+seu.LS
+```
+
+    ## An object of class Seurat 
+    ## 10353 features across 4808 samples within 1 assay 
+    ## Active assay: RNA (10353 features, 0 variable features)
+    ##  1 layer present: data
+
 Finally, we write this into the data directory:
 
 ``` r
 usethis::use_data(seu.NL)
-# ✔ Setting active project to "C:/Users/aramasamy/Documents/CCCtools".
 # ✔ Saving "seu.NL" to "data/seu.NL.rda".
 # ☐ Document your data (see <https://r-pkgs.org/data.html>).
+usethis::use_data(seu.LS)
+# ✔ Saving "seu.LS" to "data/seu.LS.rda".
+# ☐ Document your data (see <https://r-pkgs.org/data.html>
 ```
