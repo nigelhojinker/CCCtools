@@ -21,16 +21,18 @@
 
 filter_cellchat <- function(cellchat, crosscheck_res, category = c("Sig_Both", "Sig_CellChat_Not_Found_CellPhoneDB", "Sig_CellPhoneDB_Not_Found_CellChat",
                                                                    "Sig_CellChat_Not_Sig_CellPhoneDB", "Sig_CellPhoneDB_Not_Sig_CellChat")) {
-  if (! is.data.frame(pull_netslot(cellchat))) {
-    stop("Input CellChat result is not a dataframe. Perform run_cellchat() on your Seurat object and set cellchat as your output CellChat object.")
+  if (! inherits(cellchat, "CellChat")) {
+    stop("Input CellChat result is not a CellChat object. Perform run_cellchat() on your Seurat object and set cellchat as your output CellChat object.")
   } else if (! is.data.frame(crosscheck_res$result)) {
     stop("Input crosscheck_res is not a list. Run crosscheck() on your CellChat object and CellPhoneDB output list and extract the result element.")
   }
 
-  category <- match.arg(category)
+  var <- match.arg(category)
+
+  cat("Filtering interactions in category:", var)
 
   to_keep <- crosscheck_res$result %>%
-    filter(category == category) %>%
+    filter(category == var) %>%
     pull(interaction_name) %>%
     unique()
 
