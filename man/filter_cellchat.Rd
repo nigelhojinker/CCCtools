@@ -4,15 +4,23 @@
 \alias{filter_cellchat}
 \title{Subsetting CellChat object to contain interactions significant in both CCC tools}
 \usage{
-filter_cellchat(cellchat, combine.sig)
+filter_cellchat(
+  cellchat,
+  crosscheck_res,
+  category = c("Sig_Both", "Sig_CellChat_Not_Found_CellPhoneDB",
+    "Sig_CellPhoneDB_Not_Found_CellChat", "Sig_CellChat_Not_Sig_CellPhoneDB",
+    "Sig_CellPhoneDB_Not_Sig_CellChat")
+)
 }
 \arguments{
 \item{cellchat}{CellChat object obtained from run_cellchat() on a Seurat object.}
 
-\item{combine.sig}{Output data from crosscheck() result element.}
+\item{crosscheck_res}{Output data from crosscheck() function.}
+
+\item{category}{Mandatory character value of the type of interaction to filter the cellchat object.}
 }
 \value{
-A new CellChat object that contains only interactions significant in both CellChat and CellPhoneDB.
+A new CellChat object that interactions filtered to your interest (default: significant in both CellChat and CellPhoneDB).
 }
 \description{
 Subsetting CellChat object to contain interactions significant in both CCC tools
@@ -25,6 +33,6 @@ cellchat <- run_cellchat(seurat.obj, ...)
 
 combine <- crosscheck(cellchat = cellchat, cellphonedb = cpdb)
 
-cellchat.new <- filter_cellchat(cellchat = cellchat, combine.sig = combine$result)
+cellchat.new <- filter_cellchat(cellchat = cellchat, crosscheck_res = crosscheck)
 }
 }
