@@ -46,8 +46,6 @@ filter_cellchat <- function(cellchat, crosscheck_res, category = c("Sig_Both", "
   cellchat.new <- aggregateNet(cellchat.new)
   cellchat.new <- netAnalysis_computeCentrality(cellchat.new, slot.name = "netP")
 
-  cat("Filtered CellChat object to only interactions in category:", var, "\n")
-
   return(cellchat.new)
 
 }
