@@ -17,10 +17,10 @@ filter_cellchat(
 
 \item{crosscheck_res}{Output data from crosscheck() function.}
 
-\item{category}{Mandatory character value of the type of interaction to filter the cellchat object.}
+\item{category}{Character value of the type of interaction to filter the cellchat object (default: significant in both CellChat and CellPhoneDB).}
 }
 \value{
-A new CellChat object that interactions filtered to your interest (default: significant in both CellChat and CellPhoneDB).
+A new CellChat object that interactions filtered to your interest.
 }
 \description{
 Subsetting CellChat object to contain interactions significant in both CCC tools

@@ -2,9 +2,9 @@
 #'
 #' @param cellchat CellChat object obtained from run_cellchat() on a Seurat object.
 #' @param crosscheck_res Output data from crosscheck() function.
-#' @param category Mandatory character value of the type of interaction to filter the cellchat object.
+#' @param category Character value of the type of interaction to filter the cellchat object (default: significant in both CellChat and CellPhoneDB).
 #'
-#' @returns A new CellChat object that interactions filtered to your interest (default: significant in both CellChat and CellPhoneDB).
+#' @returns A new CellChat object that interactions filtered to your interest.
 #' @export
 #'
 #' @examples
