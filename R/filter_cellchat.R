@@ -35,10 +35,10 @@ filter_cellchat <- function(cellchat, crosscheck_res, category = c("Sig_Both", "
     unique()
 
   cellchat.new <- cellchat
-  cellchat.new@net$prob <- cellchat@net$prob[,, rel.int]
-  cellchat.new@net$pval <- cellchat@net$pval[,, rel.int]
+  cellchat.new@net$prob <- cellchat@net$prob[,, to_keep]
+  cellchat.new@net$pval <- cellchat@net$pval[,, to_keep]
   cellchat.new@LR$LRsig <- cellchat@LR$LRsig %>%
-    filter(interaction_name %in% rel.int)
+    filter(interaction_name %in% to_keep)
 
   cellchat.new <- computeCommunProbPathway(cellchat.new)
   cellchat.new <- aggregateNet(cellchat.new)
