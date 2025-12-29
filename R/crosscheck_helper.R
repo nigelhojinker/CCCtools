@@ -65,14 +65,14 @@ crosscheck_CC_CC <- function(cellchat1, cellchat2, name1, name2, threshold = 0.0
 
   ## Process first CellChat object
   cellchat_res1 <- pull_netslot(cellchat1) %>%
-    left_join(CCDB %>%
+    left_join(db_map %>%
                 select(interaction_name, LR)) %>%
     mutate(unique_int = paste(source, target, LR, sep = "|")) %>%
     rename(!!prob1 := prob, !!pval1 := pval)
 
   ## Process second CellChat object
   cellchat_res2 <- pull_netslot(cellchat2) %>%
-    left_join(CCDB %>%
+    left_join(db_map %>%
                 select(interaction_name, LR)) %>%
     mutate(unique_int = paste(source, target, LR, sep = "|")) %>%
     rename(!!prob2 := prob, !!pval2 := pval)
@@ -137,7 +137,7 @@ crosscheck_CPDB_CPDB <- function(cellphonedb1, cellphonedb2, name1, name2, thres
   cellphonedb_res1 <- cellphonedb1$pvalues %>%
     pivot_longer(cols = contains("|"), names_to = "cell_type_pair", values_to = "pval") %>%
     separate(cell_type_pair, into = c("source", "target"), sep = "\\|") %>%
-    left_join(CPDB %>% select(1:7)) %>%
+    left_join(db_map %>% select(id_cp_interaction, LR)) %>%
     mutate(unique_int = paste(source, target, LR, sep = "|")) %>%
     rename(!!pval1 := pval)
 
@@ -145,7 +145,7 @@ crosscheck_CPDB_CPDB <- function(cellphonedb1, cellphonedb2, name1, name2, thres
   cellphonedb_res2 <- cellphonedb2$pvalues %>%
     pivot_longer(cols = contains("|"), names_to = "cell_type_pair", values_to = "pval") %>%
     separate(cell_type_pair, into = c("source", "target"), sep = "\\|") %>%
-    left_join(CPDB %>% select(1:7)) %>%
+    left_join(db_map %>% select(id_cp_interaction, LR)) %>%
     mutate(unique_int = paste(source, target, LR, sep = "|")) %>%
     rename(!!pval2 := pval)
 
@@ -155,7 +155,7 @@ crosscheck_CPDB_CPDB <- function(cellphonedb1, cellphonedb2, name1, name2, thres
   second_only <- anti_join(cellphonedb_res2, cellphonedb_res1)
 
   res <- bind_rows(found_both, second_only) %>%
-    relocate(id_cp_interaction, interacting_pair, source, target, ligand_name, ligand, receptor_name, receptor, unique_int, starts_with("pval")) %>%
+    relocate(id_cp_interaction, interacting_pair, source, target, partner_a, partner_b, unique_int, starts_with("pval")) %>%
     mutate(category = case_when(!!sym(pval1) < threshold  & !!sym(pval2) < threshold  ~ "Sig_Both",
                                 !!sym(pval1) < threshold  & is.na(!!sym(pval2))  ~ paste0("Sig_", name1, "_Not_Found_", name2),
                                 is.na(!!sym(pval1))  & !!sym(pval2) < threshold  ~ paste0("Sig_", name2, "_Not_Found_", name1),
