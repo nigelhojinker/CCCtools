@@ -1,7 +1,7 @@
 #' Run CellChat v2 in R
 #'
 #' @description
-#' This function takes as input a Seurat object that has been processed and contains annotated cell type labels in its meta.data.
+#' This function takes as input a Seurat object that has been processed and contains annotated cell type labels in its meta.data. It uses the customized CellChatDB.human.v2a database containing additional interactions from CellPhoneDB.
 #' @description
 #' It runs functions from the CellChat package, namely: createCellChat(), subsetDB(), subsetData(), identifyOverExpressedGenes(),
 #' identifyOverExpressedInteractions(), computeCommunProb() and filterCommunication(). run_cellchat() allows users to input
@@ -60,9 +60,9 @@ run_cellchat <- function(obj, group.by = "ident", assay = "RNA",
 
   # Subset CellChat database if needed
   if (subsetDB){
-    cellchat@DB <- subsetDB(CellChatDB.human.new, search = search, key = key, non_protein = non_protein)
+    cellchat@DB <- subsetDB(CellChatDB.human.v2a, search = search, key = key, non_protein = non_protein)
   } else {
-    cellchat@DB <- CellChatDB.human.new
+    cellchat@DB <- CellChatDB.human.v2a
   }
 
   ## Run analysis

@@ -6,50 +6,43 @@
 crosscheck_CC_CPDB <- function(cellchat, cellphonedb, threshold = 0.05, return.all = FALSE) {
 
   cellchat_res <- pull_netslot(cellchat) %>%
-    left_join(CCDB %>%
-                select(interaction_name, LR)) %>%
+    left_join(db_map %>% select(interaction_name, LR)) %>%
     mutate(unique_int = paste(source, target, LR, sep = "|"))
 
-  cellphonedb_res <- cellphonedb$pvalues %>%
-    pivot_longer(cols = contains("|"), names_to = "cell_type_pair", values_to = "pval") %>%
+  cellphonedb_res <- cellphonedb$pvalues %>% pivot_longer(cols = contains("|"),
+                                                          names_to = "cell_type_pair",
+                                                          values_to = "pval") %>%
     separate(cell_type_pair, into = c("source", "target"), sep = "\\|") %>%
-    left_join(CPDB %>% select(1:7)) %>%
+    left_join(db_map %>% select(id_cp_interaction, LR)) %>%
     mutate(unique_int = paste(source, target, LR, sep = "|"))
 
   levels <- c("Sig", "Not_Sig", "Not_Found")
 
-  combine.all <- cellchat_res %>%
-    full_join(cellphonedb_res %>% select(id_cp_interaction, interacting_pair, classification, source, target, ligand_name, ligand, receptor_name, receptor, unique_int, pval),
-              by = "unique_int",
-              suffix = c("_cc", "_cpdb")) %>%
-    mutate(classification = ifelse(is.na(classification), ligand_name, classification),
-           pathway_name   = ifelse(is.na(pathway_name), classification, pathway_name),
-           category = case_when(pval_cc < threshold  & pval_cpdb < threshold  ~ "Sig_Both",
-                                pval_cc < threshold  & is.na(pval_cpdb)  ~ "Sig_CellChat_Not_Found_CellPhoneDB",
-                                is.na(pval_cc)  & pval_cpdb < threshold  ~ "Sig_CellPhoneDB_Not_Found_CellChat",
-                                pval_cc < threshold  & pval_cpdb >= threshold ~ "Sig_CellChat_Not_Sig_CellPhoneDB",
-                                pval_cc >= threshold & pval_cpdb < threshold  ~ "Sig_CellPhoneDB_Not_Sig_CellChat"),
+  combine.all <- cellchat_res %>% full_join(cellphonedb_res %>%
+                                              select(id_cp_interaction, interacting_pair, source, target,  unique_int, pval),
+                                            by = "unique_int",
+                                            suffix = c("_cc", "_cpdb")) %>%
+    mutate(category = case_when(pval_cc < threshold & pval_cpdb < threshold ~ "Sig_Both",
+                                pval_cc < threshold & is.na(pval_cpdb) ~ "Sig_CellChat_Not_Found_CellPhoneDB",
+                                is.na(pval_cc) & pval_cpdb < threshold ~ "Sig_CellPhoneDB_Not_Found_CellChat",
+                                pval_cc < threshold & pval_cpdb >= threshold ~ "Sig_CellChat_Not_Sig_CellPhoneDB",
+                                pval_cc >= threshold & pval_cpdb < threshold ~ "Sig_CellPhoneDB_Not_Sig_CellChat"),
            CellPhoneDB_status = case_when(pval_cpdb < threshold ~ "Sig",
-                                          pval_cpdb >= threshold ~ "Not_Sig",
-                                          is.na(pval_cpdb) ~ "Not_Found"),
+                                          pval_cpdb >= threshold ~ "Not_Sig", is.na(pval_cpdb) ~ "Not_Found"),
            CellPhoneDB_status = factor(CellPhoneDB_status, levels = levels),
            CellChat_status = case_when(pval_cc < threshold ~ "Sig",
                                        pval_cc >= threshold ~ "Not_Sig",
                                        is.na(pval_cc) ~ "Not_Found"),
            CellChat_status = factor(CellChat_status, levels = levels))
 
-  summary <- table(CellChat = combine.all$CellChat_status, CellPhoneDB = combine.all$CellPhoneDB_status) %>% addmargins()
-
+  summary <- table(CellChat = combine.all$CellChat_status,
+                   CellPhoneDB = combine.all$CellPhoneDB_status) %>% addmargins()
   if (!return.all) {
-    res <- combine.all %>%
-      filter(!is.na(category))
+    res <- combine.all %>% filter(!is.na(category))
   }
-
-  cat("Comparative analysis done successfully for p-value", threshold, "\n",
-      "CCCtools summary: \n")
-
+  cat("Comparative analysis done successfully for p-value",
+      threshold, "\n", "CCCtools summary: \n")
   print(summary)
-
   return(list(result = res, summary = summary))
 
 }

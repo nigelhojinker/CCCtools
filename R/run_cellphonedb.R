@@ -1,7 +1,7 @@
 #' Run CellPhoneDB version 5 in R
 #'
 #' @description
-#' Runs CellPhoneDBv5 on a Seurat object
+#' Runs CellPhoneDBv5 on a Seurat object using the customized cellphonedbv5a database containing additional interactions from CellChat.
 #'
 #' @param obj Seurat object with normalized counts in the data layer of the RNA assay
 #' @param labels Metadata column name of cell type annotations
@@ -56,7 +56,7 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, group.by = NULL, toKeep =
       stop("obj and labels cannot be NULL. Please input a Seurat object (obj) and a metadata column name (labels).")
     }
 
-  cpdbPath <- file.path(pacman::p_path("CCCtools"), "data/cellphonedb.zip")
+  cpdbPath <- file.path(pacman::p_path("CCCtools"), "data/cellphonedb_v5a.zip")
 
   # Use use_dir if provided, else use tempdir with deparse
   if (!is.null(use_dir)) {
