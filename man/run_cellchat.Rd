@@ -6,14 +6,14 @@
 \usage{
 run_cellchat(
   obj,
-  group.by = "ident",
+  labels = "ident",
   assay = "RNA",
   subsetDB = FALSE,
   search = c(),
   key = "annotation",
   non_protein = FALSE,
   type = c("triMean", "truncatedMean", "thresholdedMean", "median"),
-  trim = 0.1,
+  threshold = 0.1,
   LR.use = NULL,
   raw.use = TRUE,
   population.size = FALSE,
@@ -36,11 +36,11 @@ run_cellchat(
 \arguments{
 \item{obj}{Seurat object}
 
-\item{group.by}{Metadata column name for the cell type labels}
+\item{labels}{Metadata column name for the cell type labels}
 
 \item{assay}{RNA assay by default}
 
-\item{subsetDB}{set to TRUE if filtering CellChatDB.human.new, our customized CellChatDB.human (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)}
+\item{subsetDB}{set to TRUE if filtering scpeakerDB (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)}
 
 \item{search}{taken from CellChat package, run help(subsetDB) for details}
 
@@ -50,7 +50,7 @@ run_cellchat(
 
 \item{type}{taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{trim}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{threshold}{taken from CellChat package, run help(computeCommunProb) for details}
 
 \item{LR.use}{taken from CellChat package, run help(computeCommunProb) for details}
 
@@ -94,7 +94,7 @@ cellchat@net$prob is a 3-dimensional array consisting of the source(sender cell)
 cellchat@net$pval consists of the corresponding p-values computed for each interaction.
 }
 \description{
-This function takes as input a Seurat object that has been processed and contains annotated cell type labels in its meta.data.
+This function takes as input a Seurat object that has been processed and contains annotated cell type labels in its meta.data. It uses the customized CellChatDB.human.v2a database containing additional interactions from CellPhoneDB.
 
 It runs functions from the CellChat package, namely: createCellChat(), subsetDB(), subsetData(), identifyOverExpressedGenes(),
 identifyOverExpressedInteractions(), computeCommunProb() and filterCommunication(). run_cellchat() allows users to input

@@ -5,8 +5,6 @@
 #'
 #' @param obj Seurat object with normalized counts in the data layer of the RNA assay
 #' @param labels Metadata column name of cell type annotations
-#' @param group.by Metadata column to filter by; this is for seurat objects containing cells from different disease status or time frames etc. (default = NULL)
-#' @param toKeep Value within the metadata column of interest to retain for the analysis. This field is mandatory if group.by is not NULL. (default = NULL)
 #' @param use_dir Input files required to run CellPhoneDB and the output files from the analysis are created and saved to a temp file (default). Should users desire to have these files be stored in their personal directories, they may input their filepath to this argument.
 #' @param ... Takes in any arguments from c("iterations", "threads", "debug_seed", "result_precision", "subsampling_num_pc", "subsampling_num_cells") for user customization, else running on the default values for these paramters. See Value below for link to description by CellPhoneDB
 #' @param counts_data See Value below for link to description by CellPhoneDB
@@ -47,7 +45,7 @@
 #'   score_interactions = TRUE)
 #' }
 
-run_cellphonedb <- function(obj = NULL, labels = NULL, group.by = NULL, toKeep = NULL, use_dir = NULL, ...,
+run_cellphonedb <- function(obj = NULL, labels = NULL, use_dir = NULL, ...,
                                 counts_data = "hgnc_symbol", active_tfs_file_path = NULL, microenvs_file_path = NULL,
                                 score_interactions = FALSE, threshold = 0.1, pvalue = 0.05, subsampling = FALSE,
                                 subsampling_log = FALSE, separator = "|", debug = FALSE, output_suffix = NULL) {
@@ -56,7 +54,7 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, group.by = NULL, toKeep =
       stop("obj and labels cannot be NULL. Please input a Seurat object (obj) and a metadata column name (labels).")
     }
 
-  cpdbPath <- file.path(pacman::p_path("CCCtools"), "data/cellphonedb_v5a.zip")
+  cpdbPath <- file.path(pacman::p_path("CCCtools"), "data/scpeakerDB_CP.zip")
 
   # Use use_dir if provided, else use tempdir with deparse
   if (!is.null(use_dir)) {
@@ -84,11 +82,6 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, group.by = NULL, toKeep =
   cpdb.analysis <- import("cellphonedb.src.core.methods.cpdb_statistical_analysis_method")
 
   ## Input file creation
-  if (!is.null(group.by)) {
-    to.keep <- rownames(obj@meta.data)[obj@meta.data[[group.by]] == toKeep]
-    obj <- subset(obj, cells = to.keep)
-  }
-
   meta <- obj@meta.data %>%
     rownames_to_column(var = "barcode") %>%
     select(barcode, !!rlang::sym(labels)) %>%

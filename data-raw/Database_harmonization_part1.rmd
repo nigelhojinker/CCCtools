@@ -7,6 +7,7 @@ vignette: >
   %\VignetteIndexEntry{Database harmonization by scpeakeR - Part 1}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+date: 2025/12/30
 ---
 
 # Introduction
@@ -67,6 +68,8 @@ map <- CellChatDB.human$geneInfo %>%
   select(Symbol, EntryID.uniprot) %>% 
   drop_na() %>% 
   deframe()
+
+map %>% length()
 
 map %>% head()
 ```
@@ -139,11 +142,6 @@ CC.int$complex_ligand   <- CC.int$ligand   %in% names(complex)
 CC.int$complex_receptor <- CC.int$receptor %in% names(complex)
 
 tmp <- join_summarize(CC.int, CC.int)
-# ligand-receptors = 3233 
-# simple ligands = 664 
-# simple receptors = 576 
-# complex ligands = 136 
-# complex receptors = 204 
 
 ### Keeping gene/complex name of original database
 CC.int$ligand_name   <- CC.int$ligand
@@ -153,7 +151,9 @@ CC.int$receptor_name <- CC.int$receptor
 CC.int$ligand   <- map[CC.int$ligand]
 CC.int$receptor <- map[CC.int$receptor]
 
-CC.int %>% select(interaction_name, pathway_name, ligand_name, ligand, receptor_name, receptor) %>% head()
+CC.int %>% 
+  select(interaction_name, pathway_name, ligand_name, ligand, receptor_name, receptor) %>% 
+  head()
 ```
 
 ## Download CellPhoneDB database
@@ -175,21 +175,11 @@ CPDB.int$complex_ligand   <- CPDB.int$ligand   %in% complex$complex_name
 CPDB.int$complex_receptor <- CPDB.int$receptor %in% complex$complex_name
 
 tmp <- join_summarize(CPDB.int, CPDB.int)
-# ligand-receptor = 2911 
-# simple ligand = 611 
-# simple receptors = 493 
-# complex ligand = 150 
-# complex receptors = 216 
 
 rm(map, tmp)
 
 ### Step 1 join
 step1 <- join_summarize(CC.int, CPDB.int)
-# ligand-receptors = 585 
-# simple ligands = 327 
-# simple receptors = 288 
-# complex ligands = 0 
-# complex receptors = 0 
 
 rm(step1)
 ```
@@ -269,7 +259,7 @@ CC.int <- tmp %>%
   rename_with(~ sub("_new", "", .), ends_with("_new"))
 ```
 
-## Finding duplicate LR pairs in **CCDB** after gene-to-uniprot conversion
+## Finding duplicate LR pairs in **CPDB** after gene-to-uniprot conversion
 
 ### CellPhoneDB does not have any duplicated interactions at this stage
 ```{r} 
@@ -293,11 +283,6 @@ CPDB.int <- CPDB.int %>%
 
 ```{r}
 step2 <- join_summarize(CC.int, CPDB.int)
-# ligand-receptors = 591 
-# simple ligands = 331 
-# simple receptors = 291 
-# complex ligands = 0 
-# complex receptors = 0 
 
 rm(diff, tmp, step2)
 ```
@@ -373,11 +358,6 @@ CPDB.int$receptor <- sapply(strsplit(CPDB.int$receptor, split = "_" ), sort_past
 ## Finding duplicated interactions once again after sorting of subunits
 ### CellChatDB
 tmp <- join_summarize(CC.int, CC.int)
-# ligand-receptors = 3233 
-# simple ligands = 665 
-# simple receptors = 576 
-# complex ligands = 134 
-# complex receptors = 203 
 ```
 
 No duplicated LR pairs were observed in CCDB after sorting subunits of complexes.
@@ -385,14 +365,9 @@ No duplicated LR pairs were observed in CCDB after sorting subunits of complexes
 ```{r}
 ### CellPhoneDB
 tmp <- join_summarize(CPDB.int, CPDB.int)
-# ligand-receptors = 2909 
-# simple ligands = 611 
-# simple receptors = 493 
-# complex ligands = 146 
-# complex receptors = 215 
 ```
 
-We observed duplicated complex keys after sorting subunits in CPDB:
+As indicated in the warning above, we observed duplicated complex keys after sorting subunits in CPDB:
 ```{r}
 dups <- CPDB.int %>% 
   count(ligand, receptor) %>% 
@@ -413,21 +388,11 @@ CC.int <- CC.int %>% mutate(ligand = ifelse(ligand_name == "LTC4-LTC4S", "P20292
 
 ### After addressing duplicated LR pairs in CellPhoneDB
 tmp <- join_summarize(CPDB.int, CPDB.int)
-# ligand-receptors = 2911 
-# simple ligands = 611 
-# simple receptors = 493 
-# complex ligands = 147 
-# complex receptors = 216 
 
 rm(dups, tmp, sort_paste)
 
 ### Step 4 join
 step4 <- join_summarize(CC.int, CPDB.int)
-# ligand-receptors = 2165 
-# simple ligands = 453 
-# simple receptors = 390 
-# complex ligands = 125 
-# complex receptors = 170 
 ```
 
 **After Step 4, we observed an increase in the number of overlapping ligand-receptor interactions attributed to the sorting process.**
@@ -465,11 +430,6 @@ for(i in to_swap){
 }
 
 step5 <- join_summarize(CC.int, CPDB.int2)
-# ligand-receptors = 2213 
-# simple ligands = 464 
-# simple receptors = 415 
-# complex ligands = 128 
-# complex receptors = 170 
 ```
 
 After swapping the interaction partners of the unmatched interactions only, we observed 48 more overlapping interactions.
@@ -585,9 +545,12 @@ partial.match <- partial.match %>% mutate(proposed_name = c("P00352", "P28329_Q9
                                                             "O60896_Q16602_Q99527", "P36897_P37173_Q04771", "P07359_P13224_P14770_P40197"))
 
 partial.match
+```
 
 ### Changing to proposed names in respective databases
-#### CellChatDB
+
+```{r}
+## CellChatDB
 CC.int <- CC.int %>% 
   left_join(partial.match %>% select(CellChat_uniprot, proposed_name), by = c("ligand" = "CellChat_uniprot")) %>% 
   mutate(ligand = ifelse(!is.na(proposed_name), proposed_name, ligand)) %>% 
@@ -597,7 +560,7 @@ CC.int <- CC.int %>%
          LR = paste(ligand, receptor, sep = "|")) %>% 
   select(-proposed_name) 
 
-#### CellPhoneDB
+## CellPhoneDB
 CPDB.int <- CPDB.int %>% 
   left_join(partial.match %>% select(CellPhoneDB_uniprot, proposed_name), by = c("ligand" = "CellPhoneDB_uniprot")) %>% 
   mutate(ligand = ifelse(!is.na(proposed_name), proposed_name, ligand)) %>% 
@@ -608,11 +571,6 @@ CPDB.int <- CPDB.int %>%
   select(-proposed_name) 
 
 step6 <- join_summarize(CC.int, CPDB.int)
-# ligand-receptors = 2239 
-# simple ligands = 466 
-# simple receptors = 415 
-# complex ligands = 130 
-# complex receptors = 174 
 
 rm(step6)
 ```
@@ -622,6 +580,15 @@ Finally, we have a overlap of **2,239** interactions across CCDB and CPDB:
 ```{r, fig.height = 3, fig.width = 7}
 ggvenn::ggvenn(list(CellChat = CC.int$LR, CellPhoneDB = CPDB.int$LR))
 ```
+
+```{r}
+knitr::knit_exit()
+```
+
+# Creating scpeakeRDB
+
+xxx
+
 
 # Customising CCDB and CPDB
 
@@ -686,7 +653,7 @@ rm(interaction_input, complex_input, geneInfo, cofactor_input, CellChatDB.human.
 
 ## CellPhoneDB -- new
 
-To customize CPDB with our revised changes, we refer to the document [here](https://pypi.org/project/cellphonedb/).
+To customize CPDB with our revised changes, we refer to the document [here](https://github.com/ventolab/CellphoneDB/blob/master/notebooks/T0_BuildDBfromFiles.ipynb).
 
 ```{r, eval = FALSE}
 sapply(c("data", "data/sources"), dir.create, recursive = TRUE)

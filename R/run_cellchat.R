@@ -9,14 +9,14 @@
 #'
 #'
 #' @param obj Seurat object
-#' @param group.by Metadata column name for the cell type labels
+#' @param labels Metadata column name for the cell type labels
 #' @param assay RNA assay by default
-#' @param subsetDB set to TRUE if filtering CellChatDB.human.new, our customized CellChatDB.human (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)
+#' @param subsetDB set to TRUE if filtering scpeakerDB (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)
 #' @param search taken from CellChat package, run help(subsetDB) for details
 #' @param key taken from CellChat package, run help(subsetDB) for details
 #' @param non_protein taken from CellChat package, run help(subsetDB) for details
 #' @param type taken from CellChat package, run help(computeCommunProb) for details
-#' @param trim taken from CellChat package, run help(computeCommunProb) for details
+#' @param threshold taken from CellChat package, run help(computeCommunProb) for details
 #' @param LR.use taken from CellChat package, run help(computeCommunProb) for details
 #' @param raw.use taken from CellChat package, run help(computeCommunProb) for details
 #' @param population.size taken from CellChat package, run help(computeCommunProb) for details
@@ -45,31 +45,31 @@
 #' cellchat <- run_cellchat(seu.NL, group.by = "labels", assay = "RNA")
 #' }
 
-run_cellchat <- function(obj, group.by = "ident", assay = "RNA",
+run_cellchat <- function(obj, labels = "ident", assay = "RNA",
                          subsetDB = FALSE, search = c(), key = "annotation", non_protein = FALSE,
                          type = c("triMean", "truncatedMean", "thresholdedMean", "median"),
-                         trim = 0.1, LR.use = NULL, raw.use = TRUE, population.size = FALSE, distance.use = TRUE,
+                         threshold = 0.1, LR.use = NULL, raw.use = TRUE, population.size = FALSE, distance.use = TRUE,
                          interaction.range = 250, scale.distance = 0.01, k.min = 10, contact.dependent = TRUE,
                          contact.range = NULL, contact.knn.k = NULL, contact.dependent.forced = FALSE,
                          do.symmetric = TRUE, nboot = 100, seed.use = 1L, Kh = 0.5, n = 1, min.cells = 10) {
 
   ## Create CellChat object from Seurat object
-  cellchat <- createCellChat(obj, group.by = group.by, assay = assay)
+  cellchat <- createCellChat(obj, group.by = labels, assay = assay)
 
   ## Database selection
 
   # Subset CellChat database if needed
   if (subsetDB){
-    cellchat@DB <- subsetDB(CellChatDB.human.v2a, search = search, key = key, non_protein = non_protein)
+    cellchat@DB <- subsetDB(scpeakerDB_CC, search = search, key = key, non_protein = non_protein)
   } else {
-    cellchat@DB <- CellChatDB.human.v2a
+    cellchat@DB <- scpeakerDB_CC
   }
 
   ## Run analysis
   cellchat <- subsetData(cellchat) %>%
     identifyOverExpressedGenes() %>%
     identifyOverExpressedInteractions() %>%
-    computeCommunProb(type = type, trim = trim, LR.use = LR.use, raw.use = raw.use,
+    computeCommunProb(type = type, trim = threshold, LR.use = LR.use, raw.use = raw.use,
                       population.size = population.size, distance.use = distance.use,
                       interaction.range = interaction.range, scale.distance = scale.distance,
                       k.min = k.min, contact.dependent = contact.dependent,

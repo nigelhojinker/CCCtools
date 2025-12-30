@@ -7,8 +7,6 @@
 run_cellphonedb(
   obj = NULL,
   labels = NULL,
-  group.by = NULL,
-  toKeep = NULL,
   use_dir = NULL,
   ...,
   counts_data = "hgnc_symbol",
@@ -28,10 +26,6 @@ run_cellphonedb(
 \item{obj}{Seurat object with normalized counts in the data layer of the RNA assay}
 
 \item{labels}{Metadata column name of cell type annotations}
-
-\item{group.by}{Metadata column to filter by; this is for seurat objects containing cells from different disease status or time frames etc. (default = NULL)}
-
-\item{toKeep}{Value within the metadata column of interest to retain for the analysis. This field is mandatory if group.by is not NULL. (default = NULL)}
 
 \item{use_dir}{Input files required to run CellPhoneDB and the output files from the analysis are created and saved to a temp file (default). Should users desire to have these files be stored in their personal directories, they may input their filepath to this argument.}
 
@@ -65,7 +59,7 @@ Folder path to CellPhoneDB analysis outputs and result as a list of the outputs 
 For arguments from counts_data to output_suffix, please refer to https://github.com/ventolab/CellphoneDB/blob/master/notebooks/T1_Method2.ipynb
 }
 \description{
-Runs CellPhoneDBv5 on a Seurat object
+Runs CellPhoneDBv5 on a Seurat object using the customized cellphonedbv5a database containing additional interactions from CellChat.
 }
 \examples{
 \dontrun{
