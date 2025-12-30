@@ -29,10 +29,8 @@
 #' \dontrun{
 #' ## Runs CellPhoneDB method 2 with all default parameters
 #' run_cellphonedb(
-#'   obj = seurat_object,
-#'   group.by  = "condition", # if seurat object contains multiple conditions to filter, input column name in metadata
-#'   toKeep = "treated",      # mandatory if group is not NULL; input condition to be filtered
-#'   labels = "celltype")
+#'   obj = seu.NL,
+#'   labels = "labels")
 #'
 #' ## For users interested in customizing their CellPhoneDB run
 #' run_cellphonedb(seu.NL,
@@ -54,7 +52,7 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, use_dir = NULL, ...,
       stop("obj and labels cannot be NULL. Please input a Seurat object (obj) and a metadata column name (labels).")
     }
 
-  cpdbPath <- file.path(pacman::p_path("CCCtools"), "data/scpeakerDB_CP.zip")
+  cpdbPath <- file.path(pacman::p_path("scpeakeR"), "data/scpeakerDB_CP.zip")
 
   # Use use_dir if provided, else use tempdir with deparse
   if (!is.null(use_dir)) {

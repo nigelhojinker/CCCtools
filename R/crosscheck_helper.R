@@ -41,7 +41,7 @@ crosscheck_CC_CPDB <- function(cellchat, cellphonedb, threshold = 0.05, return.a
     res <- combine.all %>% filter(!is.na(category))
   }
   cat("Comparative analysis done successfully for p-value",
-      threshold, "\n", "CCCtools summary: \n")
+      threshold, "\n", "scpeakeR summary: \n")
   print(summary)
   return(list(result = res, summary = summary))
 
@@ -112,7 +112,7 @@ crosscheck_CC_CC <- function(cellchat1, cellchat2, name1, name2, threshold = 0.0
   }
 
   cat("Comparative analysis done successfully for p-value", threshold, "\n",
-      "CCCtools summary: \n")
+      "scpeakeR summary: \n")
 
   print(summary)
 
@@ -184,7 +184,7 @@ crosscheck_CPDB_CPDB <- function(cellphonedb1, cellphonedb2, name1, name2, thres
   }
 
   cat("Comparative analysis done successfully for p-value", threshold, "\n",
-      "CCCtools summary: \n")
+      "scpeakeR summary: \n")
 
   print(summary)
 
