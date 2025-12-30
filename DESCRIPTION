@@ -1,4 +1,4 @@
-Package: CCCtools
+Package: scpeakeR
 Type: Package
 Title: Single-cell cell-cell communication tool integrating both CellChat and CellPhoneDB in R 
 Version: 0.1.1
@@ -19,5 +19,5 @@ Remotes:
     jinworks/CellChat
 Imports:
 RoxygenNote: 7.3.3
-URL: https://github.com/nigelhojinker/CCCtools
-BugReports: https://github.com/nigelhojinker/CCCtools/issues
+URL: https://github.com/nigelhojinker/scpeakeR
+BugReports: https://github.com/nigelhojinker/scpeakeR/issues
