@@ -7,6 +7,7 @@
 run_cellphonedb(
   obj = NULL,
   labels = NULL,
+  type = NULL,
   use_dir = NULL,
   ...,
   counts_data = "hgnc_symbol",
@@ -26,6 +27,8 @@ run_cellphonedb(
 \item{obj}{Seurat object with normalized counts in the data layer of the RNA assay}
 
 \item{labels}{Metadata column name of cell type annotations}
+
+\item{type}{Method to compute average gene expression per cell type cluster (default: triMean)}
 
 \item{use_dir}{Input files required to run CellPhoneDB and the output files from the analysis are created and saved to a temp file (default). Should users desire to have these files be stored in their personal directories, they may input their filepath to this argument.}
 
@@ -65,10 +68,8 @@ Runs CellPhoneDBv5 on a Seurat object using the customized cellphonedbv5a databa
 \dontrun{
 ## Runs CellPhoneDB method 2 with all default parameters
 run_cellphonedb(
-  obj = seurat_object,
-  group.by  = "condition", # if seurat object contains multiple conditions to filter, input column name in metadata
-  toKeep = "treated",      # mandatory if group is not NULL; input condition to be filtered
-  labels = "celltype")
+  obj = seu.NL,
+  labels = "labels")
 
 ## For users interested in customizing their CellPhoneDB run
 run_cellphonedb(seu.NL,

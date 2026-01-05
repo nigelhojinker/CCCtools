@@ -64,8 +64,8 @@
 #'
 
 scpeaker <- function(obj, labels, method = c("cellchat", "cellphonedb"), database = c("scpeakerDB", "CCDB", "CPDB"), pvalue = 0.05,
-                     assay = "RNA", subsetDB = FALSE, search = c(), key = "annotation", non_protein = FALSE,
                      type = c("triMean", "truncatedMean", "thresholdedMean", "median"),
+                     assay = "RNA", subsetDB = FALSE, search = c(), key = "annotation", non_protein = FALSE,
                      threshold = 0.1, LR.use = NULL, raw.use = TRUE, population.size = FALSE, distance.use = TRUE,
                      interaction.range = 250, scale.distance = 0.01, k.min = 10, contact.dependent = TRUE,
                      contact.range = NULL, contact.knn.k = NULL, contact.dependent.forced = FALSE,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/scpeaker.R
 \name{scpeaker}
 \alias{scpeaker}
-\title{Run CellChat (v2) and/or CellOPhoneDB (v5) for cell-cell communication analysis}
+\title{Run CellChat (v2) and/or CellPhoneDB (v5) for cell-cell communication analysis}
 \usage{
 scpeaker(
   obj,
@@ -10,12 +10,12 @@ scpeaker(
   method = c("cellchat", "cellphonedb"),
   database = c("scpeakerDB", "CCDB", "CPDB"),
   pvalue = 0.05,
+  type = c("triMean", "truncatedMean", "thresholdedMean", "median"),
   assay = "RNA",
   subsetDB = FALSE,
   search = c(),
   key = "annotation",
   non_protein = FALSE,
-  type = c("triMean", "truncatedMean", "thresholdedMean", "median"),
   threshold = 0.1,
   LR.use = NULL,
   raw.use = TRUE,
@@ -58,6 +58,8 @@ scpeaker(
 
 \item{pvalue}{p-value threshold for significance testing (default: 0.05)}
 
+\item{type}{method for computing average gene expression per cell type cluster (default: triMean)}
+
 \item{assay}{RNA assay by default}
 
 \item{subsetDB}{set to TRUE if filtering scpeakerDB (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)}
@@ -67,8 +69,6 @@ scpeaker(
 \item{key}{taken from CellChat package, run help(subsetDB) for details}
 
 \item{non_protein}{taken from CellChat package, run help(subsetDB) for details}
-
-\item{type}{taken from CellChat package, run help(computeCommunProb) for details}
 
 \item{threshold}{taken from CellChat package and replaces "trim" argument, run help(computeCommunProb) for details}
 
