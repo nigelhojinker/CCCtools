@@ -1,6 +1,6 @@
 Running CellPhoneDB in R
 ================
-2025-08-06
+2025-01-05
 
 # Introduction
 
@@ -20,21 +20,31 @@ accurately recapitulates how interactions can occur in vivo. As such, we
 thought to incorporate CellPhoneDB with another popular cell-cell
 communication tool, CellChat, that shares the same feature.
 
+We forked the original CellPhoneDB repository and implement an
+additional change to allow triMean as a method for computing the average
+gene expression per cell type cluster like CellChat. We direct the
+installation of the [fork
+repository](https://github.com/nigelhojinker/scpeaker-CellphoneDB) with
+the changes in the .yaml file mentioned in the section below. triMean is
+the default method used in scpeakeR for calculating the average gene
+expression per cell cluster. Users may switch to the CellPhoneDB-default
+method by setting `type = "thresholdedMean`.
+
 # Setting up required environment
 
 As mentioned in the **Introduction**, CellPhoneDB is a Python package
 and currently, does not have an R equivalent. Here, we provide a wrapper
-function `run_cellphonedb()` for running CellPhoneDB completely within
-R. To do this, we require the use of the `reticulate` package (a
-dependency in CCCtools) and provide users with the `cpdb.yaml` file for
-creating the CellPhoneDB python environment in R.
+function `scpeaker()` for running CellPhoneDB completely within R. To do
+this, we require the use of the `reticulate` package (a dependency in
+scpeakeR) and provide users with the `scpeaker.yaml` file for creating
+the CellPhoneDB python environment in R.
 
 ## CellPhoneDB conda environment in R
 
 ### R set-up
 
 ``` r
-pacman::p_load_gh("nigelhojinker/CCCtools")
+pacman::p_load_gh("nigelhojinker/scpeakeR")
 setwd(this.path::here())
 rm(list = ls())
 ```
@@ -57,14 +67,25 @@ conda_binary()
 
 #### What if my conda installation is not automatically detected?
 
-If conda is NOT automatically detected, we recommend running the line
-below to ensure that the correct conda is selected and used by
-`reticulate`. Of course, users should input the path to conda in their
-respective local machines.
+If the Conda executable is not automatically detected, located the path
+to conda.exe (e.g. using Windows File Explorer) and set it manually in
+the .Rprofile.
+
+Open the user profile:
 
 ``` r
-# We used miniforge for our conda installation
-options(reticulate.conda_binary = "C:/path/to/miniforge3/condabin/conda.bat")
+usethis::edit_r_profile(scope = "user")
+```
+
+Add in the following lines (with correct path) and restart Rstudio.
+
+``` r
+# In this example, we show the case when conda is installed via miniforge and how users may manually set conda path
+if (.Platform$OS.type == "windows") {
+  Sys.setenv(
+    RETICULATE_CONDA = "C:/users/user/miniforge3/condabin/conda.exe"
+  )
+}
 ```
 
 Once installation and conda selection is complete, we can confirm this
@@ -81,30 +102,16 @@ necessary Python modules for running the analysis. This is done **only
 once**, and typically takes a few minutes to complete:
 
 ``` r
-config <- file.path( pacman::p_path("CCCtools"), "data/cpdb.yaml" )
+config <- file.path( pacman::p_path("scpeakeR"), "data/scpeaker.yaml" )
 
-conda_create(envname = "cpdb", environment = config)
+conda_create(envname = "scpeaker", environment = config)
 ```
 
 Once the cpdb environment has been created, we have to select its python
 interpreter:
 
 ``` r
-python_binary <- conda_list() %>%
-  filter(name == "cpdb") %>%
-  pull(python) %>%
-  normalizePath(winslash = "/")
-```
-
-``` r
-# Check right python interpreter selected
-python_binary
-
-## [1] "C:/path/to/miniforge3/envs/cpdb/python.exe"
-```
-
-``` r
-use_python(python_binary, required = TRUE)
+use_condaenv("scpeaker")
 ```
 
 # Running CellPhoneDB
@@ -151,44 +158,46 @@ seu.NL@meta.data %>% head()
 
 ## Running CellPhoneDB with all default parameters
 
-Minimally, `run_cellphonedb()` takes in a Seurat object and the metadata
-column name corresponding to the annotated cell types. It creates a
-temporary directory (by default) that stores input files required to run
+Minimally, `scpeaker()` takes in a Seurat object, the metadata column
+name corresponding to the annotated cell types and the cell-cell
+communication method (in this case cellphonedb). It creates a temporary
+directory (by default) that stores input files required to run
 CellPhoneDB, as well as the output .txt files from the analysis. Users
 may make a copy of the temporary directory for future use of the data if
 necessary.
 
 ``` r
-cpdb <- run_cellphonedb(obj = seu.NL, labels = "labels")
+cpdb <- scpeaker(obj = seu.NL, labels = "labels", method = "cellphonedb")
 
 # use_dir is NULL. Creating temp directory for file creation and storage.
-# Creating input and output files to directory: C:\Users\hojkn\AppData\Local\Temp\RtmpKixGIi/seu.NL 
-#  Note: Make a copy of the temp directory (if applicable) for future use if necessary. 
-# input_meta.tsv file created and saved to: C:\Users\hojkn\AppData\Local\Temp\RtmpKixGIi/seu.NL 
-# input.h5ad file created and saved to: C:\Users\hojkn\AppData\Local\Temp\RtmpKixGIi/seu.NL 
+# Creating input and output files to directory: C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj 
+#  Note: Make a copy of the temp directory for future use if necessary. 
+# input_meta.tsv file created and saved to: C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj 
+# input.h5ad file created and saved to: C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj 
+# Running CellPhoneDB Statistical Analysis with - triMean
 # Reading user files...
 # The following user files were loaded successfully:
-# C:\Users\hojkn\AppData\Local\Temp\RtmpKixGIi/seu.NL/input.h5ad
-# C:\Users\hojkn\AppData\Local\Temp\RtmpKixGIi/seu.NL/input_meta.tsv
-# [ ][CORE][13/08/25-16:37:23][INFO] [Cluster Statistical Analysis] Threshold:0.1 Iterations:1000 Debug-seed:-1 Threads:4 Precision:3
-# [ ][CORE][13/08/25-16:37:23][INFO] Running Real Analysis
-# [ ][CORE][13/08/25-16:37:23][INFO] Running Statistical Analysis
-# 100%|██████████| 1000/1000 [00:38<00:00, 25.86it/s][ ][CORE][13/08/25-16:38:02][INFO] Building Pvalues result
-# [ ][CORE][13/08/25-16:38:02][INFO] Building results
-# Saved deconvoluted to C:\Users\hojkn\AppData\Local\Temp\RtmpKixGIi/seu.NL\statistical_analysis_deconvoluted_08_13_2025_163802.txt
-# Saved deconvoluted_percents to C:\Users\hojkn\AppData\Local\Temp\RtmpKixGIi/seu.NL\statistical_analysis_deconvoluted_percents_08_13_2025_163802.txt
-# Saved means to C:\Users\hojkn\AppData\Local\Temp\RtmpKixGIi/seu.NL\statistical_analysis_means_08_13_2025_163802.txt
-# Saved pvalues to C:\Users\hojkn\AppData\Local\Temp\RtmpKixGIi/seu.NL\statistical_analysis_pvalues_08_13_2025_163802.txt
+# C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj/input.h5ad
+# C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj/input_meta.tsv
+# [ ][CORE][05/01/26-14:19:05][INFO] [Cluster Statistical Analysis] Threshold:0.1 Iterations:1000 Debug-seed:-1 Threads:4 Precision:3
+# [ ][CORE][05/01/26-14:19:05][INFO] Running Real Analysis
+# [ ][CORE][05/01/26-14:19:05][INFO] Running Statistical Analysis
+# 100%|██████████| 1000/1000 [00:37<00:00, 26.97it/s][ ][CORE][05/01/26-14:19:42][INFO] Building Pvalues result
+# [ ][CORE][05/01/26-14:19:42][INFO] Building results
+# Saved deconvoluted to C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj\statistical_analysis_deconvoluted_01_05_2026_141942.txt
+# Saved deconvoluted_percents to C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj\statistical_analysis_deconvoluted_percents_01_05_2026_141942.txt
 # 
 # CellPhoneDB analysis completed successfully.
 # Warning messages:
 # 1: In dir.create(prefix %>% normalizePath(winslash = "/"), recursive = TRUE) :
-#   'C:\Users\hojkn\AppData\Local\Temp\RtmpKixGIi\seu.NL' already exists
+#   'C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW\obj' already exists
 # 2: In py_to_r.pandas.core.frame.DataFrame(<environment>) :
 #   index contains duplicated values: row names not set
 # 3: In py_to_r.pandas.core.frame.DataFrame(<environment>) :
 #   index contains duplicated values: row names not set
-# Saved significant_means to C:\Users\hojkn\AppData\Local\Temp\RtmpKixGIi/seu.NL\statistical_analysis_significant_means_08_13_2025_163802.txt
+# Saved means to C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj\statistical_analysis_means_01_05_2026_141942.txt
+# Saved pvalues to C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj\statistical_analysis_pvalues_01_05_2026_141942.txt
+# Saved significant_means to C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj\statistical_analysis_significant_means_01_05_2026_141942.txt
 ```
 
 ## Running CellPhoneDB with user-defined directory
@@ -198,18 +207,20 @@ choice, simply add the path to the directory of interest in the argument
 `use_dir`.
 
 ``` r
-cpdb <- run_cellphonedb(seu.NL, labels = "labels", use_dir = "cpdb/results")
+cpdb <- scpeaker(seu.NL, labels = "labels", method = "cellphonedb", use_dir = "cpdb/results")
 ```
 
 ## Running CellPhoneDB with adjustable parameters
 
 ``` r
-cpdb <- run_cellphonedb(seu.NL,
-                        labels = "labels",
-                        iterations = 123,
-                        threshold = 0.2,
-                        threads = 5,
-                        debug_seed = 42,
-                        result_precision = 5,
-                        score_interactions = TRUE)
+cpdb <- scpeaker(seu.NL,
+                 labels = "labels",
+                 method = "cellphonedb",
+                 type = "thresholdedMean",
+                 iterations = 123,
+                 threshold = 0.2,
+                 threads = 5,
+                 debug_seed = 42,
+                 result_precision = 5,
+                 score_interactions = TRUE)
 ```

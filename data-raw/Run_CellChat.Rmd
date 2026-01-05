@@ -1,7 +1,7 @@
 ---
 title: "Wrapper for running CellChat"
 output: github_document
-date: "2025-08-07"
+date: "2025-01-05"
 ---
 
 ```{r setup, include=FALSE}
@@ -14,11 +14,11 @@ CellChat is a popular R package for inferring cell-cell communication from singl
 
 ## Running CellChat directly from Seurat object
 
-`run_cellchat()` takes as input a Seurat object with the normalized counts in the data layer and annotated cell types stored in its meta.data. For more details on `run_cellchat()`, users may refer [**here**](../R/run_cellchat.R). CellChat offers different methods of calculating average gene expression per cell type (default: triMean). As described by the developers of CellChat, triMean is a robust mean method given by [(Q1 + 2M + Q3) / 4]* that returns fewer but stronger interactions. If users would like to change the method for calculating average expression, they may use the `type` parameter to manually overwrite this. 
+`scpeaker()` takes as input a Seurat object with the normalized counts in the data layer, the annotated cell types stored in its meta.data and the cell-cell communication method to be used (cellchat in this case). For more details on the cellchat-run in `scpeaker()`, users may refer [**here**](../R/run_cellchat.R). CellChat offers different methods of calculating average gene expression per cell type (default: triMean). As described by the developers of CellChat, triMean is a robust mean method given by $[(Q1 + 2M + Q3) / 4]$* that returns fewer but stronger interactions. If users would like to change the method for calculating average expression, they may use the `type` parameter to manually overwrite this. 
 
-`run_cellchat()` takes in the same arguments as CellChat's `createCellChat()`, `subsetDB()`, `computeCommunProb()` and `filterCommunication()`. Details on the respective functions can be found by running help(<package_name>) in R. 
+`scpeaker()` takes in the same arguments as CellChat's `createCellChat()`, `subsetDB()`, `computeCommunProb()` and `filterCommunication()`. Details on the respective functions can be found by running help(<package_name>) in R. 
 
-Lastly, `run_cellchat()` runs CellChat analysis on a single dataset up to and including `filterCommunication()`. For further downstream analyses, please see the [CellChat vignette for a single dataset](https://htmlpreview.github.io/?https://github.com/jinworks/CellChat/blob/master/tutorial/CellChat-vignette.html) for the full tutorial. Note that CellChat is already installed when users install CCCtools, therefore, users may immediately run CellChat functions used in the tutorial(s). 
+Lastly, `scpeaker()` runs CellChat analysis on a single dataset up to and including `filterCommunication()`. For further downstream analyses, please see the [CellChat vignette for a single dataset](https://htmlpreview.github.io/?https://github.com/jinworks/CellChat/blob/master/tutorial/CellChat-vignette.html) for the full tutorial. Note that CellChat is already installed when users install scpeakeR, therefore, users may immediately run CellChat functions used in the tutorial(s). 
 
 *: 
 **Q1** First quartile; **M** Median; **Q3** Third quartile
@@ -28,7 +28,7 @@ Lastly, `run_cellchat()` runs CellChat analysis on a single dataset up to and in
 R set-up and data input ([example data](../demo_data.md))
 
 ```{r}
-pacman::p_load_gh("nigelhojinker/CCCtools")
+pacman::p_load_gh("nigelhojinker/scpeakeR")
 setwd(this.path::here())
 rm(list = ls())
 
@@ -37,14 +37,14 @@ data("seu.NL")
 seu.NL@meta.data %>% head()
 ```
 
-In `seu.NL`, the metadata column for the annotated cell type labels is "labels". As such, we take "labels" as the input for the `group.by` argument in `run_cellchat()`.
+In `seu.NL`, the metadata column for the annotated cell type labels is "labels". As such, we take "labels" as the input for the `labels` argument in `scpeaker()`.
 
 ### Running CellChat with all default parameters
 
 This step typically takes a few minutes to run:
 
 ```{r, eval = FALSE}
-cellchat <- run_cellchat(seu.NL, group.by = "labels", assay = "RNA")
+cellchat <- scpeaker(seu.NL, labels = "labels", method = "cellchat")
 
 # [1] "Create a CellChat object from a Seurat object"
 # The `meta.data` slot in the Seurat object is used as cell meta information 
@@ -54,40 +54,48 @@ cellchat <- run_cellchat(seu.NL, group.by = "labels", assay = "RNA")
 #   |++++++++++++++++++++++++++++++++++++++++++++++++++| 100% elapsed=00s  
 #   |++++++++++++++++++++++++++++++++++++++++++++++++++| 100% elapsed=00s  
 #   |++++++++++++++++++++++++++++++++++++++++++++++++++| 100% elapsed=00s  
-# The number of highly variable ligand-receptor pairs used for signaling inference is 440 
-# [1] ">>> Run CellChat on sc/snRNA-seq data <<< [2025-08-07 15:54:08.823879]"
-#   |=======================================================================================================| 100%
-# [1] ">>> CellChat inference is done. Parameter values are stored in `object@options$parameter` <<< [2025-08-07 15:57:07.573151]"
-# The cell-cell communication related with the following cell groups are excluded due to the few number of cells:  cDC1, Inflam. DC ! 	37.6% interactions are removed!
+# The number of highly variable ligand-receptor pairs used for signaling inference is 588 
+# [1] ">>> Run CellChat on sc/snRNA-seq data <<< [2026-01-05 15:08:19.014103]"
+#   |====================================================================================================================| 100%
+# [1] ">>> CellChat inference is done. Parameter values are stored in `object@options$parameter` <<< [2026-01-05 15:10:58.284517]"
+# The cell-cell communication related with the following cell groups are excluded due to the few number of cells:  cDC1, Inflam. DC ! 	38.4% interactions are removed!
 # CellChat analysis completed succesfully.
 # Warning message:
-# In createCellChat(obj, group.by = group.by, assay = assay) :
+# In createCellChat(obj, group.by = labels, assay = assay) :
 #   The 'meta' data does not have a column named `samples`. We now add this column and all cells are assumed to belong to `sample1`! 
 ```
 
 ### Running CellChat with filtered database
 
-For users interested in only using a subset of CellChat's database, they may filter the database in accordance with the `subsetDB()` function by CellChat. We provide an argument `subsetDB` that is set to FALSE by default. To filter, simply set `subsetDB = TRUE` in `run_cellchat()` and add in the corresponding arguments as per CellChat's `subsetDB()` function.
+For users interested in only using a subset of CellChat's database, they may filter the database in accordance with the `subsetDB()` function by CellChat. We provide an argument `subsetDB` that is set to FALSE by default. To filter, simply set `subsetDB = TRUE` in `scpeaker()` and add in the corresponding arguments as per CellChat's `subsetDB()` function.
 
 ```{r, eval = FALSE}
-cellchat <- run_cellchat(seu.NL, group.by = "labels", assay = "RNA",
-                         subsetDB = TRUE, search = c("Cell-Cell Contact"), key = c("annotation"))
+cellchat <- scpeaker(seu.NL, 
+                     labels = "labels",
+                     method = "cellchat",
+                     subsetDB = TRUE, 
+                     search = c("Cell-Cell Contact"), 
+                     key = c("annotation"))
 ```
 
 For more than one level of filtering, `key` takes in a character vector of the columns in CellChatDB and `search` has to take in a list corresponding to the item(s) to filter in the keys.
 
 ```{r, eval = FALSE}
-cellchat <- run_cellchat(seu.NL, group.by = "labels", assay = "RNA",
-                         subsetDB = TRUE, 
-                         search = list(c("Cell-Cell Contact", "Secreted Signaling"), c("CellChatDB v1")),
-                         key = c("annotation", "version"))
+cellchat <- scpeaker(seu.NL, 
+                     labels = "labels", 
+                     method = "cellchat",
+                     subsetDB = TRUE, 
+                     search = list(c("Cell-Cell Contact", "Secreted Signaling"), c("CellChatDB v1")),
+                     key = c("annotation", "version"))
 ```
 
 To remove only non-protein signaling interactions, since a majority of non-protein signaling interactions consists of metabolic and synaptic signaling:
 
 ```{r, eval = FALSE}
-cellchat <- run_cellchat(seu.NL, group.by = "labels", assay = "RNA",
-                         subsetDB = TRUE)
+cellchat <- scpeaker(seu.NL, 
+                     labels = "labels", 
+                     method = "cellchat",
+                     subsetDB = TRUE)
 ```
 
 ### Extracting all relevant interactions from CellChat analysis
@@ -102,17 +110,17 @@ Refer [**here**](../R/pull_netslot.R) for more details.
 cellchat.res <- pull_netslot(cellchat)
 
 cellchat.res %>% glimpse()
-# Rows: 62,929
+# Rows: 84,144
 # Columns: 11
-# $ source             <fct> APOE+ FIB, FBN1+ FIB, COL11A1+ FIB, Inflam. FIB, cDC1, cDC2, LC, Inflam. DC, TC, Inflam. TC, CD40LG+ TC, NK…
-# $ target             <fct> APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FI…
-# $ interaction_name   <fct> TGFB1_TGFBR1_TGFBR2, TGFB1_TGFBR1_TGFBR2, TGFB1_TGFBR1_TGFBR2, TGFB1_TGFBR1_TGFBR2, TGFB1_TGFBR1_TGFBR2, TG…
-# $ prob               <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-# $ pval               <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,…
-# $ interaction_name_2 <chr> "TGFB1 - (TGFBR1+TGFBR2)", "TGFB1 - (TGFBR1+TGFBR2)", "TGFB1 - (TGFBR1+TGFBR2)", "TGFB1 - (TGFBR1+TGFBR2)",…
-# $ pathway_name       <chr> "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TG…
-# $ ligand             <chr> "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1",…
-# $ receptor           <chr> "TGFbR1_R2", "TGFbR1_R2", "TGFbR1_R2", "TGFbR1_R2", "TGFbR1_R2", "TGFbR1_R2", "TGFbR1_R2", "TGFbR1_R2", "TG…
-# $ annotation         <chr> "Secreted Signaling", "Secreted Signaling", "Secreted Signaling", "Secreted Signaling", "Secreted Signaling…
-# $ evidence           <chr> "KEGG: hsa04350", "KEGG: hsa04350", "KEGG: hsa04350", "KEGG: hsa04350", "KEGG: hsa04350", "KEGG: hsa04350",…
+# $ source             <fct> APOE+ FIB, FBN1+ FIB, COL11A1+ FIB, Inflam. FIB, cDC1, cDC2, LC, Inflam. DC, TC, Inflam. TC, CD40…
+# $ target             <fct> APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB, APOE+ FIB…
+# $ interaction_name   <fct> TGFB1_TGFBR1_TGFBR2, TGFB1_TGFBR1_TGFBR2, TGFB1_TGFBR1_TGFBR2, TGFB1_TGFBR1_TGFBR2, TGFB1_TGFBR1_…
+# $ prob               <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
+# $ pval               <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+# $ interaction_name_2 <chr> "TGFB1 - (TGFBR1+TGFBR2)", "TGFB1 - (TGFBR1+TGFBR2)", "TGFB1 - (TGFBR1+TGFBR2)", "TGFB1 - (TGFBR1…
+# $ pathway_name       <chr> "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "TGFb", "…
+# $ ligand             <chr> "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1", "TGFB1"…
+# $ receptor           <chr> "TGFbR1_R2", "TGFbR1_R2", "TGFbR1_R2", "TGFbR1_R2", "TGFbR1_R2", "TGFbR1_R2", "TGFbR1_R2", "TGFbR…
+# $ annotation         <chr> "Secreted Signaling", "Secreted Signaling", "Secreted Signaling", "Secreted Signaling", "Secreted…
+# $ evidence           <chr> "KEGG: hsa04350", "KEGG: hsa04350", "KEGG: hsa04350", "KEGG: hsa04350", "KEGG: hsa04350", "KEGG: …
 ```

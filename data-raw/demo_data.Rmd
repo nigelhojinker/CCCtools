@@ -1,7 +1,7 @@
 ---
-title: "Demo data for CCCtools package"
+title: "Demo data for scpeakeR package"
 output: github_document
-date: "2025-08-05"
+date: "2025-01-05"
 ---
 
 ```{r setup, include=FALSE}

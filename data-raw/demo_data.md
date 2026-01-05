@@ -1,6 +1,6 @@
-Demo data for CCCtools package
+Demo data for scpeakeR package
 ================
-2025-08-05
+2025-01-05
 
 # Download the raw data
 
