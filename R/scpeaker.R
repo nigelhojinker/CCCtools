@@ -90,7 +90,7 @@ scpeaker <- function(obj, labels, method = c("cellchat", "cellphonedb"), databas
                         contact.dependent.forced = contact.dependent.forced, do.symmetric = do.symmetric, nboot = nboot,
                         seed.use = seed.use, Kh = Kh, n = n, min.cells = min.cells))
   } else if (method == "cellphonedb") {
-    return(run_cellphonedb(obj = obj, labels = labels, use_dir = use_dir, ..., counts_data = counts_data,
+    return(run_cellphonedb(obj = obj, labels = labels, type = type, use_dir = use_dir, ..., counts_data = counts_data,
                            active_tfs_file_path = active_tfs_file_path, microenvs_file_path = microenvs_file_path,
                            score_interactions = score_interactions, threshold = threshold, pvalue = pvalue,
                            subsampling = subsampling, subsampling_log = subsampling_log, separator = separator, debug = debug,

@@ -5,6 +5,7 @@
 #'
 #' @param obj Seurat object with normalized counts in the data layer of the RNA assay
 #' @param labels Metadata column name of cell type annotations
+#' @param type Method to compute average gene expression per cell type cluster (default: thresholdedMean)
 #' @param use_dir Input files required to run CellPhoneDB and the output files from the analysis are created and saved to a temp file (default). Should users desire to have these files be stored in their personal directories, they may input their filepath to this argument.
 #' @param ... Takes in any arguments from c("iterations", "threads", "debug_seed", "result_precision", "subsampling_num_pc", "subsampling_num_cells") for user customization, else running on the default values for these paramters. See Value below for link to description by CellPhoneDB
 #' @param counts_data See Value below for link to description by CellPhoneDB
@@ -43,7 +44,7 @@
 #'   score_interactions = TRUE)
 #' }
 
-run_cellphonedb <- function(obj = NULL, labels = NULL, use_dir = NULL, ...,
+run_cellphonedb <- function(obj = NULL, labels = NULL, type = c("thresholdedMean", "triMean"), use_dir = NULL, ...,
                                 counts_data = "hgnc_symbol", active_tfs_file_path = NULL, microenvs_file_path = NULL,
                                 score_interactions = FALSE, threshold = 0.1, pvalue = 0.05, subsampling = FALSE,
                                 subsampling_log = FALSE, separator = "|", debug = FALSE, output_suffix = NULL) {
@@ -104,6 +105,10 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, use_dir = NULL, ...,
 
   cat("input.h5ad file created and saved to:", prefix, "\n")
 
+  type <- match.arg(type)
+
+  message("Running CellPhoneDB Statistical Analysis with - ", type, "\n")
+
   ## Run analysis
   cpdb <- do.call(cpdb.analysis$call, c(dots, list(
     cpdb_file_path = cpdbPath,
@@ -120,7 +125,8 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, use_dir = NULL, ...,
     separator = separator,
     debug = debug,
     output_path = prefix,
-    output_suffix = output_suffix
+    output_suffix = output_suffix,
+    avg_method = type
   )))
 
   message("CellPhoneDB analysis completed successfully.")
