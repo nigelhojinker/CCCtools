@@ -81,6 +81,8 @@ scpeaker <- function(obj, labels, method = c("cellchat", "cellphonedb"), databas
 
   if (! database %in% c("scpeakerDB", "CCDB", "CPDB")) stop("Invalid input for database.\n Please indicate a database - scpeakerDB, CCDB, or CPDB")
 
+  type <- match.arg(type)
+
   if (method == "cellchat"){
     return(run_cellchat(obj, labels = labels, assay = assay,
                         subsetDB = subsetDB, search = search, key = key, non_protein = non_protein, type = type, threshold = threshold,

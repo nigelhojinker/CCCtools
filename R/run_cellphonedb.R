@@ -44,14 +44,20 @@
 #'   score_interactions = TRUE)
 #' }
 
-run_cellphonedb <- function(obj = NULL, labels = NULL, type = c("thresholdedMean", "triMean"), use_dir = NULL, ...,
+run_cellphonedb <- function(obj = NULL, labels = NULL, type = NULL, use_dir = NULL, ...,
                                 counts_data = "hgnc_symbol", active_tfs_file_path = NULL, microenvs_file_path = NULL,
                                 score_interactions = FALSE, threshold = 0.1, pvalue = 0.05, subsampling = FALSE,
                                 subsampling_log = FALSE, separator = "|", debug = FALSE, output_suffix = NULL) {
 
   if (is.null(obj) || is.null(labels)) {
-      stop("obj and labels cannot be NULL. Please input a Seurat object (obj) and a metadata column name (labels).")
-    }
+      stop("obj and labels cannot be NULL. Please input a Seurat object (obj) and a metadata column name (labels).\n")
+  }
+
+  if (type == "truncatedMean" | type == "median") {
+    stop("truncatedMean and median are currently not available as a mean method. Use either thresholdedMean or triMean.")
+  } else if (! type %in% c("thresholdedMean", "triMean")) {
+    stop("Unknown type method, use either thresholdedMean or triMean.")
+  }
 
   cpdbPath <- file.path(pacman::p_path("scpeakeR"), "data/scpeakerDB_CP.zip")
 
@@ -104,8 +110,6 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, type = c("thresholdedMean
   adata$write_h5ad(file.path(prefix, "input.h5ad"))
 
   cat("input.h5ad file created and saved to:", prefix, "\n")
-
-  type <- match.arg(type)
 
   message("Running CellPhoneDB Statistical Analysis with - ", type, "\n")
 
