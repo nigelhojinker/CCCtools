@@ -1,4 +1,4 @@
-#' Run CellChat (v2) and/or CellOPhoneDB (v5) for cell-cell communication analysis
+#' Run CellChat (v2) and/or CellPhoneDB (v5) for cell-cell communication analysis
 #'
 #' @description
 #' This function takes as input a Seurat object that has been processed and contains annotated cell type labels in its meta.data.
@@ -10,6 +10,7 @@
 #' @param method Cell-cell communication method for analysis (CellChat or CellPhoneDB)
 #' @param database Database to use for cell-cell communication analysis (default: scpeakerDB)
 #' @param pvalue p-value threshold for significance testing (default: 0.05)
+#' @param type method for computing average gene expression per cell type cluster (default: triMean)
 #'
 #' @section CellChat arguments:
 #'
@@ -18,7 +19,6 @@
 #' @param search taken from CellChat package, run help(subsetDB) for details
 #' @param key taken from CellChat package, run help(subsetDB) for details
 #' @param non_protein taken from CellChat package, run help(subsetDB) for details
-#' @param type taken from CellChat package, run help(computeCommunProb) for details
 #' @param threshold taken from CellChat package and replaces "trim" argument, run help(computeCommunProb) for details
 #' @param LR.use taken from CellChat package, run help(computeCommunProb) for details
 #' @param raw.use taken from CellChat package, run help(computeCommunProb) for details
