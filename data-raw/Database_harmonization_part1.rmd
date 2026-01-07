@@ -31,6 +31,9 @@ pacman::p_load(tidyverse, janitor, CellChat)
 setwd(this.path::here())
 rm(list = ls())
 
+# File creation
+if (! dir.exists("../data/db_utils")) sapply("../data/db_utils", dir.create, recursive = TRUE)
+
 # Function for summarizing overlap between databases  
 join_summarize <- function(db1, db2){
   
@@ -143,11 +146,11 @@ CC.int$complex_receptor <- CC.int$receptor %in% names(complex)
 
 tmp <- join_summarize(CC.int, CC.int)
 
-### Keeping gene/complex name of original database
+# Keeping gene/complex name of original database
 CC.int$ligand_name   <- CC.int$ligand
 CC.int$receptor_name <- CC.int$receptor
 
-### Map Gene Symbol to UniProt in CCDB
+# Map Gene Symbol to UniProt in CCDB
 CC.int$ligand   <- map[CC.int$ligand]
 CC.int$receptor <- map[CC.int$receptor]
 
@@ -178,7 +181,7 @@ tmp <- join_summarize(CPDB.int, CPDB.int)
 
 rm(map, tmp)
 
-### Step 1 join
+# Step 1 join
 step1 <- join_summarize(CC.int, CPDB.int)
 
 rm(step1)
@@ -215,7 +218,7 @@ CC.int$interaction_name[which(is.na(CC.int$receptor))]
 
 We loaded the [uniprotkb](https://www.uniprot.org/) database of only reviewed Uniprot IDs to identify interaction partners not successfully mapped. 
 ```{r}
-### Load Uniprot Database
+# Load Uniprot Database
 uniprotkb <- read_tsv(url("https://rest.uniprot.org/uniprotkb/stream?download=true&fields=accession%2Cid%2Cprotein_name%2Cgene_names%2Ccc_subcellular_location%2Ccc_pathway%2Clit_pubmed_id%2Cxref_kegg&format=tsv&query=%28*%29+AND+%28reviewed%3Atrue%29+AND+%28model_organism%3A9606%29")) %>% 
   clean_names() %>% 
   filter(! is.na(gene_names)) %>% 
@@ -228,7 +231,7 @@ uniprotkb <- read_tsv(url("https://rest.uniprot.org/uniprotkb/stream?download=tr
   select(-n_genes, -name) %>% 
   relocate(entry, entry_name, gene)
 
-#### Checking for non-uniprot entries 
+# Checking for non-uniprot entries 
 CC.int %>% filter(! complex_ligand,   ! ligand %in% uniprotkb$entry)   %>% pull(ligand,   ligand_name)   # ligand:   CCL3L1, CCL3L3, IFNA1, IFNA13 invalid
 CC.int %>% filter(! complex_receptor, ! receptor %in% uniprotkb$entry) %>% pull(receptor, receptor_name) # receptor: GPR1 missing an entry
 ```
@@ -254,7 +257,7 @@ tmp <- CC.int %>%
          LR = paste(ligand, receptor, sep = "|")) %>% 
   rename(interaction_name_new = interaction_name, ligand_new = ligand, receptor_new = receptor)
 
-### Apply changes to CCDB 
+# Apply changes to CCDB 
 CC.int <- tmp %>% 
   rename_with(~ sub("_new", "", .), ends_with("_new"))
 ```
@@ -282,6 +285,7 @@ CPDB.int <- CPDB.int %>%
 ```
 
 ```{r}
+# Step 2 join
 step2 <- join_summarize(CC.int, CPDB.int)
 
 rm(diff, tmp, step2)
@@ -324,13 +328,8 @@ CPDB.int$receptor <- ifelse(CPDB.int$complex_receptor, complex[CPDB.int$receptor
 
 CPDB.int$ligand <- ifelse(CPDB.int$partner_a == "b-Endorphin_byPOMC", "P01189betaEndo", CPDB.int$ligand) # match changes done for same interaction in CCDB
 
-### Step 3 join
+# Step 3 join
 step3 <- join_summarize(CC.int, CPDB.int)
-# ligand-receptors = 1760 
-# simple ligands = 411 
-# simple receptors = 390 
-# complex ligands = 121 
-# complex receptors = 122 
 
 rm(complex, step3)
 ```
@@ -355,15 +354,15 @@ CC.int$receptor   <- sapply(strsplit(CC.int$receptor,   split = "_" ), sort_past
 CPDB.int$ligand   <- sapply(strsplit(CPDB.int$ligand,   split = "_" ), sort_paste )
 CPDB.int$receptor <- sapply(strsplit(CPDB.int$receptor, split = "_" ), sort_paste )
 
-## Finding duplicated interactions once again after sorting of subunits
-### CellChatDB
+# Finding duplicated interactions once again after sorting of subunits
+## CellChatDB
 tmp <- join_summarize(CC.int, CC.int)
 ```
 
 No duplicated LR pairs were observed in CCDB after sorting subunits of complexes.
 
 ```{r}
-### CellPhoneDB
+## CellPhoneDB
 tmp <- join_summarize(CPDB.int, CPDB.int)
 ```
 
@@ -386,12 +385,12 @@ CPDB.int <- CPDB.int %>% mutate(ligand   = ifelse(partner_a == "LeukotrieneC4_by
 
 CC.int <- CC.int %>% mutate(ligand = ifelse(ligand_name == "LTC4-LTC4S", "P20292_P09917_Q16873", ligand)) # Match name for same complex in CPDB
 
-### After addressing duplicated LR pairs in CellPhoneDB
+# After addressing duplicated LR pairs in CellPhoneDB
 tmp <- join_summarize(CPDB.int, CPDB.int)
 
 rm(dups, tmp, sort_paste)
 
-### Step 4 join
+# Step 4 join
 step4 <- join_summarize(CC.int, CPDB.int)
 ```
 
@@ -410,10 +409,10 @@ found <- step4 %>%
 
 CPDB.int2 <- CPDB.int %>% left_join(found) 
 
-## Extracting rows which were previously NOT MATCHED to CellChatDB
+# Extracting rows which were previously NOT MATCHED to CellChatDB
 to_swap <- which( is.na( CPDB.int2$found ) )
 
-### Performing swap of ligand and receptor for unmatched interactions
+# Performing swap of ligand and receptor for unmatched interactions
 for(i in to_swap){
   
   CPDB.int2$ligand[i]   <- CPDB.int$receptor[i]
@@ -448,9 +447,9 @@ flip %>% tabyl(annotation) ## all are Cell-Cell Contact
 We now implement the swap to the original CPDB
 
 ```{r}
-flipped <- flip$interactors ## used for customizing CellPhoneDB database later
+flipped <- flip$interactors # used for customizing CellPhoneDB database later
 
-## Flipping only interactions that mapped after swapping interaction partners
+# Flipping only interactions that mapped after swapping interaction partners
 
 CPDB.int$flip_LR <- paste(CPDB.int$receptor, CPDB.int$ligand, sep = "|")
 
@@ -511,7 +510,7 @@ $$ Jaccard Index = (number of identical subunits) / (total number of shared subu
 Suppose we have a complexes made up of subunitA_subunitB in CCDB and another similar complexes made up of subunitA_subunitB_subunitC. The pairwise jaccard index for these two complexes will be 0.667 (3 d.p.) since they both share subunits A and B, and the number of unique subunits is 3 (subunits A, B and C).
 
 ```{r}
-### Finding potential overlapping subunits in complexes across both databases
+# Finding potential overlapping subunits in complexes across both databases
 find_jaccard_index <- function(x, y){
   
   x <- str_split_1(x, pattern = "_")
@@ -550,7 +549,7 @@ partial.match
 ### Changing to proposed names in respective databases
 
 ```{r}
-## CellChatDB
+# CellChatDB
 CC.int <- CC.int %>% 
   left_join(partial.match %>% select(CellChat_uniprot, proposed_name), by = c("ligand" = "CellChat_uniprot")) %>% 
   mutate(ligand = ifelse(!is.na(proposed_name), proposed_name, ligand)) %>% 
@@ -560,7 +559,7 @@ CC.int <- CC.int %>%
          LR = paste(ligand, receptor, sep = "|")) %>% 
   select(-proposed_name) 
 
-## CellPhoneDB
+# CellPhoneDB
 CPDB.int <- CPDB.int %>% 
   left_join(partial.match %>% select(CellPhoneDB_uniprot, proposed_name), by = c("ligand" = "CellPhoneDB_uniprot")) %>% 
   mutate(ligand = ifelse(!is.na(proposed_name), proposed_name, ligand)) %>% 
@@ -575,256 +574,28 @@ step6 <- join_summarize(CC.int, CPDB.int)
 rm(step6)
 ```
 
+Save the following objects for customizing CCDB and CPDB in Part 2:
+
+```{r, eval = FALSE}
+save(flipped,  file = "../data/db_utils/flipped.rda")
+save(CC.int,   file = "../data/db_utils/CC_int.rda")
+save(CPDB.int, file = "../data/db_utils/CPDB_int.rda")
+```
+
+```{r, echo = FALSE}
+if (! file.exists("../data/db_utils/flipped.rda"))  save(flipped,  file = "../data/db_utils/flipped.rda")
+if (! file.exists("../data/db_utils/CC_int.rda"))   save(CC.int,   file = "../data/db_utils/CC_int.rda")
+if (! file.exists("../data/db_utils/CPDB_int.rda")) save(CPDB.int, file = "../data/db_utils/CPDB_int.rda")
+```
+
 Finally, we have a overlap of **2,239** interactions across CCDB and CPDB:
 
 ```{r, fig.height = 3, fig.width = 7}
 ggvenn::ggvenn(list(CellChat = CC.int$LR, CellPhoneDB = CPDB.int$LR))
 ```
 
-```{r}
-knitr::knit_exit()
-```
-
-# Creating scpeakeRDB
-
-xxx
-
-
-# Customising CCDB and CPDB
-
-## CellChatDB -- new
-
-To customize CCDB for cell-cell communication analysis with CellChat, we refer to the document attached [here](https://rdrr.io/github/sqjin/CellChat/f/tutorial/Update-CellChatDB.Rmdhttps://rdrr.io/github/sqjin/CellChat/f/tutorial/Update-CellChatDB.Rmd).
-
-```{r}
-interaction_input <- CellChatDB.human$interaction
-interaction_input$interaction_name <- CC.int$interaction_name
-rownames(interaction_input) <- interaction_input$interaction_name
-
-## Extract interaction partners of simple genes and add new changes to geneInfo slot
-CC.ligand.simple   <- CC.int %>% filter(! complex_ligand)   %>% select(Symbol = ligand_name,   uniprot = ligand)
-CC.receptor.simple <- CC.int %>% filter(! complex_receptor) %>% select(Symbol = receptor_name, uniprot = receptor)
-
-CC.gene.map <- bind_rows(CC.ligand.simple, CC.receptor.simple) %>% distinct()
-
-CC.gene.map %>% dim()
-CC.gene.map %>% head()
-
-geneInfo <- CellChatDB.human$geneInfo %>% 
-  left_join(CC.gene.map) %>% 
-  mutate(EntryID.uniprot = case_when(is.na(uniprot) ~ EntryID.uniprot,
-                                     is.na(EntryID.uniprot) ~ uniprot,
-                                     EntryID.uniprot != uniprot ~ uniprot,
-                                     .default = EntryID.uniprot)) %>% 
-  select(-uniprot)
-
-rm(CC.ligand.simple, CC.receptor.simple, CC.gene.map)
-
-## Add changes to complex slot
-
-complex_input <- CellChatDB.human$complex %>% 
-  rownames_to_column("CellChat_complex") %>% 
-  mutate(subunit_1 = ifelse(grepl("^CALCRL", CellChat_complex), "CALCRL", subunit_1),
-         subunit_2 = case_when(CellChat_complex == "RA-ALDH1A1" ~ "",
-                               CellChat_complex == "Ach-CHAT_SLC10A4" ~ "CHAT",
-                               .default = subunit_2),
-         subunit_3 = case_when(CellChat_complex == "Ach-CHAT_SLC10A4" ~ "",
-                               CellChat_complex == "CALCRL_RAMP3" ~ "GPER1",
-                               .default = subunit_3)) %>% 
-  column_to_rownames("CellChat_complex")
-
-## cofactor slot is unchanged
-cofactor_input <- CellChatDB.human$cofactor
-
-CellChatDB.human.new <- list()
-CellChatDB.human.new$interaction <- interaction_input
-CellChatDB.human.new$complex     <- complex_input
-CellChatDB.human.new$cofactor    <- cofactor_input
-CellChatDB.human.new$geneInfo    <- geneInfo
-```
-
-```{r, eval = FALSE}
-save(CellChatDB.human.new, file = "data/CellChatDB.human.new")
-```
-
-```{r}
-rm(interaction_input, complex_input, geneInfo, cofactor_input, CellChatDB.human.new)
-```
-
-## CellPhoneDB -- new
-
-To customize CPDB with our revised changes, we refer to the document [here](https://github.com/ventolab/CellphoneDB/blob/master/notebooks/T0_BuildDBfromFiles.ipynb).
-
-```{r, eval = FALSE}
-sapply(c("data", "data/sources"), dir.create, recursive = TRUE)
-basepath <- "https://raw.github.com/ventolab/cellphonedb-data/refs/heads/master/data"
-
-# Load required files for database customization
-interaction_input <- read_csv(url(file.path(basepath, "interaction_input.csv")))
-gene_input        <- read_csv(url(file.path(basepath, "gene_input.csv")))
-complex_input     <- read_csv(url(file.path(basepath, "complex_input.csv")))
-protein_input     <- read_csv(url(file.path(basepath, "protein_input.csv")))
-transcription_factor_input <- read_csv(url(file.path(basepath, "transcription_factor_input.csv")))
-uniprot_syn       <- read_tsv(url(file.path(basepath, "sources/uniprot_synonyms.tsv")))
-
-## Customizing database with changes implemented
-interaction_input <- interaction_input %>% 
-  mutate(partner_a = case_when(partner_a == "HLAA"  ~ "P04439",
-                               partner_a == "HLAB"  ~ "P01889",
-                               partner_a == "HLAC"  ~ "P10321",
-                               partner_a == "IFNA1" ~ "P01562",
-                               .default = partner_a),
-         partner_b = ifelse(partner_b == "Glycoprotein_Ib_complex", "GP_complex", partner_b)) 
-
-to_flip <- which(interaction_input$interactors %in% flipped)
-
-### Make a copy to perform swap
-tmp <- interaction_input
-
-interaction_input$partner_a[to_flip] <- tmp$partner_b[to_flip]
-interaction_input$partner_b[to_flip] <- tmp$partner_a[to_flip]
-
-interaction_input$protein_name_a[to_flip] <- tmp$protein_name_b[to_flip]
-interaction_input$protein_name_b[to_flip] <- tmp$protein_name_a[to_flip]
-
-rm(tmp, flipped, to_flip)
-
-new_genes <- data.frame(gene_name = c("GP9", "GP5"),
-                        uniprot = c("P14770", "P40197"),
-                        hgnc_symbol = c("GP9", "GP5"),
-                        ensembl = c("ENSG00000169704", "ENSG00000178732"))
-
-gene_input <- gene_input %>% 
-  mutate(uniprot = case_when(uniprot == "HLAA"  ~ "P04439",
-                             uniprot == "HLAB"  ~ "P01889",
-                             uniprot == "HLAC"  ~ "P10321",
-                             uniprot == "IFNA1" ~ "P01562",
-                             .default = uniprot)) %>% 
-  bind_rows(new_genes)
-
-complex_input <- complex_input %>% 
-  mutate(complex_name = ifelse(complex_name == "Glycoprotein_Ib_complex", "GP_complex", complex_name),
-         uniprot_3 = case_when(complex_name == "IL15_receptor" ~ "P31785",
-                               complex_name == "TGFbeta_receptor2" ~ "P36897",
-                               complex_name == "GP_complex" ~ "P14770",
-                               .default = uniprot_3),
-         uniprot_4 = ifelse(complex_name == "GP_complex", "P40197", uniprot_4))
-
-new_proteins <- data.frame(uniprot = c("P14770", "P40197"),
-                           protein_name = c("GPIX_HUMAN", "GPV_HUMAN"))
-
-protein_input <- protein_input %>% 
-  mutate(uniprot = case_when(uniprot == "HLAA"  ~ "P04439",
-                             uniprot == "HLAB"  ~ "P01889",
-                             uniprot == "HLAC"  ~ "P10321",
-                             uniprot == "IFNA1" ~ "P01562",
-                             .default = uniprot)) %>% 
-  bind_rows(new_proteins)
-
-### Save input files to data dir
-write_csv(interaction_input, file = "data/interaction_input.csv")
-write_csv(gene_input,        file = "data/gene_input.csv")
-write_csv(complex_input,     file = "data/complex_input.csv")
-write_csv(protein_input,     file = "data/protein_input.csv")
-write_csv(transcription_factor_input, file = "data/transcription_factor_input.csv")
-write_tsv(uniprot_syn, file = "data/sources/uniprot_synonyms.tsv")
-
-## Creating customized CPDB
-use_condaenv("cpdb")
-
-db_create <- import("cellphonedb.utils.db_utils")
-db_create$create_db("data")
-# Created data\cellphonedb_11_07_2025_010457.zip successfully
-
-# Saved customized CellPhoneDB .zip file to  CCCtools GitHub 
-file.rename(from = "data/cellphonedb_11_07_2025_010457.zip", to = "data/cellphonedb.zip") 
-
-rm(interaction_input, gene_input, complex_input, protein_input, transcription_factor_input, uniprot_syn)
-```
-
-# Final touches to harmonized databases
-
-## CCDB
-```{r, eval = FALSE}
-CCDB <- CC.int %>% 
-  relocate(interaction_name, pathway_name, ligand_name, ligand, receptor_name, receptor, LR, complex_ligand, complex_receptor)
-```
-
-## CPDB
-```{r, eval = FALSE}
-unzip("data/cellphonedb.zip", files = c("interaction_table.csv", "multidata_table.csv"), exdir = "data")
-
-multi  <- read_csv("data/multidata_table.csv") %>% select(id_multidata, name)
-
-id_map <- read_csv("data/interaction_table.csv") %>% 
-  left_join(multi, by = c("multidata_1_id" = "id_multidata")) %>% 
-  mutate(multidata_1_id = ifelse(! is.na(name), name, multidata_1_id)) %>% # change partner_a to uniprot/complex_name
-  select(- name) %>% 
-  left_join(multi, by = c("multidata_2_id" = "id_multidata")) %>% 
-  mutate(multidata_2_id = ifelse(! is.na(name), name, multidata_2_id),     # change partner_b to uniprot/complex_name
-         pair = paste(multidata_1_id, multidata_2_id, sep = "|")) %>% 
-  select(id_cp_interaction, pair)
-
-CPDB <- CPDB.int %>% 
-  mutate(partner_a = case_when(partner_a == "HLAA"  ~ "P04439",
-                        partner_a == "HLAB"  ~ "P01889",
-                        partner_a == "HLAC"  ~ "P10321",
-                        partner_a == "IFNA1" ~ "P01562",
-                        .default = partner_a),
-         partner_b = ifelse(partner_b == "Glycoprotein_Ib_complex", "GP_complex", partner_b),
-         pair = paste(partner_a, partner_b, sep = "|"),
-         ligand_name = ifelse(is.na(protein_name_a), partner_a, protein_name_a),
-         receptor_name = ifelse(is.na(protein_name_b), partner_b, protein_name_b)) %>% 
-  left_join(id_map, by = "pair") %>% 
-  select(- id_cp_interaction.x, - pair) %>% 
-  relocate(id_cp_interaction = id_cp_interaction.y, classification, ligand_name, ligand, receptor_name, receptor, LR, complex_ligand, complex_receptor)
-```
-
-```{r, echo = FALSE}
-pacman::p_load(CCCtools)
-```
-
-```{r, eval = FALSE}
-CCDB %>% dim()
-```
-
-```{r, echo = FALSE}
-CCDB %>% dim()
-```
-
-```{r, eval = FALSE}
-CCDB %>% glimpse()
-```
-
-```{r, echo = FALSE}
-CCDB %>% glimpse()
-```
-
-```{r, eval = FALSE}
-CPDB %>% dim()
-```
-
-```{r, echo = FALSE}
-CPDB %>% dim()
-```
-
-```{r, eval = FALSE}
-CPDB %>% glimpse()
-```
-
-```{r, echo = FALSE}
-CPDB %>% glimpse()
-```
-
-```{r, eval = FALSE}
-## Save CCDB and CPDB as .rda to CCCtools GitHub
-save(CCDB, file = "data/CCDB.rda")
-save(CPDB, file = "data/CPDB.rda")
-```
-
-This concludes the process performed in **Part 1** of the Database Harmonization conducted, as well as the customization of the respective databases to be run with CellChat and CellPhoneDB respectively. In **Part 2**, we outline the full convergence of the harmonized databases, providing users with a single merged database comprising of interactions from both CellChat and CellPhoneDB. You may refer to **Part 2** [here]().
+This concludes the process performed in **Part 1** of the Database Harmonization conducted. In **Part 2**, we outline the customization of the CellChatDB and CellPhoneDB with the proposed changes above. You may refer to **Part 2** [here]().
 
 ```{r}
 knitr::knit_exit()
 ```
-

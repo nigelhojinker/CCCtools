@@ -1,0 +1,286 @@
+---
+title: "scpeakeRDB creation - Part 3"
+output: rmarkdown::html_vignette
+description: >
+  scpeakerDB creation via convergence of CellChatDB and CellPhoneDB
+vignette: >
+  %\VignetteIndexEntry{scpeakeRDB creation - Part 3}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+date: 2025/01/05
+---
+
+# Creating scpeakeRDB
+
+In this document, we outline the process undergone to develop scpeakeRDB, first by identifying interactions not present in each of the databases. We then manually input the mandatory fields required for each package before constructing the databases in a format compatible with their original tools. If you have not viewed "Database customization by scpeakeR - Part 2", you may refer [here]().
+
+## Load required packages & databases
+
+```{r}
+pacman::p_load(scpeakeR)
+setwd(this.path::here())
+rm(list = ls())
+
+data(CCDB, CPDB)
+```
+
+## scpeakerDB_CC
+
+We start with the scpeakeRDB-CellChat (scpeakeRDB_CC) database creation. CellChatDB has interactions annotated with pathways in their original structure, and we preserve that same structure for newly added interactions from CellPhoneDB. We made a named mapping vector `pathway_map` with the pathways as the values and the ligands involved in the pathway as the names.  
+
+```{r}
+pathway_map <- CCDB %>%
+  select(ligand, pathway_name) %>%
+  distinct(ligand, .keep_all = TRUE) %>%
+  deframe()
+```
+
+```{r}
+pathway_map %>% length()
+
+pathway_map %>% head()
+```
+
+In the next step, we extract interations in CPDB that are not found in CCDB, manually refining the interaction dataframe to resemble more closely to CCDB format:
+
+```{r}
+CPDB.only <- CPDB %>%
+  filter(LR %in% setdiff(CPDB$LR, CCDB$LR)) %>%
+  relocate(interactors) %>%
+  mutate(interactors = case_when(
+    grepl("^HLA-", interactors)    ~ sub("HLA-", "HLA", interactors),
+    grepl("^ERVH48-1", interactors) ~ sub("-", "_", interactors),
+    .default = interactors)) %>%
+  separate(interactors, into = c("ligand_name", "receptor_name"), sep = "-") %>%
+  mutate(ligand_name = ifelse(ligand_name == "ERVH48_1", "ERVH48-1", ligand_name)) %>% # reassign gene to correct name
+  mutate(ligand_name   = gsub("\\+", "_", ligand_name),
+         receptor_name = gsub("\\+", "_", receptor_name))
+```
+
+We not create a `pathway_name` column to `CPDB.only` and map the CellChat-based pathways according to the ligands in CPDB:
+
+```{r}
+CPDB.only$pathway_name <- pathway_map[CPDB.only$ligand]
+```
+
+```{r}
+CPDB.only %>% 
+  select(starts_with("ligand"), starts_with("receptor"), pathway_name) %>% 
+  head()
+```
+
+In most cases, since the ligands in `CPDB.only` are not originally found in CCDB, the interactions they are involved in are not automatically mapped. Here, we manually patched the pathways for the interactions in CPDB:
+
+```{r}
+# Keep original copy for comparison
+CPDB.only2 <- CPDB.only
+
+# Manual matching of pathway names
+CPDB.only <- CPDB.only %>%
+  mutate(pathway_name = case_when(
+  grepl("^COL", ligand_name) ~ "COLLAGEN",
+  grepl("^(WNT5A|WNT5B|WNT11)", ligand_name) ~ "ncWNT",
+  grepl("^WNT", ligand_name) ~ "WNT",
+  grepl("^INH", ligand_name) ~ "ACTIVIN",
+  grepl("^IGFL", ligand_name) ~ "IGF",
+  grepl("^CGA_", ligand_name) ~ "CHORIOGONADOTROPIN",
+  grepl("^NRXN", receptor_name) ~ "NRXN",
+  ligand_name == "PNMT" ~ "Adrenaline",
+  ligand_name == "RLN2" ~ "RLN",
+  ligand_name == "PODXL2" ~ receptor_name,
+  ligand_name == "ANGPT4" ~ "ANGPT",
+  ligand_name == "ADM2" ~ "ADM",
+  ligand_name == "AKR1B1" ~ "Prostaglandin",
+  ligand_name == "NRXN1" & receptor_name == "DAG1" ~ "NRXN",
+  receptor_name == "ADGRL1" ~ "ADGRL",
+  classification == "Adhesion by Cadherin" ~ "CDH",
+  classification == "Adhesion by Fibribogen" ~ "FIBRINOGEN",
+  classification == "Adhesion by ICAM" ~ "ICAM",
+  classification == "Signaling by Acetylcholine" ~ "Ach",
+  classification == "Signaling by TAFA" ~ "TAFA",
+  classification == "Signaling by R-spondin" ~ "R-SPONDIN",
+  classification == "Signaling by Calsyntenin" ~ "NRXN",
+  classification == "Signaling by Agouti-related protein" ~ "MELANOCORTIN",
+  classification == "Signaling by BMP" ~ "BMP",
+  classification == "Signaling by Interferon" ~ "IFNL",
+  is.na(pathway_name) ~ ligand_name,
+  .default = pathway_name
+))
+
+setdiff(CPDB.only2$pathway_name, CPDB.only$pathway_name) # check for difference in mapping
+
+rm(CPDB.only2, pathway_map)
+```
+
+In addition to pathways, CCDB segments their database according to four broad categories of interactions - Secreted Signaling, ECM-Receptor, Cell-Cell Contact and Non-protein Signaling. We constructed an interaction_name column for the newly added interactions by concatenating the ligand-receptor pair and join the pre-exisiting annotations in CCDB via pathway_name. We found 111 interactions which do not have an annotation automatically mapped in the process:
+
+```{r}
+CPDB.only <- CPDB.only %>%
+  mutate(interaction_name = paste(ligand_name, receptor_name, sep = "_")) %>%
+  relocate(interaction_name, pathway_name, ligand_name, ligand, receptor_name, receptor) %>%
+  left_join(CCDB %>% select(pathway_name, annotation)) %>%
+  distinct(id_cp_interaction, .keep_all = TRUE)
+
+# Extract interactions with unmapped annotation
+CPDB.only %>% filter(is.na(annotation)) %>% tabyl(directionality)
+# directionality      n    percent
+# Adhesion-Adhesion   4    0.03603604
+# Ligand-Receptor     102  0.91891892
+# Receptor-Receptor   5    0.04504505
+```
+
+We manually added these annotations to the newly added interactions, along with an identifer "CPDB:" at the start of these interactions for differentiation:
+
+```{r}
+CPDB.only <- CPDB.only %>%
+  mutate(annotation = case_when(
+    pathway_name == "FIBRINOGEN" ~ "ECM-Receptor",
+    pathway_name == "CHORIOGONADOTROPIN" ~ "Non-protein Signaling",
+    directionality == "Adhesion-Adhesion" ~ "Cell-Cell Contact",
+    directionality == "Receptor-Receptor" ~ "Cell-Cell Contact",
+    directionality == "Ligand-Receptor" ~ "Secreted Signaling",
+    .default = annotation),
+    interaction_name = paste0("CPDB:", interaction_name)) %>%
+  distinct(interaction_name, .keep_all = TRUE) # removed one duplicated interaction
+```
+
+Now all CellPhoneDB interactions have a pathway_name and a pathway annotation. We begin constructing scpeakeRDB_CC by first recalling the previously revised `CellChatDB.human.new` from Part 2:
+
+### Load CellChatDB.human.new
+
+```{r}
+interaction_input <- CellChatDB.human.new$interaction
+complex  <- CellChatDB.human.new$complex
+cofactor <- CellChatDB.human.new$cofactor
+geneInfo <- CellChatDB.human.new$geneInfo
+```
+
+```{r}
+interaction_input <- bind_rows(interaction_input, 
+                               CPDB.only %>%
+                                 select(interaction_name, 
+                                        pathway_name, 
+                                        ligand = ligand_name, 
+                                        receptor = receptor_name, 
+                                        annotation, 
+                                        LR)) %>%
+  mutate(version = ifelse(is.na(version), "CellChatDB v2a", version))
+
+CP_simple_ligand <- CPDB.only %>%
+  filter(! complex_ligand) %>%
+  pull(ligand_name)
+
+CP_simple_receptor <- CPDB.only %>%
+  filter(! complex_receptor) %>%
+  pull(receptor_name)
+
+CP_simple <- union(CP_simple_ligand, CP_simple_receptor) # 424
+
+CP_simple[which(! CP_simple %in% geneInfo$Symbol)]
+# [1] "C10orf99" "HLAF"     "HLAE"
+
+genes.add <- data.frame(EntryID.uniprot = c("Q6UWK7", "P30511", "P13747"),
+                        Symbol = c("C10orf99", "HLAF", "HLAE"))
+
+geneInfo <- bind_rows(geneInfo, genes.add) %>%
+  mutate(EntryID.uniprot = ifelse(Symbol == "CGB3", "P0DN86", EntryID.uniprot)) # 26,830
+
+rm(CP_simple, CP_simple_ligand, CP_simple_receptor, genes.add)
+
+CP_complex_ligand <- CPDB.only %>%
+  filter(complex_ligand) %>%
+  pull(ligand_name)
+
+CP_complex_receptor <- CPDB.only %>%
+  filter(complex_receptor) %>%
+  pull(receptor_name)
+
+CP_complex <- union(CP_complex_ligand, CP_complex_receptor) # 120
+
+complex <- complex %>%
+  rownames_to_column("complex_name") %>%
+  filter(complex_name != "KLRK1_HCST") # unused complex in CellChat
+
+complex[complex == ""] <- NA
+
+complex <- complex %>%
+  rowwise() %>%
+  mutate(symbol = paste(sort(na.omit(c(subunit_1, subunit_2, subunit_3, subunit_4, subunit_5))), collapse = "_"))
+
+new <- CP_complex[which(! CP_complex %in% complex$symbol)] # 53
+
+#### Check if genes in "new" found in geneInfo
+new.genes <- paste(new, collapse = "_") %>%
+  str_split_1("_")
+
+new.genes[which(! new.genes %in% geneInfo$Symbol)] # 0
+
+present_diff_name <- setdiff(CP_complex[which(! CP_complex %in% complex$complex_name)], new) # 17 interactions already in CCDB but diff name
+
+# Remove symbol which requires special handling
+present_diff_name <- setdiff(present_diff_name, "ALOX5_ALOX5AP_LTC4S")
+
+map <- complex %>%
+  filter(symbol %in% present_diff_name) %>%
+  select(symbol, complex_name)
+
+rm(CP_complex, CP_complex_ligand, CP_complex_receptor, present_diff_name, new.genes)
+
+### Rewrite names of interaction partners to those already present in CellChatDB
+interaction_input <- left_join(interaction_input, map, by = c("ligand" = "symbol")) %>%
+  mutate(ligand = case_when(
+    !is.na(complex_name) ~ complex_name,
+    ligand == "ALOX5_ALOX5AP_LTC4S" & receptor == "CYSLTR1" ~ "LXA4-ALOX5",
+    ligand == "ALOX5_ALOX5AP_LTC4S" & receptor == "GPR17" ~ "LTC4-LTC4S",
+    ligand == "ALOX5_ALOX5AP_LTC4S" & receptor == "OXER1" ~ "5SHpETE_byALOX5",
+    .default = ligand
+  )) %>%
+  select(- complex_name) %>%
+  left_join(map, by = c("receptor" = "symbol")) %>%
+  mutate(receptor = ifelse(! is.na(complex_name), complex_name, receptor)) %>%
+  select(- complex_name) # 3904
+
+rownames(interaction_input) <- interaction_input$interaction_name
+
+orig_map <- CCDB %>%
+  select(interaction_name, LR)
+
+ccdb_map <- interaction_input %>%
+  select(interaction_name, LR) %>%
+  left_join(orig_map, by= "interaction_name", suffix = c("_new", "_orig")) %>%
+  mutate(LR_new = ifelse(! is.na(LR_orig), LR_orig, LR_new)) %>%
+  select(interaction_name, LR = LR_new)
+
+interaction_input <- interaction_input %>% select(-LR)
+
+save(ccdb_map, file = "data/ccdb_map.rda")
+
+### Add new complexes to dataframe
+new <- new %>%
+  as.data.frame()
+
+colnames(new) <- "complex_name"
+
+new <- new %>%
+  separate(complex_name, into = paste0("subunit_", 1:5), sep = "_", fill = "right", remove = FALSE) %>%
+  bind_rows(data.frame(complex_name = c("5SHpETE_byALOX5"),
+                       subunit_1 = c("LTC4S"),
+                       subunit_2 = c("ALOX5"),
+                       subunit_3 = c("ALOX5AP")))
+
+complex <- bind_rows(complex, new) %>%
+  column_to_rownames("complex_name") %>%
+  select(-symbol) # 391
+
+complex[is.na(complex)] <- ""
+
+CellChatDB.human.v2a <- list()
+CellChatDB.human.v2a$interaction <- interaction_input
+CellChatDB.human.v2a$complex     <- complex
+CellChatDB.human.v2a$cofactor    <- cofactor
+CellChatDB.human.v2a$geneInfo    <- geneInfo
+
+rm(interaction_input, complex, geneInfo, cofactor, new, map)
+
+save(CellChatDB.human.v2a, file = "data/CellChatDB_humanv2a.rda")
+```
