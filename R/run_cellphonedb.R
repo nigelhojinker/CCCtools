@@ -6,6 +6,7 @@
 #' @param obj Seurat object with normalized counts in the data layer of the RNA assay
 #' @param labels Metadata column name of cell type annotations
 #' @param type Method to compute average gene expression per cell type cluster (default: triMean)
+#' @param database Choice of database to use for CellChat analysis
 #' @param use_dir Input files required to run CellPhoneDB and the output files from the analysis are created and saved to a temp file (default). Should users desire to have these files be stored in their personal directories, they may input their filepath to this argument.
 #' @param ... Takes in any arguments from c("iterations", "threads", "debug_seed", "result_precision", "subsampling_num_pc", "subsampling_num_cells") for user customization, else running on the default values for these paramters. See Value below for link to description by CellPhoneDB
 #' @param counts_data See Value below for link to description by CellPhoneDB
@@ -44,7 +45,7 @@
 #'   score_interactions = TRUE)
 #' }
 
-run_cellphonedb <- function(obj = NULL, labels = NULL, type = NULL, use_dir = NULL, ...,
+run_cellphonedb <- function(obj = NULL, labels = NULL, type = NULL, database = NULL, use_dir = NULL, ...,
                                 counts_data = "hgnc_symbol", active_tfs_file_path = NULL, microenvs_file_path = NULL,
                                 score_interactions = FALSE, threshold = 0.1, pvalue = 0.05, subsampling = FALSE,
                                 subsampling_log = FALSE, separator = "|", debug = FALSE, output_suffix = NULL) {
@@ -59,7 +60,14 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, type = NULL, use_dir = NU
     stop("Unknown type method, use either thresholdedMean or triMean.")
   }
 
-  cpdbPath <- file.path(pacman::p_path("scpeakeR"), "data/scpeakerDB_CP.zip")
+  # Database selection
+  if (database == "scpeakerDB") {
+    cpdbPath <- file.path(pacman::p_path("scpeakeR"), "data/scpeakerDB_CP.zip")
+  } else if (database == "CCDB") {
+    cpdbPath <- file.path(pacman::p_path("scpeakeR"), "data/cellchat.zip")
+  } else if (database == "CPDB") {
+    cpdbPath <- file.path(pacman::p_path("scpeakeR"), "data/cellphonedb.zip")
+  }
 
   # Use use_dir if provided, else use tempdir with deparse
   if (!is.null(use_dir)) {

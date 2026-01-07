@@ -81,10 +81,12 @@ scpeaker <- function(obj, labels, method = c("cellchat", "cellphonedb"), databas
 
   if (! database %in% c("scpeakerDB", "CCDB", "CPDB")) stop("Invalid input for database.\n Please indicate a database - scpeakerDB, CCDB, or CPDB")
 
+  message(paste("Running cell-cell communication analysis with database:", database))
+
   type <- match.arg(type)
 
   if (method == "cellchat"){
-    return(run_cellchat(obj, labels = labels, assay = assay,
+    return(run_cellchat(obj, labels = labels, assay = assay, database = database,
                         subsetDB = subsetDB, search = search, key = key, non_protein = non_protein, type = type, threshold = threshold,
                         LR.use = LR.use, raw.use = raw.use, population.size = population.size, distance.use = distance.use,
                         interaction.range = interaction.range, scale.distance = scale.distance, k.min = k.min,
@@ -92,10 +94,10 @@ scpeaker <- function(obj, labels, method = c("cellchat", "cellphonedb"), databas
                         contact.dependent.forced = contact.dependent.forced, do.symmetric = do.symmetric, nboot = nboot,
                         seed.use = seed.use, Kh = Kh, n = n, min.cells = min.cells))
   } else if (method == "cellphonedb") {
-    return(run_cellphonedb(obj = obj, labels = labels, type = type, use_dir = use_dir, ..., counts_data = counts_data,
-                           active_tfs_file_path = active_tfs_file_path, microenvs_file_path = microenvs_file_path,
-                           score_interactions = score_interactions, threshold = threshold, pvalue = pvalue,
-                           subsampling = subsampling, subsampling_log = subsampling_log, separator = separator, debug = debug,
-                           output_suffix = output_suffix))
+    return(run_cellphonedb(obj = obj, labels = labels, type = type, database =database, use_dir = use_dir, ...,
+                           counts_data = counts_data, active_tfs_file_path = active_tfs_file_path,
+                           microenvs_file_path = microenvs_file_path, score_interactions = score_interactions, threshold = threshold,
+                           pvalue = pvalue, subsampling = subsampling, subsampling_log = subsampling_log, separator = separator,
+                           debug = debug, output_suffix = output_suffix))
   }
 }

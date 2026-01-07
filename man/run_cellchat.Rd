@@ -8,6 +8,7 @@ run_cellchat(
   obj,
   labels = "ident",
   assay = "RNA",
+  database = NULL,
   subsetDB = FALSE,
   search = c(),
   key = "annotation",
@@ -39,6 +40,8 @@ run_cellchat(
 \item{labels}{Metadata column name for the cell type labels}
 
 \item{assay}{RNA assay by default}
+
+\item{database}{Choice of database to use for CellChat analysis}
 
 \item{subsetDB}{set to TRUE if filtering scpeakerDB (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)}
 
