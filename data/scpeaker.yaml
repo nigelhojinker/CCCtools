@@ -13,7 +13,7 @@ dependencies:
       - backcall==0.2.0
       - backports-zoneinfo==0.2.1
       - biopython==1.83
-      - cellphonedb @ git+https://github.com/nigelhojinker/scpeaker-CellphoneDB.git@edaeb7bb87a9d95234e449c66f33f614f3a047d9
+      - cellphonedb @ git+https://github.com/nigelhojinker/scpeaker-CellphoneDB.git@5ad644288cf278307456491ea4cafd44ca59fda6
       - certifi==2025.7.14
       - charset-normalizer==3.4.2
       - contourpy==1.1.1
