@@ -78,12 +78,18 @@ crosscheck_CC_CC <- function(cellchat1, cellchat2, name1, name2, threshold = 0.0
     rename(!!prob2 := prob, !!pval2 := pval)
 
   ## Combining results
-  found_both <- left_join(cellchat_res1, cellchat_res2)
-
-  second_only <- anti_join(cellchat_res2, cellchat_res1)
-
-  res <- bind_rows(found_both, second_only) %>%
-    relocate(interaction_name, source, target, ligand, receptor, starts_with("prob"), starts_with("pval"), everything()) %>%
+  ## Combining results
+  res <- full_join(cellchat_res1, cellchat_res2, by = "unique_int", suffix = c("_cc1", "_cc2")) %>%
+    mutate(interaction_name = coalesce(interaction_name_cc1, interaction_name_cc2),
+           pathway_name     = coalesce(pathway_name_cc1, pathway_name_cc2),
+           source     = coalesce(source_cc1,   source_cc2),
+           target     = coalesce(target_cc1,   target_cc2),
+           ligand     = coalesce(ligand_cc1,   ligand_cc2),
+           receptor   = coalesce(receptor_cc1, receptor_cc2),
+           annotation = coalesce(annotation_cc1, annotation_cc2),
+           evidence   = coalesce(evidence_cc1, evidence_cc2)) %>%
+    select(interaction_name, pathway_name, source, target, ligand, receptor,
+           unique_int, starts_with("prob"), starts_with("pval"), annotation, evidence) %>%
     mutate(category = case_when(!!sym(pval1) < threshold  & !!sym(pval2) < threshold  ~ "Sig_Both",
                                 !!sym(pval1) < threshold  & is.na(!!sym(pval2))  ~ paste0("Sig_", name1, "_Not_Found_", name2),
                                 is.na(!!sym(pval1))  & !!sym(pval2) < threshold  ~ paste0("Sig_", name2, "_Not_Found_", name1),
@@ -150,12 +156,25 @@ crosscheck_CPDB_CPDB <- function(cellphonedb1, cellphonedb2, name1, name2, thres
     rename(!!pval2 := pval)
 
   ## Combining results
-  found_both <- left_join(cellphonedb_res1, cellphonedb_res2)
-
-  second_only <- anti_join(cellphonedb_res2, cellphonedb_res1)
-
-  res <- bind_rows(found_both, second_only) %>%
-    relocate(id_cp_interaction, interacting_pair, source, target, partner_a, partner_b, unique_int, starts_with("pval")) %>%
+  res <- full_join(cellphonedb_res1, cellphonedb_res2, by = "unique_int", suffix = c("_cp1", "_cp2")) %>%
+    mutate(id_cp_interaction = coalesce(id_cp_interaction_cp1, id_cp_interaction_cp2),
+           interacting_pair  = coalesce(interacting_pair_cp1, interacting_pair_cp2),
+           source     = coalesce(source_cp1,   source_cp2),
+           target     = coalesce(target_cp1,   target_cp2),
+           partner_a  = coalesce(partner_a_cp1, partner_a_cp2),
+           partner_b  = coalesce(partner_b_cp1, partner_b_cp2),
+           gene_a = coalesce(gene_a_cp1, gene_b_cp2),
+           gene_b = coalesce(gene_b_cp1, gene_b_cp2),
+           secreted = coalesce(secreted_cp1, secreted_cp2),
+           receptor_a = coalesce(receptor_a_cp1, receptor_b_cp2),
+           receptor_b = coalesce(receptor_b_cp1, receptor_b_cp2),
+           annotation_strategy = coalesce(annotation_strategy_cp1, annotation_strategy_cp2),
+           is_integrin = coalesce(is_integrin_cp1, is_integrin_cp2),
+           directionality = coalesce(directionality_cp1, directionality_cp2),
+           classification = coalesce(classification_cp1, classification_cp2)) %>%
+    select(id_cp_interaction, interacting_pair, source, target, partner_a, partner_b,
+           gene_a, gene_b, starts_with("pval"), secreted, receptor_a, receptor_b,
+           annotation_strategy, is_integrin, directionality, classification, unique_int) %>%
     mutate(category = case_when(!!sym(pval1) < threshold  & !!sym(pval2) < threshold  ~ "Sig_Both",
                                 !!sym(pval1) < threshold  & is.na(!!sym(pval2))  ~ paste0("Sig_", name1, "_Not_Found_", name2),
                                 is.na(!!sym(pval1))  & !!sym(pval2) < threshold  ~ paste0("Sig_", name2, "_Not_Found_", name1),
