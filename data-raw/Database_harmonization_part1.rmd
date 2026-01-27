@@ -596,6 +596,6 @@ ggvenn::ggvenn(list(CellChat = CC.int$LR, CellPhoneDB = CPDB.int$LR))
 
 This concludes the process performed in **Part 1** of the Database Harmonization conducted. In **Part 2**, we outline the customization of the CellChatDB and CellPhoneDB with the proposed changes above. You may refer to **Part 2** [here]().
 
-```{r}
+```{r, echo = FALSE}
 knitr::knit_exit()
 ```

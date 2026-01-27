@@ -32,7 +32,7 @@ load("../data/db_utils/flipped.rda")
 
 ## CellChatDB -- new
 
-To customize CCDB for cell-cell communication analysis with CellChat, we refer to the document attached [here](https://rdrr.io/github/sqjin/CellChat/f/tutorial/Update-CellChatDB.Rmdhttps://rdrr.io/github/sqjin/CellChat/f/tutorial/Update-CellChatDB.Rmd). 
+To customize CCDB for cell-cell communication analysis with CellChat, we refer to the document attached [here](https://rdrr.io/github/sqjin/CellChat/f/tutorial/Update-CellChatDB.Rmd). 
 
 CellChatDB.human is a list of four elements encompassing the human interactions curated by CellChat package:
 
@@ -329,6 +329,6 @@ save(CPDB, file = "data/CPDB.rda")
 
 This concludes the process performed in **Part 2** of the Database Customization conducted. In **Part 3**, we outline the full convergence of the harmonized databases, providing users with a single merged database comprising of interactions from both CellChat and CellPhoneDB. You may refer to **Part 3** [here]().
 
-```{r}
+```{r, echo = FALSE}
 knitr::knit_exit()
 ```
