@@ -5,9 +5,11 @@ description: >
   scpeakerDB creation via convergence of CellChatDB and CellPhoneDB
 vignette: >
   %\VignetteIndexEntry{scpeakeRDB creation - Part 3}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
 date: 2025/01/05
+editor_options: 
+  chunk_output_type: console
 ---
 
 # Creating scpeakeRDB
@@ -156,16 +158,32 @@ geneInfo <- CellChatDB.human.new$geneInfo
 ```
 
 ```{r}
-interaction_input <- bind_rows(interaction_input, 
-                               CPDB.only %>%
-                                 select(interaction_name, 
-                                        pathway_name, 
-                                        ligand = ligand_name, 
-                                        receptor = receptor_name, 
-                                        annotation, 
-                                        LR)) %>%
-  mutate(version = ifelse(is.na(version), "CellChatDB v2a", version))
+interaction_input <- bind_rows(interaction_input, CPDB.only %>%
+                                 select(interaction_name, pathway_name, 
+                                        ligand = ligand_name, receptor = receptor_name, 
+                                        annotation, version, LR))
+```
 
+Here, we check for any duplicated interaction partners after merging CellChatDB and CellPhoneDB. We observed that duplicated mappings from both databases were due to different Uniprot identifers linked to the same gene symbol. For example, CellChatDB linked *NRXN1* to NRX1B_HUMAN (UniProtKB: P58400) while CellPhoneDB linked *NRXN1* to NRX1A_HUMAN (UniProtKB: QULB1). 
+
+```{r}
+interaction_input <- interaction_input %>% 
+  mutate(partners = paste(ligand, receptor, sep = "|")) 
+
+interaction_input %>% 
+  count(partners) %>% 
+  filter(n > 1)
+```
+
+As scRNA-seq expression matrix from droplet-based sequencing is not isoform-aware, we compressed these interactions to be the same. In the other case of the gene *PRNP*, CellChatDB linked *PRNP* to PRIO_HUMAN (UniProtKB: P04156) while CellPhoneDB linked *PRNP* to APRIO_HUMAN (UniProtKB: F7VJQ1) the alternative prion protein produced by the same bicistronic gene. Since the expression matrix does not distinguish between the two protein from the same mRNA transcript, we adopted the same collapsing strategy as *NRXN1*.
+
+```{r}
+interaction_input <- interaction_input %>% 
+  distinct(partners, .keep_all = TRUE) %>% 
+  select(-partners) # 3901
+```
+
+```{r}
 CP_simple_ligand <- CPDB.only %>%
   filter(! complex_ligand) %>%
   pull(ligand_name)
@@ -186,7 +204,9 @@ geneInfo <- bind_rows(geneInfo, genes.add) %>%
   mutate(EntryID.uniprot = ifelse(Symbol == "CGB3", "P0DN86", EntryID.uniprot)) # 26,830
 
 rm(CP_simple, CP_simple_ligand, CP_simple_receptor, genes.add)
+```
 
+```{r}
 CP_complex_ligand <- CPDB.only %>%
   filter(complex_ligand) %>%
   pull(ligand_name)
@@ -207,15 +227,17 @@ complex <- complex %>%
   rowwise() %>%
   mutate(symbol = paste(sort(na.omit(c(subunit_1, subunit_2, subunit_3, subunit_4, subunit_5))), collapse = "_"))
 
-new <- CP_complex[which(! CP_complex %in% complex$symbol)] # 53
+new_complex <- CP_complex[which(! CP_complex %in% complex$symbol)] # 53
+```
 
-#### Check if genes in "new" found in geneInfo
-new.genes <- paste(new, collapse = "_") %>%
+```{r}
+#### Check if genes in "new_complex" found in geneInfo
+new.genes <- paste(new_complex, collapse = "_") %>%
   str_split_1("_")
 
 new.genes[which(! new.genes %in% geneInfo$Symbol)] # 0
 
-present_diff_name <- setdiff(CP_complex[which(! CP_complex %in% complex$complex_name)], new) # 17 interactions already in CCDB but diff name
+present_diff_name <- setdiff(CP_complex[which(! CP_complex %in% complex$complex_name)], new_complex) # 17 interactions already in CCDB but diff name
 
 # Remove symbol which requires special handling
 present_diff_name <- setdiff(present_diff_name, "ALOX5_ALOX5AP_LTC4S")
@@ -225,7 +247,9 @@ map <- complex %>%
   select(symbol, complex_name)
 
 rm(CP_complex, CP_complex_ligand, CP_complex_receptor, present_diff_name, new.genes)
+```
 
+```{r}
 ### Rewrite names of interaction partners to those already present in CellChatDB
 interaction_input <- left_join(interaction_input, map, by = c("ligand" = "symbol")) %>%
   mutate(ligand = case_when(
@@ -238,7 +262,7 @@ interaction_input <- left_join(interaction_input, map, by = c("ligand" = "symbol
   select(- complex_name) %>%
   left_join(map, by = c("receptor" = "symbol")) %>%
   mutate(receptor = ifelse(! is.na(complex_name), complex_name, receptor)) %>%
-  select(- complex_name) # 3904
+  select(- complex_name)
 
 rownames(interaction_input) <- interaction_input$interaction_name
 
@@ -251,36 +275,329 @@ ccdb_map <- interaction_input %>%
   mutate(LR_new = ifelse(! is.na(LR_orig), LR_orig, LR_new)) %>%
   select(interaction_name, LR = LR_new)
 
-interaction_input <- interaction_input %>% select(-LR)
+# LR no longer used in interaction_input
+interaction_input <- interaction_input %>% 
+  select(-LR)
 
 save(ccdb_map, file = "data/ccdb_map.rda")
+```
 
+```{r}
 ### Add new complexes to dataframe
-new <- new %>%
+new_complex <- new_complex %>%
   as.data.frame()
 
-colnames(new) <- "complex_name"
+colnames(new_complex) <- "complex_name"
 
-new <- new %>%
+new_complex <- new_complex %>%
   separate(complex_name, into = paste0("subunit_", 1:5), sep = "_", fill = "right", remove = FALSE) %>%
   bind_rows(data.frame(complex_name = c("5SHpETE_byALOX5"),
                        subunit_1 = c("LTC4S"),
                        subunit_2 = c("ALOX5"),
                        subunit_3 = c("ALOX5AP")))
 
-complex <- bind_rows(complex, new) %>%
+complex <- bind_rows(complex, new_complex) %>%
   column_to_rownames("complex_name") %>%
   select(-symbol) # 391
 
 complex[is.na(complex)] <- ""
 
-CellChatDB.human.v2a <- list()
-CellChatDB.human.v2a$interaction <- interaction_input
-CellChatDB.human.v2a$complex     <- complex
-CellChatDB.human.v2a$cofactor    <- cofactor
-CellChatDB.human.v2a$geneInfo    <- geneInfo
+scpeakerDB_CC <- list()
+scpeakerDB_CC$interaction <- interaction_input
+scpeakerDB_CC$complex     <- complex
+scpeakerDB_CC$cofactor    <- cofactor
+scpeakerDB_CC$geneInfo    <- geneInfo
 
-rm(interaction_input, complex, geneInfo, cofactor, new, map)
+save(scpeakerDB_CC, file = "data/scpeakerDB_CC.rda")
 
-save(CellChatDB.human.v2a, file = "data/CellChatDB_humanv2a.rda")
+rm(CPDB.only, interaction_input, complex, geneInfo, cofactor, new_complex, map, orig_map)
+```
+
+## scpeakeRDB_CP.zip
+
+Now, we curated the scpeakeRDB in zip format that is CellPhoneDB-compatible.
+
+Load the original CellPhoneDB input tables for customization
+```{r}
+interaction_input <- read_csv("data/interaction_input.csv")
+gene_input        <- read_csv("data/gene_input.csv")
+complex_input     <- read_csv("data/complex_input.csv")
+protein_input     <- read_csv("data/protein_input.csv")
+transcription_factor_input <- read_csv("data/transcription_factor_input.csv")
+uniprot_syn       <- read_tsv("data/sources/uniprot_synonyms.tsv")
+```
+
+Add missing entries to uniprot_syn dataframe:
+
+```{r}
+CCDB.only <- CCDB %>%
+  filter(LR %in% setdiff(CCDB$LR, CPDB$LR))
+
+CC_simple_ligands <- CCDB.only %>%
+  filter(! complex_ligand) %>%
+  pull(ligand)
+
+CC_simple_receptors <- CCDB.only %>%
+  filter(! complex_receptor) %>%
+  pull(receptor)
+
+CC_simple <- union(CC_simple_ligands, CC_simple_receptors)
+
+CC_simple[which(! CC_simple %in% uniprot_syn$Entry)]
+# [1] "P16619byCCL3L3" "P01562byIFNA13"
+
+genes.add <- data.frame(Entry = c("P16619byCCL3L3", "P01562byIFNA13"),
+                        "Entry Name" = c("CL3L1_HUMAN", "IFNA1_HUMAN"),
+                        check.names = FALSE)
+
+uniprot_syn <- bind_rows(uniprot_syn, genes.add)
+```
+
+Add current missing entries to gene_input dataframe:
+
+```{r}
+genes.add <- data.frame(gene_name = c("CCL3L3", "IFNA13"),
+                        uniprot = c("P16619byCCL3L3", "P01562byIFNA13"),
+                        hgnc_symbol = c("CCL3L3", "IFNA13"),
+                        ensembl = c("ENSG00000276085", "ENSG00000233816"))
+
+gene_input <- bind_rows(gene_input, genes.add)
+
+rm(CC_simple, CC_simple_ligands, CC_simple_receptors, genes.add)
+```
+
+Compiling CellChatDB interactions to CellPhoneDB format
+
+```{r}
+tmp <- CCDB.only %>%
+  select(ligand_name, partner_a = ligand, receptor_name, partner_b = receptor, version, LR) %>%
+  mutate(ligand_name = gsub("_", "\\+", ligand_name),
+         receptor_name = gsub("_", "\\+", receptor_name),
+         interactors = paste(paste0("CCDB:",ligand_name), receptor_name, sep = "-")) %>% # create "interactors" column
+  left_join(uniprot_syn %>% select(Entry, `Entry Name`), by = c("partner_a" = "Entry")) %>%
+  mutate(protein_name_a = ifelse(! is.na(`Entry Name`), `Entry Name`, NA)) %>%
+  select(-`Entry Name`) %>%
+  left_join(uniprot_syn %>% select(Entry, `Entry Name`), by = c("partner_b" = "Entry")) %>%
+  mutate(protein_name_b = ifelse(! is.na(`Entry Name`), `Entry Name`, NA)) %>%
+  select(-`Entry Name`) %>%
+  mutate(ligand_name   = gsub("\\+", "_", ligand_name),                   # change format of interaction partners
+         receptor_name = gsub("\\+", "_", receptor_name),
+         partner_a = ifelse(is.na(protein_name_a), ligand_name,   partner_a),
+         partner_b = ifelse(is.na(protein_name_b), receptor_name, partner_b)) %>%
+  select(partner_a, partner_b, protein_name_a, protein_name_b, interactors, version, LR)
+```
+
+Handle same duplicated interaction in CPDB:
+In the earlier section, we observed that some interaction partners were duplicated after database merger due to inconsistent mapping of UniProt identifiers to gene symbols. To deal with these interactions, we compressed the duplicated ligand/receptor to the canonical gene symbol since the expression matrix from scRNA-seq is unable to distinguish between isoforms or protein products from bicistronic genes. In addition, we remove one duplicated interaction we found here:
+
+```{r}
+interaction_input <- bind_rows(interaction_input, tmp) %>% 
+  filter(! (partner_a == "F7VJQ1" |                                # APRIO_HUMAN
+           (partner_a == "Q9ULB1" & partner_b == "O94910") |       # NRX1A_HUMAN
+           (partner_a == "Q9ULB1" & partner_b == "Q14118") |       # NRX1A_HUMAN
+           (partner_a == "Q8IZI9" & partner_b == "Type_III_IFNR")) # IL28 receptor = Type_III_IFNR
+         )                                                         # 3901 interactions
+
+## Extract new complexes to CPDB
+CC_complex_ligand <- CCDB.only %>%
+  filter(complex_ligand) %>%
+  select(complex_name = ligand_name, uniprot = ligand)
+
+CC_complex_receptor <- CCDB.only %>%
+  filter(complex_receptor) %>%
+  select(complex_name = receptor_name, uniprot = receptor)
+
+CC_complex <- bind_rows(CC_complex_ligand, CC_complex_receptor) %>%
+  distinct() # 100
+
+CP_complex <- complex_input %>%
+  select(complex_name, starts_with("uniprot_")) %>%
+  rowwise() %>%
+  mutate(uniprot = paste(sort(na.omit(c(uniprot_1, uniprot_2, uniprot_3, uniprot_4, uniprot_5))), collapse = "_"))
+
+CC_complex <- left_join(CC_complex, CP_complex %>% select(complex_name, uniprot),
+                        by = "uniprot", suffix = c("_CC", "_CP")) %>%
+  filter(is.na(complex_name_CP) | complex_name_CC != complex_name_CP) # 77
+
+complex_present <- CC_complex %>%
+  filter(! is.na(complex_name_CP)) # 48
+
+rm(CC_complex_ligand, CC_complex_receptor, tmp)
+```
+
+```{r}
+## Rename newly added complexes to original CPDB complex names
+interaction_input <- interaction_input %>%
+  left_join(complex_present %>% select(complex_name_CC, complex_name_CP), by = c("partner_a" = "complex_name_CC")) %>%
+  mutate(partner_a = ifelse(! is.na(complex_name_CP), complex_name_CP, partner_a)) %>%
+  select(-complex_name_CP) %>%
+  left_join(complex_present %>% select(complex_name_CC, complex_name_CP), by = c("partner_b" = "complex_name_CC")) %>%
+  mutate(partner_b = ifelse(! is.na(complex_name_CP), complex_name_CP, partner_b)) %>%
+  select(-complex_name_CP)
+
+## Add new complexes to complex_input
+complex_new <- anti_join(CC_complex, complex_present) # 29
+
+complex_new <- complex_new %>%
+  select(-complex_name_CP) %>%
+  rename(complex_name = complex_name_CC) %>%
+  separate(uniprot, into = c(paste0("uniprot_", 1:5)), fill = "right", remove = FALSE)
+
+complex_input <- bind_rows(complex_input, complex_new %>% select(complex_name, starts_with("uniprot_"))) %>%
+  mutate(version = ifelse(is.na(version), "CellPhoneDBcore==5a", version))
+
+rm(CC_complex, complex_new, complex_present, CP_complex)
+```
+
+```{r}
+## Extract proteins in complex_input NOT in database
+complex_proteins <- complex_input %>%
+  rowwise() %>%
+  mutate(uniprot = paste(na.omit(c(uniprot_1, uniprot_2, uniprot_3, uniprot_4, uniprot_5)), collapse = "_")) %>%
+  pull(uniprot) %>%
+  paste(collapse = "_") %>%
+  str_split_1(pattern = "_") %>%
+  unique()
+
+new_genes    <- complex_proteins[which(! complex_proteins %in% gene_input$uniprot)]    # 7
+new_proteins <- complex_proteins[which(! complex_proteins %in% protein_input$uniprot)] # 11
+
+gene_add <- data.frame(gene_name   = c("FREM1", "NPNT", "FRAS1", "FREM2", "SMO", "HSP90AA1", "MMP14"),
+                       uniprot = new_genes,
+                       hgnc_symbol = c("FREM1", "NPNT", "FRAS1", "FREM2", "SMO", "HSP90AA1", "MMP14"),
+                       ensembl     = c("ENSG00000164946", "ENSG00000168743", "ENSG00000138759",
+                                       "ENSG00000150893", "ENSG00000128602", "ENSG00000080824",
+                                       "ENSG00000157227"))
+
+protein_add <- data.frame(uniprot = new_proteins,
+                          protein_name = c("FREM1_HUMAN", "NPNT_HUMAN", "FRAS1_HUMAN", "FREM2_HUMAN", "SMO_HUMAN",
+                                           "IL31R_HUMAN", "CNTP1_HUMAN", "CNTN2_HUMAN", "CNTP2_HUMAN", "HS90A_HUMAN",
+                                           "MMP14_HUMAN"))
+```
+
+```{r}
+## Update database with new gene/protein
+gene_input    <- bind_rows(gene_input, gene_add)       # 1813
+protein_input <- bind_rows(protein_input, protein_add) # 1368
+
+rm(new_genes, new_proteins, gene_add, protein_add, complex_proteins)
+
+
+## Checking gene_input table
+genes <- union( interaction_input$partner_a[! grepl("[: _a-z]", interaction_input$partner_a)],
+                interaction_input$partner_b[! grepl("[: _a-z]", interaction_input$partner_b)])
+
+not_included <- setdiff(genes, gene_input$uniprot)
+
+genes.add <- uniprot_syn %>%
+  filter(Entry %in% not_included) %>%
+  select(gene_name = `Gene Names (primary)`, uniprot = Entry, hgnc_symbol = `Gene Names (primary)`)
+
+gene_input <- bind_rows(gene_input, genes.add)
+
+rm(genes, not_included, genes.add)
+```
+
+```{r}
+## Adding changes to protein_input table
+ligand_protein <- interaction_input %>%
+  filter(!is.na(protein_name_a)) %>%
+  select(uniprot = partner_a, protein_name = protein_name_a) %>%
+  distinct()
+
+receptor_protein <- interaction_input %>%
+  filter(!is.na(protein_name_b)) %>%
+  select(uniprot = partner_b, protein_name = protein_name_b) %>%
+  distinct()
+
+CP_protein <- bind_rows(ligand_protein, receptor_protein)
+
+rm(ligand_protein, receptor_protein)
+
+new_protein <- setdiff(CP_protein$uniprot, protein_input$uniprot)
+
+protein_input <- bind_rows(protein_input, CP_protein %>% filter(uniprot %in% new_protein)) %>%
+  distinct()
+```
+
+Aligning gene and protien input with interaction_input
+```{r}
+setdiff(protein_input$uniprot, gene_input$uniprot)    # 0
+setdiff(gene_input$uniprot,    protein_input$uniprot) # 194
+
+new_protein <- setdiff(gene_input$uniprot, protein_input$uniprot)
+
+protein_add <- uniprot_syn %>%
+  filter(Entry %in% new_protein) %>%
+  select(uniprot = Entry, protein_name = `Entry Name`)
+
+setdiff(new_protein, protein_add$uniprot)
+# [1] "HLADRA"  "HLADRB5" "HLADRB1" "HLADQA1" "HLADQB1" "HLADQA2" "HLADQB2" "HLADOB"  "HLADMB"  "HLADMA"  "HLADOA"  "HLADPA1" "HLADPB1"
+
+protein_add2 <- data.frame(uniprot = "P05538",
+                           protein_name = "DQB2_HUMAN")
+
+protein_add <- bind_rows(protein_add, protein_add2)
+
+protein_input <- bind_rows(protein_input, protein_add)
+
+rm(protein_add, protein_add2, new_protein)
+
+setdiff(protein_input$uniprot, gene_input$uniprot)
+# [1] "P05538"
+
+gene_input <- gene_input %>%
+  mutate(uniprot = ifelse(gene_name == "HLA-DQB2", "P05538", uniprot))
+```
+
+Final edit
+```{r}
+interaction_input <- interaction_input %>%
+  mutate(annotation_strategy = ifelse(is.na(annotation_strategy), "user_curated", annotation_strategy))
+
+orig_map <- CPDB %>%
+  mutate(partner = paste(partner_a, partner_b, sep = "|")) %>%
+  select(partner, LR)
+
+cpdb_map <- interaction_input %>%
+  mutate(partner = paste(partner_a, partner_b, sep = "|")) %>%
+  select(partner, LR) %>%
+  left_join(orig_map, by = "partner", suffix = c("_new", "_orig")) %>%
+  mutate(LR_new = ifelse(! is.na(LR_orig), LR_orig, LR_new)) %>%
+  select(partner, LR = LR_new)
+
+save(cpdb_map, file = "data/cpdb_map.rda")
+
+db_map <- full_join(ccdb_map, cpdb_map)
+
+save(db_map, file = "data/db_map.rda")
+
+interaction_input <- interaction_input %>% select(- LR)
+```
+
+Create scpeakerDB for CellPhoneDB analysis - scpeakerDB_CP.zip
+
+```{r, eval = FALSE}
+if (! dir.exists("scpeaker_cp/data")) sapply(c("scpeaker_cp/data", "scpeaker_cp/data/sources"), dir.create, recursive = TRUE)
+
+### Save input files to data dir
+write_csv(interaction_input, file = "scpeaker_cp/data/interaction_input.csv")
+write_csv(gene_input,        file = "scpeaker_cp/data/gene_input.csv")
+write_csv(complex_input,     file = "scpeaker_cp/data/complex_input.csv")
+write_csv(protein_input,     file = "scpeaker_cp/data/protein_input.csv")
+write_csv(transcription_factor_input, file = "scpeaker_cp/data/transcription_factor_input.csv")
+write_tsv(uniprot_syn, file = "scpeaker_cp/data/sources/uniprot_synonyms.tsv")
+
+## Creating customized CPDB
+use_condaenv("scpeaker")
+
+db_create <- import("cellphonedb.utils.db_utils")
+db_create$create_db("scpeaker_cp/data")
+# Created scpeaker_cp/data\cellphonedb_02_02_2026_133643.zip successfully
+
+file.rename(from = "scpeaker_cp/data/cellphonedb_02_02_2026_133643.zip", to = "scpeaker_cp/data/scpeakerDB_CP.zip") # Saved customized CellPhoneDB .zip file to  CCCtools GitHub
+```
+
+```{r, echo = FALSE}
+knitr::knit_exit()
 ```

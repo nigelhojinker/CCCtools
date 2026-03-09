@@ -1,31 +1,39 @@
 ---
 title: "Database harmonization by scpeakeR - Part 1"
-output: rmarkdown::html_vignette
+author: "Ho Jin Ker Nigel, Adaikalavan Ramasamy, Gokce Oguz"
 description: >
-  Database harmonization between CellChatDB.human(v2.2.0) and CellPhoneDB (V5.0)
-vignette: >
-  %\VignetteIndexEntry{Database harmonization by scpeakeR - Part 1}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  Database harmonization between CellChatDB.human(v2.2.0) and CellPhoneDB (V5.0.1)
 date: 2025/12/30
+format: 
+  html:
+    toc: true
+    toc-location: left
+    self-contained: true
+editor: visual
+editor_options: 
+  chunk_output_type: console
+execute:
+  message: false
+  warning: false
 ---
 
 # Introduction
 
 In this document, we outline the database harmonization steps taken to determine the degree of overlap between CellChat and CellPhoneDB, which are listed as:
 
-* Step 1: Converting gene symbols to Uniprot ID format in CellChatDB
-* Step 2: Identifying duplicates, missing or invalid entries in CellChatDB and CellPhoneDB
-* Step 3: Convert complexes in CellPhoneDB to Uniprot ID format
-* Step 4: Sorting protein subunits of complexes in both databases
-* Step 5: Swapping ligand-receptor pairs to identify missed overlaps
-* Step 6: Partial mapping of complexes 
+-   Step 1: Converting gene symbols to Uniprot ID format in CellChatDB
+-   Step 2: Identifying duplicates, missing or invalid entries in CellChatDB and CellPhoneDB
+-   Step 3: Convert complexes in CellPhoneDB to Uniprot ID format
+-   Step 4: Sorting protein subunits of complexes in both databases
+-   Step 5: Swapping ligand-receptor pairs to identify missed overlaps
+-   Step 6: Partial mapping of complexes
 
 Additionally, we describe the process to customize CellChatDB and CellPhoneDB with the revised changes implemented.
 
 # Load required packages and download CellChatDB and CellPhoneDB databases
 
 ## Load required packages
+
 ```{r}
 pacman::p_load(tidyverse, janitor, CellChat)
 setwd(this.path::here())
@@ -52,11 +60,12 @@ join_summarize <- function(db1, db2){
   return(comb %>% distinct(LR, .keep_all = TRUE))
 }
 ```
-NOTE: `join_summarize()` returns a summary table that includes the number of overlapping interactions across two databases, which we define as a match of the ligand|receptor pair, the number of simple ligands and receptors made up of a single gene, as well as the number of overlapping complexes made up of more than one gene. From CellChat (v2) and CellPhoneDB (v5) onward, both packages included **non-protein signaling** interactions in their latest databases. As such, interactions involving non-protein signaling may contain only one gene, should the hormone/molecule be produced by only one enzyme in its biosynthesis.
+
+NOTE: `join_summarize()` returns a summary table that includes the number of overlapping interactions across two databases, which we define as a match of the ligand\|receptor pair, the number of simple ligands and receptors made up of a single gene, as well as the number of overlapping complexes made up of more than one gene. From CellChat (v2) and CellPhoneDB (v5) onward, both packages included **non-protein signaling** interactions in their latest databases. As such, interactions involving non-protein signaling may contain only one gene, should the hormone/molecule be produced by only one enzyme in its biosynthesis.
 
 # STEP 1: Map Gene Symbol to UniProt in CellChatDB
 
-CellChatDB.human (CCDB) defines ligands and receptors using gene symbols, whereas CellPhoneDB (CPDB) defines them using UniProt IDs. To harmonize the two databases, we used the `geneInfo` slot to map CCDB gene symbols to their corresponding UniProt IDs. For example, the gene symbol EGF was converted to P01133. 
+CellChatDB.human (CCDB) defines ligands and receptors using gene symbols, whereas CellPhoneDB (CPDB) defines them using UniProt IDs. To harmonize the two databases, we used the `geneInfo` slot to map CCDB gene symbols to their corresponding UniProt IDs. For example, the gene symbol EGF was converted to P01133.
 
 CellChat version `r pacman::p_version("CellChat")` stores the database within R under `CellChatDB.human`.
 
@@ -65,6 +74,7 @@ pacman::p_version("CellChat")
 ```
 
 ## Prepare CCDB gene-to-uniprot conversion
+
 ```{r}
 # Gene symbol to UniProt mapping
 map <- CellChatDB.human$geneInfo %>% 
@@ -128,9 +138,9 @@ complex <- apply(complex, 1, function(x) paste(na.omit(x), collapse = "_"))
 complex[which(names(complex) %in% example)]
 ```
 
-###  Convert all interaction partners in CCDB to their respective Uniprot ID format
+### Convert all interaction partners in CCDB to their respective Uniprot ID format
 
-CCDB stores all `r nrow(CellChatDB.human$interaction)` interactions within R under `CellChatDB.human$interaction`. 
+CCDB stores all `r nrow(CellChatDB.human$interaction)` interactions within R under `CellChatDB.human$interaction`.
 
 ```{r}
 # Include complex (Uniprot) to map
@@ -191,7 +201,7 @@ rm(step1)
 
 # STEP 2: Addressing duplicated or invalid mappings
 
-## Finding duplicate LR pairs in **CCDB** after gene-to-uniprot conversion
+## Finding duplicate LR pairs in CCDB after gene-to-uniprot conversion
 
 ```{r}
 CC.int %>% count(ligand, receptor) %>% filter(n > 1) # 16
@@ -211,12 +221,14 @@ rm(dups)
 ```
 
 ### Identifying missing/invalid entries of simple genes
+
 ```{r}
 CC.int$interaction_name[which(is.na(CC.int$ligand))] 
 CC.int$interaction_name[which(is.na(CC.int$receptor))] 
 ```
 
-We loaded the [uniprotkb](https://www.uniprot.org/) database of only reviewed Uniprot IDs to identify interaction partners not successfully mapped. 
+We loaded the [uniprotkb](https://www.uniprot.org/) database of only reviewed Uniprot IDs to identify interaction partners not successfully mapped.
+
 ```{r}
 # Load Uniprot Database
 uniprotkb <- read_tsv(url("https://rest.uniprot.org/uniprotkb/stream?download=true&fields=accession%2Cid%2Cprotein_name%2Cgene_names%2Ccc_subcellular_location%2Ccc_pathway%2Clit_pubmed_id%2Cxref_kegg&format=tsv&query=%28*%29+AND+%28reviewed%3Atrue%29+AND+%28model_organism%3A9606%29")) %>% 
@@ -262,14 +274,16 @@ CC.int <- tmp %>%
   rename_with(~ sub("_new", "", .), ends_with("_new"))
 ```
 
-## Finding duplicate LR pairs in **CPDB** after gene-to-uniprot conversion
+## Finding duplicate LR pairs in CPDB after gene-to-uniprot conversion
 
 ### CellPhoneDB does not have any duplicated interactions at this stage
-```{r} 
+
+```{r}
 CPDB.int %>% count(ligand, receptor) %>% filter(n > 1) # 0 
 ```
 
 ### Checking for invalid entries
+
 ```{r}
 CPDB.int %>% filter(! complex_ligand,   ! ligand %in% uniprotkb$entry)   %>% pull(ligand)   # ligand: HLAA, HLAB, HLAC, IFNA1 not uniprot ID format 
 CPDB.int %>% filter(! complex_receptor, ! receptor %in% uniprotkb$entry) %>% pull(receptor) # receptor: no invalid uniprot IDs
@@ -291,7 +305,7 @@ step2 <- join_summarize(CC.int, CPDB.int)
 rm(diff, tmp, step2)
 ```
 
-**After Step 2 of Database Harmonization, we observed that there was a slight increase in the number of overlapping interactions (585 to 591) across CCDB and CPDB.** 
+**After Step 2 of Database Harmonization, we observed that there was a slight increase in the number of overlapping interactions (585 to 591) across CCDB and CPDB.**
 
 # STEP 3: Change nomenclature for CellPhoneDB
 
@@ -339,6 +353,7 @@ rm(complex, step3)
 We observed that some complexes in CCDB and CPDB contained the same protein subunits, but the order in which they were tabulated differed:
 
 ### Examples
+
 ```{r}
 CC.int %>% filter(ligand_name == "IL27 complex") %>% pull(ligand)
 CPDB.int %>% filter(partner_a == "IL27") %>% pull(ligand)
@@ -367,6 +382,7 @@ tmp <- join_summarize(CPDB.int, CPDB.int)
 ```
 
 As indicated in the warning above, we observed duplicated complex keys after sorting subunits in CPDB:
+
 ```{r}
 dups <- CPDB.int %>% 
   count(ligand, receptor) %>% 
@@ -398,7 +414,7 @@ step4 <- join_summarize(CC.int, CPDB.int)
 
 # STEP 5: Swap partners for unmatched CPDB
 
-Apart from internally standardizing the order of protein subunits within complexes, the order of the interaction partners affected the number of overlapping interactions as well. Since we defined interactions as ligand|receptor pair, we identified cases where interactions in **CCDB** were arranged as "ligandA|receptorB", while the same interaction was arranged as "receptorB|ligandA" in **CPDB**. This is often the case for cell-contact interactions, where directionality is inconsequential. 
+Apart from internally standardizing the order of protein subunits within complexes, the order of the interaction partners affected the number of overlapping interactions as well. Since we defined interactions as ligand\|receptor pair, we identified cases where interactions in **CCDB** were arranged as "ligand_A\|receptor_B", while the same interaction was arranged as "receptor_B\|ligand_A" in **CPDB**. This is often the case for cell-contact interactions, where directionality is inconsequential.
 
 We first extracted the interactions which did not overlapped in Step 4, and swapped the interaction partners for those unmatched interactions:
 
@@ -437,11 +453,11 @@ After swapping the interaction partners of the unmatched interactions only, we o
 flip <- step5 %>% 
   filter(LR %in% setdiff(step5$LR, step4$LR)) 
 ```
-  
+
 All swapped interactions were in the "Cell-Cell Contact" category which validates our approach.
 
 ```{r}
-flip %>% tabyl(annotation) ## all are Cell-Cell Contact
+flip %>% tabyl(annotation) # all are Cell-Cell Contact
 ```
 
 We now implement the swap to the original CPDB
@@ -467,12 +483,13 @@ CPDB.int$flip_LR <- NULL
 rm(CPDB.int2, flip, found, to_flip, to_swap, step4, step5)
 ```
 
-# STEP6: Addressing partial matches
+# STEP 6: Addressing partial matches
 
 Within the complex database in both tools, we observed instances of complexes having the similar names but differ in their subunits.
 
-```{r}
 ## CCDB complex
+
+```{r}
 CC.complex <- CellChatDB.human$complex %>% 
   rownames_to_column("CellChat_complex") %>% 
   select(CellChat_complex) %>% 
@@ -482,8 +499,11 @@ CC.complex <- CellChatDB.human$complex %>%
   mutate(CellChat_uniprot = ifelse(is.na(ligand), receptor, ligand)) %>% 
   select(-ligand, -receptor) %>% 
   filter(!is.na(CellChat_uniprot)) # some complexes have NAs for subunits
-  
+```
+
 ## CPDB complex
+
+```{r}
 CPDB.complex <- read_csv(url(file.path(basepath, "complex_input.csv"))) %>% 
   select(CellPhoneDB_complex = complex_name) %>% 
   left_join(CPDB.int %>% select(partner_a, ligand),   by = c("CellPhoneDB_complex" = "partner_a")) %>% 
@@ -491,7 +511,9 @@ CPDB.complex <- read_csv(url(file.path(basepath, "complex_input.csv"))) %>%
   distinct() %>% 
   mutate(CellPhoneDB_uniprot = ifelse(is.na(ligand), receptor, ligand)) %>% 
   select(-ligand, -receptor)
+```
 
+```{r}
 found <- CC.complex %>% 
   inner_join(CPDB.complex, by = c("CellChat_uniprot" = "CellPhoneDB_uniprot"))
 
@@ -506,11 +528,11 @@ rm(CC.complex, CPDB.complex, found)
 
 To identify partial matches, we calculated the jaccard index of the complex subunit composition in both databases, defining a partial match as complexes with a jaccard index more than or equal to 0.50.
 
-$$ Jaccard Index = (number of identical subunits) / (total number of shared subunits) $$
-Suppose we have a complexes made up of subunitA_subunitB in CCDB and another similar complexes made up of subunitA_subunitB_subunitC. The pairwise jaccard index for these two complexes will be 0.667 (3 d.p.) since they both share subunits A and B, and the number of unique subunits is 3 (subunits A, B and C).
+$$ Jaccard Index = (number of identical subunits) / (total number of shared subunits) $$ Suppose we have a complexes made up of subunitA_subunitB in CCDB and another similar complexes made up of subunitA_subunitB_subunitC. The pairwise jaccard index for these two complexes will be 0.667 (3 d.p.) since they both share subunits A and B, and the number of unique subunits is 3 (subunits A, B and C).
+
+## Finding potential overlapping subunits in complexes across both databases
 
 ```{r}
-# Finding potential overlapping subunits in complexes across both databases
 find_jaccard_index <- function(x, y){
   
   x <- str_split_1(x, pattern = "_")
@@ -538,7 +560,8 @@ rm(CC.only, CPDB.only)
 
 ```
 
-Proposing a new complex name for the partially matched complexes
+## Proposing a new complex name for the partially matched complexes
+
 ```{r}
 partial.match <- partial.match %>% mutate(proposed_name = c("P00352", "P28329_Q96EP9", "P14784_P31785_Q13261", 
                                                             "O60896_Q16602_Q99527", "P36897_P37173_Q04771", "P07359_P13224_P14770_P40197"))
@@ -546,10 +569,11 @@ partial.match <- partial.match %>% mutate(proposed_name = c("P00352", "P28329_Q9
 partial.match
 ```
 
-### Changing to proposed names in respective databases
+## Changing to proposed names in respective databases
+
+### CellChatDB
 
 ```{r}
-# CellChatDB
 CC.int <- CC.int %>% 
   left_join(partial.match %>% select(CellChat_uniprot, proposed_name), by = c("ligand" = "CellChat_uniprot")) %>% 
   mutate(ligand = ifelse(!is.na(proposed_name), proposed_name, ligand)) %>% 
@@ -558,8 +582,12 @@ CC.int <- CC.int %>%
   mutate(receptor = ifelse(!is.na(proposed_name), proposed_name, receptor),
          LR = paste(ligand, receptor, sep = "|")) %>% 
   select(-proposed_name) 
+```
 
-# CellPhoneDB
+### CellPhoneDB
+
+```{r}
+
 CPDB.int <- CPDB.int %>% 
   left_join(partial.match %>% select(CellPhoneDB_uniprot, proposed_name), by = c("ligand" = "CellPhoneDB_uniprot")) %>% 
   mutate(ligand = ifelse(!is.na(proposed_name), proposed_name, ligand)) %>% 

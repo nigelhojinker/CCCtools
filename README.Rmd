@@ -64,14 +64,14 @@ seu.NL
 
 ## Functions
 
-In **scpeakeR**, we provide the functions `run_cellchat()` and `run_cellphonedb()` for users to perform CellChat and CellPhoneDB (method 2) analysis directly on their processed Seurat object. 
+In **scpeakeR**, we provide the `scpeaker()` function to perform CellChat and CellPhoneDB (method 2) analysis directly on their processed Seurat object. 
 
 Please refer to the following links to the documentations on running these tools on your dataset:
 
 - [Running CellChat on Seurat object](https://github.com/nigelhojinker/scpeakeR/blob/main/data-raw/Run_CellChat.md)
 - [Running CellPhoneDB on Seurat object](https://github.com/nigelhojinker/scpeakeR/blob/main/data-raw/Run_CellPhoneDB.md)
 
-After running BOTH CellChat and CellPhoneDB analysis, we provide the `crosscheck()` function to compare the results of both CCC tools and rank the interactions based on the significance testing conducted. Please refer to the link below on how to compare CellChat and CellPhoneDB results on your dataset:
+After running BOTH CellChat and CellPhoneDB analysis, we provide the `crosscheck()` function to compare the results of both CCC tools and classify the interactions based on the significance testing conducted. Please refer to the link below on how to compare CellChat and CellPhoneDB results on your dataset:
 
 - [Comparing CellChat and CellPhoneDB results](https://github.com/nigelhojinker/scpeakeR/blob/main/data-raw/Crosscheck.md)
 
@@ -79,6 +79,6 @@ After running BOTH CellChat and CellPhoneDB analysis, we provide the `crosscheck
 
 In order to identify interactions that map to CellChat and/or CellPhoneDB, the ligand-receptor pair involved have to share a common notation. We convert all gene and complex names to uniprot IDs for unbiased and clear identification of the interacting partners, and used that uniprot-based identifier to compare interactions from both CCC tools.
 
-Users may view this [webpage](https://cellphonedb-cellchatdb-mapping.vercel.app/) for full details on the harmonization process used to map interactions across both databases.
+Users may view this [webpage](https://webpages-nigelhojinkers-projects.vercel.app/) for full details on the harmonization process used to map interactions across both databases.
 
-After we harmonized both databases, we compiled all unique interactions from both CellChat and CellPhoneDB which we coined **scpeakerDB**, which contains 3,904 interactions. By default, scpeakerDB is the database used for all cell-cell communication inference in this package. However, we provide users with the flexible to run their analysis with CellChat/CellPhoneDB-only interactions. 
+After we harmonized both databases, we compiled all unique interactions from both CellChat and CellPhoneDB which we coined **scpeakerDB**, which contains 3,901 interactions. By default, scpeakerDB is the database used for all cell-cell communication inference in this package. However, we provide users with the flexible to run their analysis with CellChat/CellPhoneDB-only interactions. 

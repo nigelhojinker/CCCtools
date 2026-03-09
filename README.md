@@ -52,17 +52,11 @@ generated](data-raw/demo_data.md).
 
 ``` r
 pacman::p_load_gh("nigelhojinker/scpeakeR")
-#> Warning in p_install_gh(package, dependencies, ...): The following may have incorrect capitalization specification:
-#> 
-#> scpeakeR
-#> Warning in pacman::p_load_gh("nigelhojinker/scpeakeR"): 
-#> Failed to install/load:
-#> nigelhojinker/scpeakeR
+#> systemfonts and textshaping have been compiled with different versions of Freetype. Because of this, textshaping will not use the font cache provided by systemfonts
 
 data(seu.NL)
 
 seu.NL
-#> Loading required namespace: SeuratObject
 #> An object of class Seurat 
 #> 10353 features across 2233 samples within 1 assay 
 #> Active assay: RNA (10353 features, 0 variable features)
@@ -71,9 +65,9 @@ seu.NL
 
 ## Functions
 
-In **scpeakeR**, we provide the functions `run_cellchat()` and
-`run_cellphonedb()` for users to perform CellChat and CellPhoneDB
-(method 2) analysis directly on their processed Seurat object.
+In **scpeakeR**, we provide the `scpeaker()` function to perform
+CellChat and CellPhoneDB (method 2) analysis directly on their processed
+Seurat object.
 
 Please refer to the following links to the documentations on running
 these tools on your dataset:
@@ -85,7 +79,7 @@ these tools on your dataset:
 
 After running BOTH CellChat and CellPhoneDB analysis, we provide the
 `crosscheck()` function to compare the results of both CCC tools and
-rank the interactions based on the significance testing conducted.
+classify the interactions based on the significance testing conducted.
 Please refer to the link below on how to compare CellChat and
 CellPhoneDB results on your dataset:
 
@@ -102,13 +96,13 @@ that uniprot-based identifier to compare interactions from both CCC
 tools.
 
 Users may view this
-[webpage](https://cellphonedb-cellchatdb-mapping.vercel.app/) for full
+[webpage](https://webpages-nigelhojinkers-projects.vercel.app/) for full
 details on the harmonization process used to map interactions across
 both databases.
 
 After we harmonized both databases, we compiled all unique interactions
 from both CellChat and CellPhoneDB which we coined **scpeakerDB**, which
-contains 3,904 interactions. By default, scpeakerDB is the database used
+contains 3,901 interactions. By default, scpeakerDB is the database used
 for all cell-cell communication inference in this package. However, we
 provide users with the flexible to run their analysis with
 CellChat/CellPhoneDB-only interactions.
