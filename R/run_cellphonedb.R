@@ -117,7 +117,7 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, type = NULL, database = N
     column_to_rownames("barcode")
 
   ## Create AnnData object
-  adata <- ad$AnnData(X = t(normcounts), obs = barcode, var = genes)
+  adata <- ad$AnnData(X = Matrix::t(normcounts), obs = barcode, var = genes)
   adata$write_h5ad(file.path(prefix, "input.h5ad"))
 
   cat("input.h5ad file created and saved to:", prefix, "\n")
