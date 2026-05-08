@@ -102,7 +102,11 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, type = NULL, database = N
 
   cat("input_meta.tsv file created and saved to:", prefix, "\n")
 
-  normcounts <- obj[["RNA"]]$data
+  normcounts <- GetAssayData(
+    obj,
+    assay = "RNA",
+    layer = "data"
+  )
 
   stopifnot(identical(meta$barcode, colnames(normcounts)))
 
