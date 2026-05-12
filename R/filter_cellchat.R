@@ -10,8 +10,8 @@
 #' @examples
 #' \dontrun{
 #' ## After setting up conda env
-#' cpdb <- run_cellphonedb(seurat.obj, ...)
-#' cellchat <- run_cellchat(seurat.obj, ...)
+#' cpdb     <- scpeaker(seurat_obj, method = "cellphonedb", ...)
+#' cellchat <- scpeajer(seurat_obj, method = "cellchat",    ...)
 #'
 #' combine <- crosscheck(cellchat = cellchat, cellphonedb = cpdb)
 #'
@@ -31,16 +31,31 @@ filter_cellchat <- function(cellchat, crosscheck_res, category = c("Sig_Both", "
 
   cat("Filtering interactions in category:", var, "\n")
 
+  prob <- cellchat@net$prob
+  pval <- cellchat@net$pval
+
   to_keep <- crosscheck_res$result %>%
     filter(category == var) %>%
-    pull(interaction_name) %>%
-    unique()
+    select(source = source_cc, target = target_cc, interaction = interaction_name)
+
+  keep_mask <- array(
+    FALSE,
+    dim = dim(prob),
+    dimnames = dimnames(prob)
+  )
+
+  for (i in seq_len(nrow(to_keep))) {
+    source      <- to_keep$source[i]
+    target      <- to_keep$target[i]
+    interaction <- to_keep$interaction[i]
+
+    keep_mask[source, target, interaction] <- TRUE
+  }
 
   cellchat.new <- cellchat
-  cellchat.new@net$prob <- cellchat@net$prob[,, to_keep]
-  cellchat.new@net$pval <- cellchat@net$pval[,, to_keep]
-  cellchat.new@LR$LRsig <- cellchat@LR$LRsig %>%
-    filter(interaction_name %in% to_keep)
+
+  cellchat.new@net$prob[!(keep_mask)] <- 0
+  cellchat.new@net$pval[!(keep_mask)] <- 1
 
   cellchat.new <- computeCommunProbPathway(cellchat.new)
   cellchat.new <- aggregateNet(cellchat.new)
