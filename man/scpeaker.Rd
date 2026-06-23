@@ -34,6 +34,7 @@ scpeaker(
   Kh = 0.5,
   n = 1,
   min.cells = 10,
+  fast.mode = TRUE,
   use_dir = NULL,
   ...,
   counts_data = "hgnc_symbol",
@@ -64,47 +65,49 @@ scpeaker(
 
 \item{subsetDB}{set to TRUE if filtering scpeakerDB (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)}
 
-\item{search}{taken from CellChat package, run help(subsetDB) for details}
+\item{search}{Taken from CellChat package, run help(subsetDB) for details}
 
-\item{key}{taken from CellChat package, run help(subsetDB) for details}
+\item{key}{Taken from CellChat package, run help(subsetDB) for details}
 
-\item{non_protein}{taken from CellChat package, run help(subsetDB) for details}
+\item{non_protein}{Taken from CellChat package, run help(subsetDB) for details}
 
-\item{threshold}{taken from CellChat package and replaces "trim" argument, run help(computeCommunProb) for details}
+\item{threshold}{Taken from CellChat package and replaces "trim" argument, run help(computeCommunProb) for details}
 
-\item{LR.use}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{LR.use}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{raw.use}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{raw.use}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{population.size}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{population.size}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{distance.use}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{distance.use}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{interaction.range}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{interaction.range}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{scale.distance}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{scale.distance}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{k.min}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{k.min}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{contact.dependent}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{contact.dependent}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{contact.range}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{contact.range}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{contact.knn.k}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{contact.knn.k}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{contact.dependent.forced}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{contact.dependent.forced}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{do.symmetric}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{do.symmetric}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{nboot}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{nboot}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{seed.use}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{seed.use}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{Kh}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{Kh}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{n}{taken from CellChat package, run help(computeCommunProb) for details}
+\item{n}{Taken from CellChat package, run help(computeCommunProb) for details}
 
-\item{min.cells}{taken from CellChat package, run help(filterCommunication) for details}
+\item{min.cells}{Taken from CellChat package, run help(filterCommunication) for details}
+
+\item{fast.mode}{This argument only applies to CellChat analyses in the current version. It runs C++ version of computing average gene expression to increase computation speed without changes to prob and pval scores (default: TRUE)}
 
 \item{use_dir}{Input files required to run CellPhoneDB and the output files from the analysis are created and saved to a temp file (default). Should users desire to have these files be stored in their personal directories, they may input their filepath to this argument.}
 
