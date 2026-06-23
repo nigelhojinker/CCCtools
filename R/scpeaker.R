@@ -16,27 +16,28 @@
 #'
 #' @param assay RNA assay by default
 #' @param subsetDB set to TRUE if filtering scpeakerDB (default = FALSE). If TRUE, use search, key and non_protein arguments as in help(subsetDB)
-#' @param search taken from CellChat package, run help(subsetDB) for details
-#' @param key taken from CellChat package, run help(subsetDB) for details
-#' @param non_protein taken from CellChat package, run help(subsetDB) for details
-#' @param threshold taken from CellChat package and replaces "trim" argument, run help(computeCommunProb) for details
-#' @param LR.use taken from CellChat package, run help(computeCommunProb) for details
-#' @param raw.use taken from CellChat package, run help(computeCommunProb) for details
-#' @param population.size taken from CellChat package, run help(computeCommunProb) for details
-#' @param distance.use taken from CellChat package, run help(computeCommunProb) for details
-#' @param interaction.range taken from CellChat package, run help(computeCommunProb) for details
-#' @param scale.distance taken from CellChat package, run help(computeCommunProb) for details
-#' @param k.min taken from CellChat package, run help(computeCommunProb) for details
-#' @param contact.dependent taken from CellChat package, run help(computeCommunProb) for details
-#' @param contact.range taken from CellChat package, run help(computeCommunProb) for details
-#' @param contact.knn.k taken from CellChat package, run help(computeCommunProb) for details
-#' @param contact.dependent.forced taken from CellChat package, run help(computeCommunProb) for details
-#' @param do.symmetric taken from CellChat package, run help(computeCommunProb) for details
-#' @param nboot taken from CellChat package, run help(computeCommunProb) for details
-#' @param seed.use taken from CellChat package, run help(computeCommunProb) for details
-#' @param Kh taken from CellChat package, run help(computeCommunProb) for details
-#' @param n taken from CellChat package, run help(computeCommunProb) for details
-#' @param min.cells taken from CellChat package, run help(filterCommunication) for details
+#' @param search Taken from CellChat package, run help(subsetDB) for details
+#' @param key Taken from CellChat package, run help(subsetDB) for details
+#' @param non_protein Taken from CellChat package, run help(subsetDB) for details
+#' @param threshold Taken from CellChat package and replaces "trim" argument, run help(computeCommunProb) for details
+#' @param LR.use Taken from CellChat package, run help(computeCommunProb) for details
+#' @param raw.use Taken from CellChat package, run help(computeCommunProb) for details
+#' @param population.size Taken from CellChat package, run help(computeCommunProb) for details
+#' @param distance.use Taken from CellChat package, run help(computeCommunProb) for details
+#' @param interaction.range Taken from CellChat package, run help(computeCommunProb) for details
+#' @param scale.distance Taken from CellChat package, run help(computeCommunProb) for details
+#' @param k.min Taken from CellChat package, run help(computeCommunProb) for details
+#' @param contact.dependent Taken from CellChat package, run help(computeCommunProb) for details
+#' @param contact.range Taken from CellChat package, run help(computeCommunProb) for details
+#' @param contact.knn.k Taken from CellChat package, run help(computeCommunProb) for details
+#' @param contact.dependent.forced Taken from CellChat package, run help(computeCommunProb) for details
+#' @param do.symmetric Taken from CellChat package, run help(computeCommunProb) for details
+#' @param nboot Taken from CellChat package, run help(computeCommunProb) for details
+#' @param seed.use Taken from CellChat package, run help(computeCommunProb) for details
+#' @param Kh Taken from CellChat package, run help(computeCommunProb) for details
+#' @param n Taken from CellChat package, run help(computeCommunProb) for details
+#' @param min.cells Taken from CellChat package, run help(filterCommunication) for details
+#' @param fast.mode This argument only applies to CellChat analyses in the current version. It runs C++ version of computing average gene expression to increase computation speed without changes to prob and pval scores (default: TRUE)
 #'
 #' @section CellPhoneDB arguments:
 #'
@@ -69,7 +70,7 @@ scpeaker <- function(obj, labels, method = c("cellchat", "cellphonedb"), databas
                      threshold = 0.1, LR.use = NULL, raw.use = TRUE, population.size = FALSE, distance.use = TRUE,
                      interaction.range = 250, scale.distance = 0.01, k.min = 10, contact.dependent = TRUE,
                      contact.range = NULL, contact.knn.k = NULL, contact.dependent.forced = FALSE,
-                     do.symmetric = TRUE, nboot = 100, seed.use = 1L, Kh = 0.5, n = 1, min.cells = 10,
+                     do.symmetric = TRUE, nboot = 100, seed.use = 1L, Kh = 0.5, n = 1, min.cells = 10, fast.mode = TRUE,
                      use_dir = NULL, ..., counts_data = "hgnc_symbol", active_tfs_file_path = NULL, microenvs_file_path = NULL,
                      score_interactions = FALSE, subsampling = FALSE,
                      subsampling_log = FALSE, separator = "|", debug = FALSE, output_suffix = NULL) {
@@ -86,13 +87,26 @@ scpeaker <- function(obj, labels, method = c("cellchat", "cellphonedb"), databas
   type <- match.arg(type)
 
   if (method == "cellchat"){
-    return(run_cellchat(obj, labels = labels, assay = assay, database = database,
-                        subsetDB = subsetDB, search = search, key = key, non_protein = non_protein, type = type, threshold = threshold,
-                        LR.use = LR.use, raw.use = raw.use, population.size = population.size, distance.use = distance.use,
-                        interaction.range = interaction.range, scale.distance = scale.distance, k.min = k.min,
-                        contact.dependent = contact.dependent, contact.range = contact.range, contact.knn.k = contact.knn.k,
-                        contact.dependent.forced = contact.dependent.forced, do.symmetric = do.symmetric, nboot = nboot,
-                        seed.use = seed.use, Kh = Kh, n = n, min.cells = min.cells))
+    if (fast.mode){
+      # Rcpp compiled functions
+      Rcpp::sourceCpp(file.path(pacman::p_path("scpeakeR"), "data/fast_group_summary.cpp"))
+
+      return(run_cellchat_fast(obj, labels = labels, assay = assay, database = database,
+                          subsetDB = subsetDB, search = search, key = key, non_protein = non_protein, type = type, threshold = threshold,
+                          LR.use = LR.use, raw.use = raw.use, population.size = population.size, distance.use = distance.use,
+                          interaction.range = interaction.range, scale.distance = scale.distance, k.min = k.min,
+                          contact.dependent = contact.dependent, contact.range = contact.range, contact.knn.k = contact.knn.k,
+                          contact.dependent.forced = contact.dependent.forced, do.symmetric = do.symmetric, nboot = nboot,
+                          seed.use = seed.use, Kh = Kh, n = n, min.cells = min.cells))
+    } else {
+      return(run_cellchat(obj, labels = labels, assay = assay, database = database,
+                          subsetDB = subsetDB, search = search, key = key, non_protein = non_protein, type = type, threshold = threshold,
+                          LR.use = LR.use, raw.use = raw.use, population.size = population.size, distance.use = distance.use,
+                          interaction.range = interaction.range, scale.distance = scale.distance, k.min = k.min,
+                          contact.dependent = contact.dependent, contact.range = contact.range, contact.knn.k = contact.knn.k,
+                          contact.dependent.forced = contact.dependent.forced, do.symmetric = do.symmetric, nboot = nboot,
+                          seed.use = seed.use, Kh = Kh, n = n, min.cells = min.cells))
+    }
   } else if (method == "cellphonedb") {
     return(run_cellphonedb(obj = obj, labels = labels, type = type, database =database, use_dir = use_dir, ...,
                            counts_data = counts_data, active_tfs_file_path = active_tfs_file_path,
