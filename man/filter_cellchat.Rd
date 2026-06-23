@@ -28,8 +28,8 @@ Subsetting CellChat object to contain interactions significant in both CCC tools
 \examples{
 \dontrun{
 ## After setting up conda env
-cpdb <- run_cellphonedb(seurat.obj, ...)
-cellchat <- run_cellchat(seurat.obj, ...)
+cpdb     <- scpeaker(seurat_obj, method = "cellphonedb", ...)
+cellchat <- scpeajer(seurat_obj, method = "cellchat",    ...)
 
 combine <- crosscheck(cellchat = cellchat, cellphonedb = cpdb)
 
