@@ -19,7 +19,7 @@ execute:
 
 # Creating scpeakeRDB
 
-In this document, we outline the process undergone to develop scpeakeRDB, first by identifying interactions not present in each of the databases. We then manually input the mandatory fields required for each package before constructing the databases in a format compatible with their original tools. If you have not viewed "Database customisation by scpeakeR - Part 2", you may refer [here](Database_harmonization_part2.html). To read "Database harmonisation by scpeakeR - Part 1", you may visit the link [here](Database_harmonization_part1.html).
+In this document, we outline the process undergone to develop scpeakeRDB, first by identifying interactions not present in each of the databases. We then manually input the mandatory fields required for each package before constructing the databases in a format compatible with their original tools. If you have not viewed "Database customisation by scpeakeR - Part 2", you may refer [here](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part2.html). To read "Database harmonisation by scpeakeR - Part 1", you may visit the link [here](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part1.html).
 
 ## Load required packages & databases
 

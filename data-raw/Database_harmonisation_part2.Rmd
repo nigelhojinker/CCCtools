@@ -19,7 +19,7 @@ execute:
 
 # Customising CCDB and CPDB
 
-In this document, we implement the corrections identified in "Database harmonisation by scpeakeR - Part 1". If you have not read Part 1, you may proceed to that document [here](Database_harmonization_part1.html).
+In this document, we implement the corrections identified in "Database harmonisation by scpeakeR - Part 1". If you have not read Part 1, you may proceed to that document [here](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part1.html).
 
 ## Load required packages
 
@@ -337,4 +337,4 @@ save(CCDB, file = "data/CCDB.rda")
 save(CPDB, file = "data/CPDB.rda")
 ```
 
-This concludes the process performed in **Part 2** of the Database customisation conducted. In **Part 3**, we outline the full convergence of the harmonized databases, providing users with a single merged database comprising of interactions from both CellChat and CellPhoneDB. You may refer to **Part 3** [here](Database_harmonization_part3.html).
+This concludes the process performed in **Part 2** of the Database customisation conducted. In **Part 3**, we outline the full convergence of the harmonized databases, providing users with a single merged database comprising of interactions from both CellChat and CellPhoneDB. You may refer to **Part 3** [here](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part3.html).
