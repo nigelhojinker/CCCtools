@@ -106,11 +106,12 @@ CellChat and CellPhoneDB, to the final creation of scpeakerDB, you may
 visit the links below:
 
 - [Aligning CellChat and CellPhoneDB interaction databases - Part
-  1](data-raw/Database_harmonisation_part1.html)
+  1](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part1.html)
 - [Implementing changes reconstructing CellChatDB.human and CellPhoneDB
-  database - Part 2](data-raw/Database_harmonisation_part2.html)
+  database - Part
+  2](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part2.html)
 - [Creating scpeakerDB after database harmonisation - Part
-  3](data-raw/Database_harmonisation_part3.html)
+  3](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part3.html)
 
 # Final notes
 
