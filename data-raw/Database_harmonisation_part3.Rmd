@@ -19,11 +19,11 @@ execute:
 
 # Creating scpeakeRDB
 
-In this document, we outline the process undergone to develop scpeakeRDB, first by identifying interactions not present in each of the databases. We then manually input the mandatory fields required for each package before constructing the databases in a format compatible with their original tools. If you have not viewed "Database customization by scpeakeR - Part 2", you may refer [here](Database_harmonization_part2.html). To read "Database harmonization by scpeakeR - Part 1", you may visit the link [here](Database_harmonization_part1.html).
+In this document, we outline the process undergone to develop scpeakeRDB, first by identifying interactions not present in each of the databases. We then manually input the mandatory fields required for each package before constructing the databases in a format compatible with their original tools. If you have not viewed "Database customisation by scpeakeR - Part 2", you may refer [here](Database_harmonization_part2.html). To read "Database harmonisation by scpeakeR - Part 1", you may visit the link [here](Database_harmonization_part1.html).
 
 ## Load required packages & databases
 
-We first load the package dependencies and the two curated source databases used throughout this harmonization workflow. Clearing the workspace helps ensure that subsequent objects are created only from the inputs shown in this document.
+We first load the package dependencies and the two curated source databases used throughout this harmonisation workflow. Clearing the workspace helps ensure that subsequent objects are created only from the inputs shown in this document.
 
 ```{r}
 pacman::p_load(scpeakeR)
@@ -182,7 +182,7 @@ Now all CellPhoneDB interactions have a pathway_name and a pathway annotation. W
 data(CellChatDB.human.new)
 ```
 
-The customized CellChat object from Part 2 is separated into its component tables so that each part can be updated independently.
+The customised CellChat object from Part 2 is separated into its component tables so that each part can be updated independently.
 
 ```{r}
 interaction_input <- CellChatDB.human.new$interaction
@@ -384,7 +384,7 @@ rm(CPDB.only, interaction_input, complex, geneInfo, cofactor, new_complex, map, 
 
 Now, we curated the scpeakeRDB in zip format that is CellPhoneDB-compatible.
 
-Load the revised CellPhoneDB from Part 2 (`cellphonedb.zip`) input tables for customization:
+Load the revised CellPhoneDB from Part 2 (`cellphonedb.zip`) input tables for customisation:
 
 ```{r, eval = FALSE}
 interaction_input <- read_csv("../data/interaction_input.csv")
@@ -708,14 +708,12 @@ write_csv(protein_input,     file = "scpeaker_cp/data/protein_input.csv")
 write_csv(transcription_factor_input, file = "scpeaker_cp/data/transcription_factor_input.csv")
 write_tsv(uniprot_syn, file = "scpeaker_cp/data/sources/uniprot_synonyms.tsv")
 
-# Creating customized CPDB
+# Creating customised CPDB
 use_condaenv("scpeaker")
 
 db_create <- import("cellphonedb.utils.db_utils")
 db_create$create_db("scpeaker_cp/data")
 # Created scpeaker_cp/data\cellphonedb_02_02_2026_133643.zip successfully
 
-file.rename(from = "scpeaker_cp/data/cellphonedb_02_02_2026_133643.zip", to = "scpeaker_cp/data/scpeakerDB_CP.zip") # Saved customized CellPhoneDB .zip file to  CCCtools GitHub
+file.rename(from = "scpeaker_cp/data/cellphonedb_02_02_2026_133643.zip", to = "scpeaker_cp/data/scpeakerDB_CP.zip") # Saved customised CellPhoneDB .zip file to  CCCtools GitHub
 ```
-
-

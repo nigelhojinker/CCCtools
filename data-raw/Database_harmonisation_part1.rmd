@@ -1,8 +1,8 @@
 ---
-title: "Database harmonization by scpeakeR - Part 1"
+title: "Database harmonisation by scpeakeR - Part 1"
 author: "Ho Jin Ker Nigel, Adaikalavan Ramasamy, Gokce Oguz"
 description: >
-  Database harmonization between CellChatDB.human(v2.2.0) and CellPhoneDB (V5.0.1)
+  Database harmonisation between CellChatDB.human(v2.2.0) and CellPhoneDB (V5.0.1)
 date: 2025/12/30
 format: 
   html:
@@ -19,7 +19,7 @@ execute:
 
 # Introduction
 
-In this document, we outline the database harmonization steps taken to determine the degree of overlap between CellChat and CellPhoneDB, which are listed as:
+In this document, we outline the database harmonisation steps taken to determine the degree of overlap between CellChat and CellPhoneDB, which are listed as:
 
 -   Step 1: Converting gene symbols to Uniprot ID format in CellChatDB
 -   Step 2: Identifying duplicates, missing or invalid entries in CellChatDB and CellPhoneDB
@@ -197,7 +197,7 @@ step1 <- join_summarize(CC.int, CPDB.int)
 rm(step1)
 ```
 
-After Step 1 of Database Harmonization, we observed that there were only 585 overlapping interactions across CCDB and CPDB. As expected, no complex interaction partners across both databases overlapped since CPDB complexes were not converted to Uniprot IDs in this step.
+After Step 1 of Database harmonisation, we observed that there were only 585 overlapping interactions across CCDB and CPDB. As expected, no complex interaction partners across both databases overlapped since CPDB complexes were not converted to Uniprot IDs in this step.
 
 # STEP 2: Addressing duplicated or invalid mappings
 
@@ -323,7 +323,7 @@ step2 <- join_summarize(CC.int, CPDB.int)
 rm(diff, tmp, step2)
 ```
 
-After Step 2 of Database Harmonization, we observed that there was a slight increase in the number of overlapping interactions (585 to 591) across CCDB and CPDB.
+After Step 2 of Database harmonisation, we observed that there was a slight increase in the number of overlapping interactions (585 to 591) across CCDB and CPDB.
 
 # STEP 3: Change nomenclature for CellPhoneDB
 
@@ -546,8 +546,7 @@ rm(CC.complex, CPDB.complex, found)
 
 To identify partial matches, we calculated the jaccard index of the complex subunit composition in both databases, defining a partial match as complexes with a jaccard index more than or equal to 0.50.
 
-$$ Jaccard\ Index = (number\ of\ identical\ subunits)\ /\ (total\ number\ of\ shared\ subunits) $$ 
-Suppose we have a complexes made up of subunitA_subunitB in CCDB and another similar complexes made up of subunitA_subunitB_subunitC. The pairwise jaccard index for these two complexes will be 0.667 (3 d.p.) since they both share subunits A and B, and the number of unique subunits is 3 (subunits A, B and C).
+$$ Jaccard\ Index = (number\ of\ identical\ subunits)\ /\ (total\ number\ of\ shared\ subunits) $$ Suppose we have a complexes made up of subunitA_subunitB in CCDB and another similar complexes made up of subunitA_subunitB_subunitC. The pairwise jaccard index for these two complexes will be 0.667 (3 d.p.) since they both share subunits A and B, and the number of unique subunits is 3 (subunits A, B and C).
 
 ## Finding potential overlapping subunits in complexes across both databases
 
@@ -641,4 +640,4 @@ Finally, we have a overlap of **2,239** interactions across CCDB and CPDB:
 ggvenn::ggvenn(list(CellChat = CC.int$LR, CellPhoneDB = CPDB.int$LR))
 ```
 
-This concludes the process performed in **Part 1** of the Database Harmonization conducted. In **Part 2**, we outline the customization of the CellChatDB and CellPhoneDB with the proposed changes above. You may refer to **Part 2** [here](Database_harmonization_part2.html).
+This concludes the process performed in **Part 1** of the Database harmonisation conducted. In **Part 2**, we outline the customization of the CellChatDB and CellPhoneDB with the proposed changes above. You may refer to **Part 2** [here](Database_harmonisation_part2.html).

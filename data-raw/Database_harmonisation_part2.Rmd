@@ -1,8 +1,8 @@
 ---
-title: "Database customization by scpeakeR - Part 2"
+title: "Database customisation by scpeakeR - Part 2"
 author: "Ho Jin Ker Nigel, Adaikalavan Ramasamy, Gokce Oguz"
 description: >
-  Database customization of CellChatDB.human(v2.2.0) and CellPhoneDB (V5.0) with the proposed changes in Part 1
+  Database customisation of CellChatDB.human(v2.2.0) and CellPhoneDB (V5.0) with the proposed changes in Part 1
 date: 2025/01/05
 format: 
   html:
@@ -19,7 +19,7 @@ execute:
 
 # Customising CCDB and CPDB
 
-In this document, we implement the corrections identified in "Database harmonization by scpeakeR - Part 1". If you have not read Part 1, you may proceed to that document [here](Database_harmonization_part1.html). 
+In this document, we implement the corrections identified in "Database harmonisation by scpeakeR - Part 1". If you have not read Part 1, you may proceed to that document [here](Database_harmonization_part1.html).
 
 ## Load required packages
 
@@ -29,7 +29,7 @@ setwd(this.path::here())
 rm(list = ls())
 ```
 
-## Load saved R objects from Part 1 Database Harmonization
+## Load saved R objects from Part 1 Database harmonisation
 
 ```{r}
 load("../data/db_utils/CC_int.rda")
@@ -39,7 +39,7 @@ load("../data/db_utils/flipped.rda")
 
 ## CellChatDB -- new
 
-To customize CCDB for cell-cell communication analysis with CellChat, we refer to the document attached [here](https://rdrr.io/github/sqjin/CellChat/f/tutorial/Update-CellChatDB.Rmd). 
+To customise CCDB for cell-cell communication analysis with CellChat, we refer to the document attached [here](https://rdrr.io/github/sqjin/CellChat/f/tutorial/Update-CellChatDB.Rmd).
 
 CellChatDB.human is a list of four elements encompassing the human interactions curated by CellChat package:
 
@@ -49,7 +49,7 @@ CellChatDB.human %>% names()
 
 We manually added our changes to the individual elements of this database:
 
-### CellChatDB.human$interaction
+### CellChatDB.human\$interaction
 
 ```{r}
 interaction_input <- CellChatDB.human$interaction
@@ -57,7 +57,7 @@ interaction_input$interaction_name <- CC.int$interaction_name
 rownames(interaction_input) <- interaction_input$interaction_name
 ```
 
-### CellChatDB.human$complex
+### CellChatDB.human\$complex
 
 ```{r}
 complex_input <- CellChatDB.human$complex %>% 
@@ -72,14 +72,14 @@ complex_input <- CellChatDB.human$complex %>%
   column_to_rownames("CellChat_complex")
 ```
 
-### CellChatDB.human$cofactor
+### CellChatDB.human\$cofactor
 
 ```{r}
 # cofactor slot is unchanged
 cofactor_input <- CellChatDB.human$cofactor
 ```
 
-### CellChatDB.human$geneInfo
+### CellChatDB.human\$geneInfo
 
 We extract interaction partners of simple genes and add the new changes to geneInfo slot
 
@@ -121,7 +121,7 @@ CellChatDB.human.new$geneInfo    <- geneInfo
 save(CellChatDB.human.new, file = "../data/CellChatDB.human.new")
 ```
 
-To summarise, we reconstructed `CellChatDB.human` with our changes from Part 1's database harmonisation and provide `CellChatDB.human.new` for running CellChat analysis. If users only want to perform CellChat analysis on their Seurat object(s), `CellChatDB.human.new` would be the selected database for the run. This allows users to compare CellChat's results against CellPhoneDB's inferred results post-harmonisation. 
+To summarise, we reconstructed `CellChatDB.human` with our changes from Part 1's database harmonisation and provide `CellChatDB.human.new` for running CellChat analysis. If users only want to perform CellChat analysis on their Seurat object(s), `CellChatDB.human.new` would be the selected database for the run. This allows users to compare CellChat's results against CellPhoneDB's inferred results post-harmonisation.
 
 ```{r}
 rm(interaction_input, complex_input, geneInfo, cofactor_input, CellChatDB.human.new)
@@ -129,9 +129,9 @@ rm(interaction_input, complex_input, geneInfo, cofactor_input, CellChatDB.human.
 
 ## CellPhoneDB -- new
 
-In this section, we implement the same changes after performing database harmonisation to CellPhoneDB. We recreated the database in a format (.zip file) that is readable to CellPhoneDB's internal code. To customize CPDB with our revised changes, we refer to the document [here](https://github.com/ventolab/CellphoneDB/blob/master/notebooks/T0_BuildDBfromFiles.ipynb).
+In this section, we implement the same changes after performing database harmonisation to CellPhoneDB. We recreated the database in a format (.zip file) that is readable to CellPhoneDB's internal code. To customise CPDB with our revised changes, we refer to the document [here](https://github.com/ventolab/CellphoneDB/blob/master/notebooks/T0_BuildDBfromFiles.ipynb).
 
-### Load CellPhoneDBv5 input tables for database customization
+### Load CellPhoneDBv5 input tables for database customisation
 
 ```{r, eval = FALSE}
 sapply(c("../data", "../data/sources"), dir.create, recursive = TRUE)
@@ -148,7 +148,7 @@ transcription_factor_input <- read_csv(url(file.path(basepath, "transcription_fa
 uniprot_syn       <- read_tsv(url(file.path(basepath, "sources/uniprot_synonyms.tsv")))
 ```
 
-### Customize interaction_input
+### customise interaction_input
 
 ```{r}
 interaction_input <- interaction_input %>% 
@@ -177,7 +177,7 @@ interaction_input$protein_name_b[to_flip] <- tmp$protein_name_a[to_flip]
 rm(tmp, flipped, to_flip)
 ```
 
-### Customize gene_input
+### customise gene_input
 
 ```{r}
 new_genes <- data.frame(gene_name = c("GP9", "GP5"),
@@ -194,7 +194,7 @@ gene_input <- gene_input %>%
   bind_rows(new_genes)
 ```
 
-### Customize complex_input
+### customise complex_input
 
 ```{r}
 complex_input <- complex_input %>% 
@@ -206,7 +206,7 @@ complex_input <- complex_input %>%
          uniprot_4 = ifelse(complex_name == "GP_complex", "P40197", uniprot_4))
 ```
 
-### Customize protein_input
+### customise protein_input
 
 ```{r}
 new_proteins <- data.frame(uniprot = c("P14770", "P40197"),
@@ -232,7 +232,7 @@ write_csv(transcription_factor_input, file = "../data/transcription_factor_input
 write_tsv(uniprot_syn, file = "../data/sources/uniprot_synonyms.tsv")
 ```
 
-### Creating customized CPDB
+### Creating customised CPDB
 
 ```{r, eval = FALSE}
 use_condaenv("cpdb")
@@ -337,4 +337,4 @@ save(CCDB, file = "data/CCDB.rda")
 save(CPDB, file = "data/CPDB.rda")
 ```
 
-This concludes the process performed in **Part 2** of the Database Customization conducted. In **Part 3**, we outline the full convergence of the harmonized databases, providing users with a single merged database comprising of interactions from both CellChat and CellPhoneDB. You may refer to **Part 3** [here](Database_harmonization_part3.html).
+This concludes the process performed in **Part 2** of the Database customisation conducted. In **Part 3**, we outline the full convergence of the harmonized databases, providing users with a single merged database comprising of interactions from both CellChat and CellPhoneDB. You may refer to **Part 3** [here](Database_harmonization_part3.html).
