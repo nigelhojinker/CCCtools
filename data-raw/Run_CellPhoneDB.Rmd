@@ -109,41 +109,43 @@ seu.NL@meta.data %>% head()
 
 ## Running CellPhoneDB with all default parameters
 
-Minimally, `scpeaker()` takes in a Seurat object, the metadata column name corresponding to the annotated cell types and the cell-cell communication method (in this case cellphonedb). It creates a temporary directory (by default) that stores input files required to run CellPhoneDB, as well as the output .txt files from the analysis. Users may make a copy of the temporary directory for future use of the data if necessary.
+Minimally, `scpeaker()` takes in a Seurat object, the metadata column name corresponding to the annotated cell types and the cell-cell communication method (in this case cellphonedb). It creates a temporary directory (by default) that stores input files required to run CellPhoneDB, as well as the output .txt files from the analysis. Users may make a copy of the temporary directory for future use of the data if necessary. We implemented the triMean gene expression averaging strategy within CellPhoneDB, which is the default averaging method with `scpeaker()`.
 
 ```{r, eval = FALSE}
 
 cpdb <- scpeaker(obj = seu.NL, labels = "labels", method = "cellphonedb")
 
+# Running cell-cell communication analysis with database: scpeakerDB
 # use_dir is NULL. Creating temp directory for file creation and storage.
-# Creating input and output files to directory: C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj 
+# Creating input and output files to directory: C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj 
 #  Note: Make a copy of the temp directory for future use if necessary. 
-# input_meta.tsv file created and saved to: C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj 
-# input.h5ad file created and saved to: C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj 
+# input_meta.tsv file created and saved to: C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj 
+# input.h5ad file created and saved to: C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj 
 # Running CellPhoneDB Statistical Analysis with - triMean
 # Reading user files...
 # The following user files were loaded successfully:
-# C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj/input.h5ad
-# C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj/input_meta.tsv
-# [ ][CORE][05/01/26-14:19:05][INFO] [Cluster Statistical Analysis] Threshold:0.1 Iterations:1000 Debug-seed:-1 Threads:4 Precision:3
-# [ ][CORE][05/01/26-14:19:05][INFO] Running Real Analysis
-# [ ][CORE][05/01/26-14:19:05][INFO] Running Statistical Analysis
-# 100%|██████████| 1000/1000 [00:37<00:00, 26.97it/s][ ][CORE][05/01/26-14:19:42][INFO] Building Pvalues result
-# [ ][CORE][05/01/26-14:19:42][INFO] Building results
-# Saved deconvoluted to C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj\statistical_analysis_deconvoluted_01_05_2026_141942.txt
-# Saved deconvoluted_percents to C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj\statistical_analysis_deconvoluted_percents_01_05_2026_141942.txt
+# C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj/input.h5ad
+# C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj/input_meta.tsv
+# [ ][CORE][02/07/26-17:33:05][INFO] type = triMean: Setting threshold to 0.
+# [ ][CORE][02/07/26-17:33:05][INFO] [Cluster Statistical Analysis] Threshold:0 Iterations:1000 Debug-seed:-1 Threads:4 Precision:3
+# [ ][CORE][02/07/26-17:33:06][INFO] Running Real Analysis
+# [ ][CORE][02/07/26-17:33:06][INFO] Running Statistical Analysis
+# 100%|██████████| 1000/1000 [00:32<00:00, 30.69it/s][ ][CORE][02/07/26-17:33:39][INFO] Building Pvalues result
+# [ ][CORE][02/07/26-17:33:39][INFO] Building results
 # 
+# Saved deconvoluted to C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj\statistical_analysis_deconvoluted_07_02_2026_173339.txt
+# Saved deconvoluted_percents to C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj\statistical_analysis_deconvoluted_percents_07_02_2026_173339.txt
+# Saved means to C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj\statistical_analysis_means_07_02_2026_173339.txt
+# Saved pvalues to C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj\statistical_analysis_pvalues_07_02_2026_173339.txt
+# Saved significant_means to C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj\statistical_analysis_significant_means_07_02_2026_173339.txt
 # CellPhoneDB analysis completed successfully.
 # Warning messages:
 # 1: In dir.create(prefix %>% normalizePath(winslash = "/"), recursive = TRUE) :
-#   'C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW\obj' already exists
+#   'C:\Users\Admin\AppData\Local\Temp\Rtmpknehon\obj' already exists
 # 2: In py_to_r.pandas.core.frame.DataFrame(<environment>) :
 #   index contains duplicated values: row names not set
 # 3: In py_to_r.pandas.core.frame.DataFrame(<environment>) :
 #   index contains duplicated values: row names not set
-# Saved means to C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj\statistical_analysis_means_01_05_2026_141942.txt
-# Saved pvalues to C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj\statistical_analysis_pvalues_01_05_2026_141942.txt
-# Saved significant_means to C:\Users\hojkn\AppData\Local\Temp\Rtmp8S81mW/obj\statistical_analysis_significant_means_01_05_2026_141942.txt
 ```
 
 ## Running CellPhoneDB with user-defined directory
