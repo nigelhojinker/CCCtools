@@ -79,13 +79,13 @@ After running BOTH CellChat and CellPhoneDB analysis, we provide the `crosscheck
 
 In order to identify interactions that map to CellChat and/or CellPhoneDB, the ligand-receptor pair involved have to share a common notation. We convert all gene and complex names to uniprot IDs for unbiased and clear identification of the interacting partners, and used that uniprot-based identifier to compare interactions from both CCC tools.
 
-After we harmonized both databases, we compiled all unique interactions from both CellChat and CellPhoneDB which we coined **scpeakerDB**, which contains 3,901 interactions. By default, scpeakerDB is the database used for all cell-cell communication inference in this package. However, we provide users with the flexible to run their analysis with CellChat/CellPhoneDB-only interactions. 
+After we harmonized both databases, we compiled all unique interactions from both CellChat and CellPhoneDB which we coined **scpeakeRDB**, which contains 3,901 interactions. By default, scpeakeRDB is the database used for all cell-cell communication inference in this package. However, we provide users with the flexible to run their analysis with CellChat/CellPhoneDB-only interactions. 
 
-For the full code implementation of from the mapping of interactions in CellChat and CellPhoneDB, to the final creation of scpeakerDB, you may visit the links below:
+For the full code implementation of from the mapping of interactions in CellChat and CellPhoneDB, to the final creation of scpeakeRDB, you may visit the links below:
 
 - [Aligning CellChat and CellPhoneDB interaction databases - Part 1](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part1.html)
 - [Implementing changes reconstructing CellChatDB.human and CellPhoneDB database - Part 2](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part2.html)
-- [Creating scpeakerDB after database harmonisation - Part 3](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part3.html)
+- [Creating scpeakeRDB after database harmonisation - Part 3](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part3.html)
 
 # Final notes
 

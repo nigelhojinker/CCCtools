@@ -95,14 +95,14 @@ that uniprot-based identifier to compare interactions from both CCC
 tools.
 
 After we harmonized both databases, we compiled all unique interactions
-from both CellChat and CellPhoneDB which we coined **scpeakerDB**, which
-contains 3,901 interactions. By default, scpeakerDB is the database used
+from both CellChat and CellPhoneDB which we coined **scpeakeRDB**, which
+contains 3,901 interactions. By default, scpeakeRDB is the database used
 for all cell-cell communication inference in this package. However, we
 provide users with the flexible to run their analysis with
 CellChat/CellPhoneDB-only interactions.
 
 For the full code implementation of from the mapping of interactions in
-CellChat and CellPhoneDB, to the final creation of scpeakerDB, you may
+CellChat and CellPhoneDB, to the final creation of scpeakeRDB, you may
 visit the links below:
 
 - [Aligning CellChat and CellPhoneDB interaction databases - Part
@@ -110,7 +110,7 @@ visit the links below:
 - [Implementing changes reconstructing CellChatDB.human and CellPhoneDB
   database - Part
   2](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part2.html)
-- [Creating scpeakerDB after database harmonisation - Part
+- [Creating scpeakeRDB after database harmonisation - Part
   3](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part3.html)
 
 # Final notes
