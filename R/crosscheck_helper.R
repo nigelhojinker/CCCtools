@@ -35,8 +35,8 @@ crosscheck_CC_CPDB <- function(cellchat, cellphonedb, threshold = 0.05, return.a
                                        is.na(pval_cc) ~ "Not_Found"),
            CellChat_status = factor(CellChat_status, levels = levels))
 
-  summary <- table(CellChat = combine.all$CellChat_status,
-                   CellPhoneDB = combine.all$CellPhoneDB_status) %>% addmargins()
+  summary <- table(CellChat = res$CellChat_status,
+                   CellPhoneDB = res$CellPhoneDB_status) %>% addmargins()
   if (!return.all) {
     res <- res %>%
       filter(!is.na(category))
