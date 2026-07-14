@@ -18,7 +18,7 @@ crosscheck_CC_CPDB <- function(cellchat, cellphonedb, threshold = 0.05, return.a
 
   levels <- c("Sig", "Not_Sig", "Not_Found")
 
-  combine.all <- cellchat_res %>% full_join(cellphonedb_res %>%
+  res <- cellchat_res %>% full_join(cellphonedb_res %>%
                                               select(id_cp_interaction, interacting_pair, source, target,  unique_int, pval),
                                             by = "unique_int",
                                             suffix = c("_cc", "_cpdb")) %>%
@@ -38,7 +38,8 @@ crosscheck_CC_CPDB <- function(cellchat, cellphonedb, threshold = 0.05, return.a
   summary <- table(CellChat = combine.all$CellChat_status,
                    CellPhoneDB = combine.all$CellPhoneDB_status) %>% addmargins()
   if (!return.all) {
-    res <- combine.all %>% filter(!is.na(category))
+    res <- res %>%
+      filter(!is.na(category))
   }
   cat("Comparative analysis done successfully for p-value",
       threshold, "\n", "scpeakeR summary: \n")
