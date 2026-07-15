@@ -8,8 +8,9 @@ crosscheck(
   obj1 = NULL,
   obj2 = NULL,
   comp.type = c("CC_CP", "CP_CC", "CC_CC", "CP_CP"),
-  threshold = 0.05,
-  return.all = FALSE
+  p.cutoff = 0.05,
+  return.all = FALSE,
+  expand = FALSE
 )
 }
 \arguments{
@@ -19,12 +20,14 @@ crosscheck(
 
 \item{comp.type}{Character value stating the type of comparative analysis to run; assumes a CellChat-to-CellPhoneDB comparison by default ("CC_CP").}
 
-\item{threshold}{p-value (default: 0.05)}
+\item{p.cutoff}{p-value (default: 0.05)}
 
-\item{return.all}{logical value to determine whether to return the full comparative analysis results (including non-significant interactions).}
+\item{return.all}{Logical value to determine whether to return the full comparative analysis results (including non-significant interactions).}
+
+\item{expand}{Logical value to highlight if interaction is found from cross-database analyses. This is used when comparing outputs using different databases (default = FALSE).}
 }
 \value{
-A list of two elements: (1) Comparative analysis result (2) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB.
+A list of three elements: (1) Comparative analysis result (2) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB (3) Matthew's Correlation Coefficient to quantify agreement.
 }
 \description{
 Comparing CellChat and CellPhoneDB results
@@ -35,6 +38,6 @@ Comparing CellChat and CellPhoneDB results
 cpdb <- run_cellphonedb(seurat.obj, ...)
 cellchat <- run_cellchat(seurat.obj, ...)
 
-combine <- crosscheck(obj1 = cellchat, obj2 = cpdb, comp.type = "CC_CP")
+combine <- crosscheck(obj1 = cellchat, obj2 = cpdb)
 }
 }
