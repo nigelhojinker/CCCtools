@@ -68,13 +68,39 @@ In **scpeakeR**, we provide the `scpeaker()` function to perform
 CellChat and CellPhoneDB (method 2) analysis directly on their processed
 Seurat object.
 
-Please refer to the following links to the documentations on running
-these tools on your dataset:
+Please refer to the following links to the full documentations on
+running these tools on your dataset:
+
+### Perform CellPhoneDB on Seurat object
 
 - [Running CellChat on Seurat
   object](https://github.com/nigelhojinker/scpeakeR/blob/main/data-raw/Run_CellChat.md)
+
+``` r
+# Run this ONCE to create conda environment
+config <- file.path(pacman::p_path("scpeakeR"), "data/scpeaker.yaml")
+conda_create(envname = "scpeaker", environment = config)
+```
+
+``` r
+# Run this each R session when performing CellPhoneDB analysis
+use_condaenv("scpeakeR")
+
+# CellPhoneDB analysis -- minimal example
+cellphonedb <- scpeaker(seu.NL, labels = "labels", method = "cellphonedb")
+```
+
+### Perform CellChat on Seurat object
+
 - [Running CellPhoneDB on Seurat
   object](https://github.com/nigelhojinker/scpeakeR/blob/main/data-raw/Run_CellPhoneDB.md)
+
+``` r
+# CellChat analysis -- minimal example
+cellchat <- scpeaker(seu.NL, labels = "labels", method = "cellchat")
+```
+
+### Cross-method analysis
 
 After running BOTH CellChat and CellPhoneDB analysis, we provide the
 `crosscheck()` function to compare the results of both CCC tools and
@@ -84,6 +110,27 @@ CellPhoneDB results on your dataset:
 
 - [Comparing CellChat and CellPhoneDB
   results](https://github.com/nigelhojinker/scpeakeR/blob/main/data-raw/Crosscheck.md)
+
+``` r
+combine <- crosscheck(cellchat, cellphonedb)
+```
+
+### Downstream visualisation and network analysis
+
+The `crosscheck()` function allows users to extract interactions
+significant in both CellChat and CellPhoneDB analyses. We provide the
+`filter_cellchat()` function that takes in the original CellChat object
+and the combined results (`combine`), and returns a new CellChat object
+containing only the filtered interactions from cross-method analysis. We
+leverage the abundant resource for visualising and conducting network
+analysis using CellChat.
+
+Users may refer to the full CellChat vignette
+[here](https://htmlpreview.github.io/?https://github.com/jinworks/CellChat/blob/master/tutorial/CellChat-vignette.html).
+
+``` r
+cellchat_new <- filter_cellchat(cellchat, combine)
+```
 
 ## Database harmonisation
 
