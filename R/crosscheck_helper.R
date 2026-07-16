@@ -17,17 +17,6 @@ crosscheck_CC_CPDB <- function(cellchat, cellphonedb, p.cutoff = 0.05, return.al
     left_join(db_map %>% select(id_cp_interaction, LR)) %>%
     mutate(unique_int = paste(source, target, LR, sep = "|"))
 
-  cellchat_res <- pull_netslot(cellchat) %>%
-    left_join(db_map %>% select(interaction_name, LR)) %>%
-    mutate(unique_int = paste(source, target, LR, sep = "|"))
-
-  cellphonedb_res <- cellphonedb$pvalues %>% pivot_longer(cols = contains("|"),
-                                                          names_to = "cell_type_pair",
-                                                          values_to = "pval") %>%
-    separate(cell_type_pair, into = c("source", "target"), sep = "\\|") %>%
-    left_join(db_map %>% select(id_cp_interaction, LR)) %>%
-    mutate(unique_int = paste(source, target, LR, sep = "|"))
-
   if (expand){
     levels <- c("Sig", "Not_Sig", "Not_Found")
 
