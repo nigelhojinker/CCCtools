@@ -66,8 +66,12 @@ CPDB.only <- CPDB %>%
     .default = interactors)) %>%
   separate(interactors, into = c("ligand_name", "receptor_name"), sep = "-") %>%
   mutate(ligand_name = ifelse(ligand_name == "ERVH48_1", "ERVH48-1", ligand_name)) %>% # reassign gene to correct name
-  mutate(ligand_name   = gsub("\\+", "_", ligand_name),
-         receptor_name = gsub("\\+", "_", receptor_name))
+  mutate(ligand_temp = ifelse(grepl("\\+", ligand_name), paste0("(", ligand_name, ")"), ligand_name),
+         receptor_temp = ifelse(grepl("\\+", receptor_name), paste0("(", receptor_name, ")"), receptor_name),
+         interaction_name_2 = paste(ligand_temp, receptor_temp, sep = " - "),
+         ligand_name   = gsub("\\+", "_", ligand_name),
+         receptor_name = gsub("\\+", "_", receptor_name)) %>% 
+  select(-ligand_temp, -receptor_temp)
 ```
 
 We now create a `pathway_name` column in `CPDB.only` and map the CellChat-based pathways according to the ligands in CPDB:
@@ -151,10 +155,6 @@ CPDB.only <- CPDB.only %>%
 CPDB.only %>% 
   filter(is.na(annotation)) %>% # Extract interactions with unmapped annotation
   tabyl(directionality)
-# directionality      n    percent
-# Adhesion-Adhesion   4    0.03603604
-# Ligand-Receptor     102  0.91891892
-# Receptor-Receptor   5    0.04504505
 ```
 
 We manually add these annotations to the newly added interactions, along with an identifier "CPDB:" at the start of these interactions for differentiation:
@@ -169,7 +169,7 @@ CPDB.only <- CPDB.only %>%
     directionality == "Ligand-Receptor"    ~ "Secreted Signaling",
     .default = annotation),
     interaction_name = paste0("CPDB:", interaction_name)) %>%
-  distinct(interaction_name, .keep_all = TRUE) # removed one duplicated interaction
+  distinct(interaction_name, .keep_all = TRUE) # removed one duplicated interaction (IFNL3_IFNLR1_IL10RB)
 
 CPDB.only
 ```
@@ -201,6 +201,7 @@ interaction_input <- bind_rows(interaction_input,
                                         ligand = ligand_name, 
                                         receptor = receptor_name, 
                                         annotation, 
+                                        interaction_name_2,
                                         version, 
                                         LR))
 ```

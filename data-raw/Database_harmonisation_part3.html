@@ -2295,8 +2295,12 @@ vertical-align: -.125em;
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> interactors)) <span class="sc">%&gt;%</span></span>
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(interactors, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">&quot;ligand_name&quot;</span>, <span class="st">&quot;receptor_name&quot;</span>), <span class="at">sep =</span> <span class="st">&quot;-&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ligand_name =</span> <span class="fu">ifelse</span>(ligand_name <span class="sc">==</span> <span class="st">&quot;ERVH48_1&quot;</span>, <span class="st">&quot;ERVH48-1&quot;</span>, ligand_name)) <span class="sc">%&gt;%</span> <span class="co"># reassign gene to correct name</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ligand_name   =</span> <span class="fu">gsub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, <span class="st">&quot;_&quot;</span>, ligand_name),</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">receptor_name =</span> <span class="fu">gsub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, <span class="st">&quot;_&quot;</span>, receptor_name))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ligand_temp =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, ligand_name), <span class="fu">paste0</span>(<span class="st">&quot;(&quot;</span>, ligand_name, <span class="st">&quot;)&quot;</span>), ligand_name),</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">receptor_temp =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, receptor_name), <span class="fu">paste0</span>(<span class="st">&quot;(&quot;</span>, receptor_name, <span class="st">&quot;)&quot;</span>), receptor_name),</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">interaction_name_2 =</span> <span class="fu">paste</span>(ligand_temp, receptor_temp, <span class="at">sep =</span> <span class="st">&quot; - &quot;</span>),</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">ligand_name   =</span> <span class="fu">gsub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, <span class="st">&quot;_&quot;</span>, ligand_name),</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">receptor_name =</span> <span class="fu">gsub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, <span class="st">&quot;_&quot;</span>, receptor_name)) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>ligand_temp, <span class="sc">-</span>receptor_temp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We now create a <code>pathway_name</code> column in <code>CPDB.only</code> and map the CellChat-based pathways according to the ligands in CPDB:</p>
 <div class="cell">
@@ -2400,27 +2404,23 @@ vertical-align: -.125em;
    Ligand-Receptor 102 0.91891892
  Receptor-Receptor   5 0.04504505</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># directionality      n    percent</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Adhesion-Adhesion   4    0.03603604</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Ligand-Receptor     102  0.91891892</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Receptor-Receptor   5    0.04504505</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We manually add these annotations to the newly added interactions, along with an identifier “CPDB:” at the start of these interactions for differentiation:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>CPDB.only <span class="ot">&lt;-</span> CPDB.only <span class="sc">%&gt;%</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">annotation =</span> <span class="fu">case_when</span>(</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    pathway_name   <span class="sc">==</span> <span class="st">&quot;FIBRINOGEN&quot;</span> <span class="sc">~</span> <span class="st">&quot;ECM-Receptor&quot;</span>,</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    pathway_name   <span class="sc">==</span> <span class="st">&quot;CHORIOGONADOTROPIN&quot;</span> <span class="sc">~</span> <span class="st">&quot;Non-protein Signaling&quot;</span>,</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    directionality <span class="sc">==</span> <span class="st">&quot;Adhesion-Adhesion&quot;</span>  <span class="sc">~</span> <span class="st">&quot;Cell-Cell Contact&quot;</span>,</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    directionality <span class="sc">==</span> <span class="st">&quot;Receptor-Receptor&quot;</span>  <span class="sc">~</span> <span class="st">&quot;Cell-Cell Contact&quot;</span>,</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    directionality <span class="sc">==</span> <span class="st">&quot;Ligand-Receptor&quot;</span>    <span class="sc">~</span> <span class="st">&quot;Secreted Signaling&quot;</span>,</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> annotation),</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">interaction_name =</span> <span class="fu">paste0</span>(<span class="st">&quot;CPDB:&quot;</span>, interaction_name)) <span class="sc">%&gt;%</span></span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(interaction_name, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>) <span class="co"># removed one duplicated interaction</span></span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>CPDB.only</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>CPDB.only <span class="ot">&lt;-</span> CPDB.only <span class="sc">%&gt;%</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">annotation =</span> <span class="fu">case_when</span>(</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    pathway_name   <span class="sc">==</span> <span class="st">&quot;FIBRINOGEN&quot;</span> <span class="sc">~</span> <span class="st">&quot;ECM-Receptor&quot;</span>,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    pathway_name   <span class="sc">==</span> <span class="st">&quot;CHORIOGONADOTROPIN&quot;</span> <span class="sc">~</span> <span class="st">&quot;Non-protein Signaling&quot;</span>,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    directionality <span class="sc">==</span> <span class="st">&quot;Adhesion-Adhesion&quot;</span>  <span class="sc">~</span> <span class="st">&quot;Cell-Cell Contact&quot;</span>,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    directionality <span class="sc">==</span> <span class="st">&quot;Receptor-Receptor&quot;</span>  <span class="sc">~</span> <span class="st">&quot;Cell-Cell Contact&quot;</span>,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    directionality <span class="sc">==</span> <span class="st">&quot;Ligand-Receptor&quot;</span>    <span class="sc">~</span> <span class="st">&quot;Secreted Signaling&quot;</span>,</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> annotation),</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">interaction_name =</span> <span class="fu">paste0</span>(<span class="st">&quot;CPDB:&quot;</span>, interaction_name)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(interaction_name, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>) <span class="co"># removed one duplicated interaction (IFNL3_IFNLR1_IL10RB)</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>CPDB.only</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 671 × 27
+<pre><code># A tibble: 671 × 28
    interaction_name       pathway_name ligand_name ligand receptor_name receptor
    &lt;chr&gt;                  &lt;chr&gt;        &lt;chr&gt;       &lt;chr&gt;  &lt;chr&gt;         &lt;chr&gt;   
  1 CPDB:CDH2_FCER2        CDH          CDH2        P19022 FCER2         P06734  
@@ -2434,7 +2434,7 @@ vertical-align: -.125em;
  9 CPDB:COL11A1_ITGA10_I… COLLAGEN     COL11A1     P12107 ITGA10_ITGB1  O75578_…
 10 CPDB:COL11A1_ITGA11_I… COLLAGEN     COL11A1     P12107 ITGA11_ITGB1  P05556_…
 # ℹ 661 more rows
-# ℹ 21 more variables: id_cp_interaction &lt;chr&gt;, classification &lt;chr&gt;, LR &lt;chr&gt;,
+# ℹ 22 more variables: id_cp_interaction &lt;chr&gt;, classification &lt;chr&gt;, LR &lt;chr&gt;,
 #   complex_ligand &lt;lgl&gt;, complex_receptor &lt;lgl&gt;, partner_a &lt;chr&gt;,
 #   partner_b &lt;chr&gt;, protein_name_a &lt;chr&gt;, protein_name_b &lt;chr&gt;,
 #   annotation_strategy &lt;chr&gt;, source &lt;chr&gt;, is_ppi &lt;lgl&gt;, curator &lt;chr&gt;,
@@ -2446,35 +2446,36 @@ vertical-align: -.125em;
 <section id="load-cellchatdb.human.new" class="level3">
 <h3 class="anchored" data-anchor-id="load-cellchatdb.human.new">Load CellChatDB.human.new</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(CellChatDB.human.new)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(CellChatDB.human.new)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The customised CellChat object from Part 2 is separated into its component tables so that each part can be updated independently.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> CellChatDB.human.new<span class="sc">$</span>interaction</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>complex  <span class="ot">&lt;-</span> CellChatDB.human.new<span class="sc">$</span>complex</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>cofactor <span class="ot">&lt;-</span> CellChatDB.human.new<span class="sc">$</span>cofactor</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>geneInfo <span class="ot">&lt;-</span> CellChatDB.human.new<span class="sc">$</span>geneInfo</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> CellChatDB.human.new<span class="sc">$</span>interaction</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>complex  <span class="ot">&lt;-</span> CellChatDB.human.new<span class="sc">$</span>complex</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>cofactor <span class="ot">&lt;-</span> CellChatDB.human.new<span class="sc">$</span>cofactor</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>geneInfo <span class="ot">&lt;-</span> CellChatDB.human.new<span class="sc">$</span>geneInfo</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The newly curated CellPhoneDB-only interactions are appended to the CellChat interaction table using the columns required by CellChat.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(interaction_input, </span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>                               CPDB.only <span class="sc">%&gt;%</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>                                 <span class="fu">select</span>(interaction_name,</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>                                        pathway_name, </span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">ligand =</span> ligand_name, </span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">receptor =</span> receptor_name, </span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>                                        annotation, </span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>                                        version, </span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>                                        LR))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(interaction_input, </span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                               CPDB.only <span class="sc">%&gt;%</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                                 <span class="fu">select</span>(interaction_name,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                                        pathway_name, </span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">ligand =</span> ligand_name, </span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">receptor =</span> receptor_name, </span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>                                        annotation, </span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>                                        interaction_name_2,</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>                                        version, </span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>                                        LR))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Here, we check for any duplicated interaction partners after merging CellChatDB and CellPhoneDB. We observed that duplicated mappings from both databases were due to different UniProt identifiers linked to the same gene symbol. For example, CellChatDB linked <em>NRXN1</em> to NRX1B_HUMAN (UniProtKB: P58400) while CellPhoneDB linked <em>NRXN1</em> to NRX1A_HUMAN (UniProtKB: Q9ULB1).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span> </span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">partners =</span> <span class="fu">paste</span>(ligand, receptor, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>)) </span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="sc">%&gt;%</span> </span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(partners) <span class="sc">%&gt;%</span> </span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n <span class="sc">&gt;</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span> </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">partners =</span> <span class="fu">paste</span>(ligand, receptor, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>)) </span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="sc">%&gt;%</span> </span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(partners) <span class="sc">%&gt;%</span> </span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n <span class="sc">&gt;</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      partners n
 1 NRXN1|ADGRL1 2
@@ -2484,107 +2485,107 @@ vertical-align: -.125em;
 </div>
 <p>As scRNA-seq expression matrices from droplet-based sequencing are not isoform-aware, we compressed these interactions to be the same. In the other case of the gene <em>PRNP</em>, CellChatDB linked <em>PRNP</em> to PRIO_HUMAN (UniProtKB: P04156) while CellPhoneDB linked <em>PRNP</em> to APRIO_HUMAN (UniProtKB: F7VJQ1), the alternative prion protein produced by the same bicistronic gene. Since the expression matrix does not distinguish between the two proteins from the same mRNA transcript, we adopted the same collapsing strategy as <em>NRXN1</em>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span> </span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(partners, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>partners) <span class="co"># 3901</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span> </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(partners, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>partners) <span class="co"># 3901</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, we identify simple ligand and receptor genes from the CellPhoneDB-only interactions and check whether they already exist in CellChat’s <code>geneInfo</code> table. Missing genes are manually added with their UniProt identifiers.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>CP_simple_ligand <span class="ot">&lt;-</span> CPDB.only <span class="sc">%&gt;%</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> complex_ligand) <span class="sc">%&gt;%</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(ligand_name)</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>CP_simple_receptor <span class="ot">&lt;-</span> CPDB.only <span class="sc">%&gt;%</span></span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> complex_receptor) <span class="sc">%&gt;%</span></span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(receptor_name)</span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>CP_simple <span class="ot">&lt;-</span> <span class="fu">union</span>(CP_simple_ligand, CP_simple_receptor) <span class="co"># 424</span></span>
-<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>CP_simple[<span class="fu">which</span>(<span class="sc">!</span> CP_simple <span class="sc">%in%</span> geneInfo<span class="sc">$</span>Symbol)] <span class="co"># [1] &quot;C10orf99&quot; &quot;HLAF&quot;     &quot;HLAE&quot;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>CP_simple_ligand <span class="ot">&lt;-</span> CPDB.only <span class="sc">%&gt;%</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> complex_ligand) <span class="sc">%&gt;%</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(ligand_name)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>CP_simple_receptor <span class="ot">&lt;-</span> CPDB.only <span class="sc">%&gt;%</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> complex_receptor) <span class="sc">%&gt;%</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(receptor_name)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>CP_simple <span class="ot">&lt;-</span> <span class="fu">union</span>(CP_simple_ligand, CP_simple_receptor) <span class="co"># 424</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>CP_simple[<span class="fu">which</span>(<span class="sc">!</span> CP_simple <span class="sc">%in%</span> geneInfo<span class="sc">$</span>Symbol)] <span class="co"># [1] &quot;C10orf99&quot; &quot;HLAF&quot;     &quot;HLAE&quot;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] &quot;C10orf99&quot; &quot;HLAF&quot;     &quot;HLAE&quot;    </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>genes.add <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">EntryID.uniprot =</span> <span class="fu">c</span>(<span class="st">&quot;Q6UWK7&quot;</span>, <span class="st">&quot;P30511&quot;</span>, <span class="st">&quot;P13747&quot;</span>),</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Symbol =</span> <span class="fu">c</span>(<span class="st">&quot;C10orf99&quot;</span>, <span class="st">&quot;HLAF&quot;</span>, <span class="st">&quot;HLAE&quot;</span>))</span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>geneInfo <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(geneInfo, genes.add) <span class="sc">%&gt;%</span></span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">EntryID.uniprot =</span> <span class="fu">ifelse</span>(Symbol <span class="sc">==</span> <span class="st">&quot;CGB3&quot;</span>, <span class="st">&quot;P0DN86&quot;</span>, EntryID.uniprot)) <span class="co"># 26,830</span></span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CP_simple, CP_simple_ligand, CP_simple_receptor, genes.add)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>genes.add <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">EntryID.uniprot =</span> <span class="fu">c</span>(<span class="st">&quot;Q6UWK7&quot;</span>, <span class="st">&quot;P30511&quot;</span>, <span class="st">&quot;P13747&quot;</span>),</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Symbol =</span> <span class="fu">c</span>(<span class="st">&quot;C10orf99&quot;</span>, <span class="st">&quot;HLAF&quot;</span>, <span class="st">&quot;HLAE&quot;</span>))</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>geneInfo <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(geneInfo, genes.add) <span class="sc">%&gt;%</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">EntryID.uniprot =</span> <span class="fu">ifelse</span>(Symbol <span class="sc">==</span> <span class="st">&quot;CGB3&quot;</span>, <span class="st">&quot;P0DN86&quot;</span>, EntryID.uniprot)) <span class="co"># 26,830</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CP_simple, CP_simple_ligand, CP_simple_receptor, genes.add)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>For complex ligands and receptors, we compare the CellPhoneDB-derived complex definitions against the existing CellChat complex table. Complexes are compared by their sorted subunit symbols so that equivalent complexes can be recognized even when the database-specific names differ.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>CP_complex_ligand <span class="ot">&lt;-</span> CPDB.only <span class="sc">%&gt;%</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(complex_ligand) <span class="sc">%&gt;%</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(ligand_name)</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>CP_complex_receptor <span class="ot">&lt;-</span> CPDB.only <span class="sc">%&gt;%</span></span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(complex_receptor) <span class="sc">%&gt;%</span></span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(receptor_name)</span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>CP_complex <span class="ot">&lt;-</span> <span class="fu">union</span>(CP_complex_ligand, CP_complex_receptor) <span class="co"># 120</span></span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>complex <span class="ot">&lt;-</span> complex <span class="sc">%&gt;%</span></span>
-<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rownames_to_column</span>(<span class="st">&quot;complex_name&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(complex_name <span class="sc">!=</span> <span class="st">&quot;KLRK1_HCST&quot;</span>) <span class="co"># unused complex in CellChat</span></span>
-<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>complex[complex <span class="sc">==</span> <span class="st">&quot;&quot;</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
-<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>complex <span class="ot">&lt;-</span> complex <span class="sc">%&gt;%</span></span>
-<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">symbol =</span> <span class="fu">paste</span>(<span class="fu">sort</span>(<span class="fu">na.omit</span>(<span class="fu">c</span>(subunit_1, subunit_2, subunit_3, subunit_4, subunit_5))), <span class="at">collapse =</span> <span class="st">&quot;_&quot;</span>))</span>
-<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a>new_complex <span class="ot">&lt;-</span> CP_complex[<span class="fu">which</span>(<span class="sc">!</span> CP_complex <span class="sc">%in%</span> complex<span class="sc">$</span>symbol)] <span class="co"># 53</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>CP_complex_ligand <span class="ot">&lt;-</span> CPDB.only <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(complex_ligand) <span class="sc">%&gt;%</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(ligand_name)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>CP_complex_receptor <span class="ot">&lt;-</span> CPDB.only <span class="sc">%&gt;%</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(complex_receptor) <span class="sc">%&gt;%</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(receptor_name)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>CP_complex <span class="ot">&lt;-</span> <span class="fu">union</span>(CP_complex_ligand, CP_complex_receptor) <span class="co"># 120</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>complex <span class="ot">&lt;-</span> complex <span class="sc">%&gt;%</span></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rownames_to_column</span>(<span class="st">&quot;complex_name&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(complex_name <span class="sc">!=</span> <span class="st">&quot;KLRK1_HCST&quot;</span>) <span class="co"># unused complex in CellChat</span></span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>complex[complex <span class="sc">==</span> <span class="st">&quot;&quot;</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>complex <span class="ot">&lt;-</span> complex <span class="sc">%&gt;%</span></span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">symbol =</span> <span class="fu">paste</span>(<span class="fu">sort</span>(<span class="fu">na.omit</span>(<span class="fu">c</span>(subunit_1, subunit_2, subunit_3, subunit_4, subunit_5))), <span class="at">collapse =</span> <span class="st">&quot;_&quot;</span>))</span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>new_complex <span class="ot">&lt;-</span> CP_complex[<span class="fu">which</span>(<span class="sc">!</span> CP_complex <span class="sc">%in%</span> complex<span class="sc">$</span>symbol)] <span class="co"># 53</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Before adding new complexes, we verify that all of their component genes are already represented in <code>geneInfo</code>. We also create a mapping for complexes that are present in CellChat but named differently from CellPhoneDB.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>new.genes <span class="ot">&lt;-</span> <span class="fu">paste</span>(new_complex, <span class="at">collapse =</span> <span class="st">&quot;_&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_split_1</span>(<span class="st">&quot;_&quot;</span>)</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>new.genes[<span class="fu">which</span>(<span class="sc">!</span> new.genes <span class="sc">%in%</span> geneInfo<span class="sc">$</span>Symbol)] <span class="co"># 0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>new.genes <span class="ot">&lt;-</span> <span class="fu">paste</span>(new_complex, <span class="at">collapse =</span> <span class="st">&quot;_&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_split_1</span>(<span class="st">&quot;_&quot;</span>)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>new.genes[<span class="fu">which</span>(<span class="sc">!</span> new.genes <span class="sc">%in%</span> geneInfo<span class="sc">$</span>Symbol)] <span class="co"># 0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>character(0)</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>present_diff_name <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(CP_complex[<span class="fu">which</span>(<span class="sc">!</span> CP_complex <span class="sc">%in%</span> complex<span class="sc">$</span>complex_name)], new_complex) <span class="co"># 17 interactions already in CCDB but diff name</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove symbol which requires special handling</span></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>present_diff_name <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(present_diff_name, <span class="st">&quot;ALOX5_ALOX5AP_LTC4S&quot;</span>)</span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>map <span class="ot">&lt;-</span> complex <span class="sc">%&gt;%</span></span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(symbol <span class="sc">%in%</span> present_diff_name) <span class="sc">%&gt;%</span></span>
-<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(symbol, complex_name)</span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CP_complex, CP_complex_ligand, CP_complex_receptor, present_diff_name, new.genes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>present_diff_name <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(CP_complex[<span class="fu">which</span>(<span class="sc">!</span> CP_complex <span class="sc">%in%</span> complex<span class="sc">$</span>complex_name)], new_complex) <span class="co"># 17 interactions already in CCDB but diff name</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove symbol which requires special handling</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>present_diff_name <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(present_diff_name, <span class="st">&quot;ALOX5_ALOX5AP_LTC4S&quot;</span>)</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>map <span class="ot">&lt;-</span> complex <span class="sc">%&gt;%</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(symbol <span class="sc">%in%</span> present_diff_name) <span class="sc">%&gt;%</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(symbol, complex_name)</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CP_complex, CP_complex_ligand, CP_complex_receptor, present_diff_name, new.genes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We use the complex-name mapping to rewrite newly imported interaction partners to the names already used by CellChat. A small number of lipid-related interactions require manual name handling because their complex labels encode different pathway products.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rewrite names of interaction partners to those already present in CellChatDB</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> <span class="fu">left_join</span>(interaction_input, map, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;ligand&quot;</span> <span class="ot">=</span> <span class="st">&quot;symbol&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ligand =</span> <span class="fu">case_when</span>(</span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(complex_name) <span class="sc">~</span> complex_name,</span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    ligand <span class="sc">==</span> <span class="st">&quot;ALOX5_ALOX5AP_LTC4S&quot;</span> <span class="sc">&amp;</span> receptor <span class="sc">==</span> <span class="st">&quot;CYSLTR1&quot;</span> <span class="sc">~</span> <span class="st">&quot;LXA4-ALOX5&quot;</span>,</span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    ligand <span class="sc">==</span> <span class="st">&quot;ALOX5_ALOX5AP_LTC4S&quot;</span> <span class="sc">&amp;</span> receptor <span class="sc">==</span> <span class="st">&quot;GPR17&quot;</span> <span class="sc">~</span> <span class="st">&quot;LTC4-LTC4S&quot;</span>,</span>
-<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    ligand <span class="sc">==</span> <span class="st">&quot;ALOX5_ALOX5AP_LTC4S&quot;</span> <span class="sc">&amp;</span> receptor <span class="sc">==</span> <span class="st">&quot;OXER1&quot;</span> <span class="sc">~</span> <span class="st">&quot;5SHpETE_byALOX5&quot;</span>,</span>
-<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> ligand</span>
-<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
-<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span> complex_name) <span class="sc">%&gt;%</span></span>
-<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(map, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;receptor&quot;</span> <span class="ot">=</span> <span class="st">&quot;symbol&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">receptor =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(complex_name), complex_name, receptor)) <span class="sc">%&gt;%</span></span>
-<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span> complex_name)</span>
-<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(interaction_input) <span class="ot">&lt;-</span> interaction_input<span class="sc">$</span>interaction_name</span>
-<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>orig_map <span class="ot">&lt;-</span> CCDB <span class="sc">%&gt;%</span></span>
-<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(interaction_name, LR)</span>
-<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>ccdb_map <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
-<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(interaction_name, LR) <span class="sc">%&gt;%</span></span>
-<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(orig_map, <span class="at">by=</span> <span class="st">&quot;interaction_name&quot;</span>, <span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">&quot;_new&quot;</span>, <span class="st">&quot;_orig&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb35-23"><a href="#cb35-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">LR_new =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(LR_orig), LR_orig, LR_new)) <span class="sc">%&gt;%</span></span>
-<span id="cb35-24"><a href="#cb35-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(interaction_name, <span class="at">LR =</span> LR_new)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rewrite names of interaction partners to those already present in CellChatDB</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> <span class="fu">left_join</span>(interaction_input, map, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;ligand&quot;</span> <span class="ot">=</span> <span class="st">&quot;symbol&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ligand =</span> <span class="fu">case_when</span>(</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(complex_name) <span class="sc">~</span> complex_name,</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    ligand <span class="sc">==</span> <span class="st">&quot;ALOX5_ALOX5AP_LTC4S&quot;</span> <span class="sc">&amp;</span> receptor <span class="sc">==</span> <span class="st">&quot;CYSLTR1&quot;</span> <span class="sc">~</span> <span class="st">&quot;LXA4-ALOX5&quot;</span>,</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    ligand <span class="sc">==</span> <span class="st">&quot;ALOX5_ALOX5AP_LTC4S&quot;</span> <span class="sc">&amp;</span> receptor <span class="sc">==</span> <span class="st">&quot;GPR17&quot;</span> <span class="sc">~</span> <span class="st">&quot;LTC4-LTC4S&quot;</span>,</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    ligand <span class="sc">==</span> <span class="st">&quot;ALOX5_ALOX5AP_LTC4S&quot;</span> <span class="sc">&amp;</span> receptor <span class="sc">==</span> <span class="st">&quot;OXER1&quot;</span> <span class="sc">~</span> <span class="st">&quot;5SHpETE_byALOX5&quot;</span>,</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> ligand</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span> complex_name) <span class="sc">%&gt;%</span></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(map, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;receptor&quot;</span> <span class="ot">=</span> <span class="st">&quot;symbol&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">receptor =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(complex_name), complex_name, receptor)) <span class="sc">%&gt;%</span></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span> complex_name)</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(interaction_input) <span class="ot">&lt;-</span> interaction_input<span class="sc">$</span>interaction_name</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>orig_map <span class="ot">&lt;-</span> CCDB <span class="sc">%&gt;%</span></span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(interaction_name, LR)</span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>ccdb_map <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(interaction_name, LR) <span class="sc">%&gt;%</span></span>
+<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(orig_map, <span class="at">by=</span> <span class="st">&quot;interaction_name&quot;</span>, <span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">&quot;_new&quot;</span>, <span class="st">&quot;_orig&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">LR_new =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(LR_orig), LR_orig, LR_new)) <span class="sc">%&gt;%</span></span>
+<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(interaction_name, <span class="at">LR =</span> LR_new)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>ccdb_map <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>ccdb_map <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     interaction_name                   LR
 1 TGFB1_TGFBR1_TGFBR2 P01137|P36897_P37173
@@ -2596,48 +2597,48 @@ vertical-align: -.125em;
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># LR no longer used in interaction_input</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span> </span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>LR)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># LR no longer used in interaction_input</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span> </span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>LR)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The CellChat interaction-to-LR mapping is saved for downstream use when the database is built locally.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(ccdb_map, <span class="at">file =</span> <span class="st">&quot;../data/ccdb_map.rda&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(ccdb_map, <span class="at">file =</span> <span class="st">&quot;../data/ccdb_map.rda&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Finally, new CellPhoneDB-derived complexes are converted into CellChat’s complex-table structure and added to the database object alongside the updated interaction and gene information.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add new complexes to dataframe</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>new_complex <span class="ot">&lt;-</span> new_complex <span class="sc">%&gt;%</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>()</span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(new_complex) <span class="ot">&lt;-</span> <span class="st">&quot;complex_name&quot;</span></span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>new_complex <span class="ot">&lt;-</span> new_complex <span class="sc">%&gt;%</span></span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(complex_name, <span class="at">into =</span> <span class="fu">paste0</span>(<span class="st">&quot;subunit_&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>), <span class="at">sep =</span> <span class="st">&quot;_&quot;</span>, <span class="at">fill =</span> <span class="st">&quot;right&quot;</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">data.frame</span>(<span class="at">complex_name =</span> <span class="fu">c</span>(<span class="st">&quot;5SHpETE_byALOX5&quot;</span>),</span>
-<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>                       <span class="at">subunit_1 =</span> <span class="fu">c</span>(<span class="st">&quot;LTC4S&quot;</span>),</span>
-<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>                       <span class="at">subunit_2 =</span> <span class="fu">c</span>(<span class="st">&quot;ALOX5&quot;</span>),</span>
-<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>                       <span class="at">subunit_3 =</span> <span class="fu">c</span>(<span class="st">&quot;ALOX5AP&quot;</span>)))</span>
-<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>complex <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(complex, new_complex) <span class="sc">%&gt;%</span></span>
-<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">column_to_rownames</span>(<span class="st">&quot;complex_name&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>symbol) <span class="co"># 391</span></span>
-<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>complex[<span class="fu">is.na</span>(complex)] <span class="ot">&lt;-</span> <span class="st">&quot;&quot;</span></span>
-<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>scpeakerDB_CC <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>scpeakerDB_CC<span class="sc">$</span>interaction <span class="ot">&lt;-</span> interaction_input</span>
-<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>scpeakerDB_CC<span class="sc">$</span>complex     <span class="ot">&lt;-</span> complex</span>
-<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>scpeakerDB_CC<span class="sc">$</span>cofactor    <span class="ot">&lt;-</span> cofactor</span>
-<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a>scpeakerDB_CC<span class="sc">$</span>geneInfo    <span class="ot">&lt;-</span> geneInfo</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add new complexes to dataframe</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>new_complex <span class="ot">&lt;-</span> new_complex <span class="sc">%&gt;%</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>()</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(new_complex) <span class="ot">&lt;-</span> <span class="st">&quot;complex_name&quot;</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>new_complex <span class="ot">&lt;-</span> new_complex <span class="sc">%&gt;%</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(complex_name, <span class="at">into =</span> <span class="fu">paste0</span>(<span class="st">&quot;subunit_&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>), <span class="at">sep =</span> <span class="st">&quot;_&quot;</span>, <span class="at">fill =</span> <span class="st">&quot;right&quot;</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">data.frame</span>(<span class="at">complex_name =</span> <span class="fu">c</span>(<span class="st">&quot;5SHpETE_byALOX5&quot;</span>),</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>                       <span class="at">subunit_1 =</span> <span class="fu">c</span>(<span class="st">&quot;LTC4S&quot;</span>),</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>                       <span class="at">subunit_2 =</span> <span class="fu">c</span>(<span class="st">&quot;ALOX5&quot;</span>),</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>                       <span class="at">subunit_3 =</span> <span class="fu">c</span>(<span class="st">&quot;ALOX5AP&quot;</span>)))</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>complex <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(complex, new_complex) <span class="sc">%&gt;%</span></span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">column_to_rownames</span>(<span class="st">&quot;complex_name&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>symbol) <span class="co"># 391</span></span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>complex[<span class="fu">is.na</span>(complex)] <span class="ot">&lt;-</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>scpeakerDB_CC <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>scpeakerDB_CC<span class="sc">$</span>interaction <span class="ot">&lt;-</span> interaction_input</span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>scpeakerDB_CC<span class="sc">$</span>complex     <span class="ot">&lt;-</span> complex</span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>scpeakerDB_CC<span class="sc">$</span>cofactor    <span class="ot">&lt;-</span> cofactor</span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>scpeakerDB_CC<span class="sc">$</span>geneInfo    <span class="ot">&lt;-</span> geneInfo</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The complete CellChat-compatible scpeakeR database object can then be saved as an R data file.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(scpeakerDB_CC, <span class="at">file =</span> <span class="st">&quot;../data/scpeakerDB_CC.rda&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(scpeakerDB_CC, <span class="at">file =</span> <span class="st">&quot;../data/scpeakerDB_CC.rda&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Temporary objects from the CellChat construction step are removed before starting the CellPhoneDB-compatible database build.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CPDB.only, interaction_input, complex, geneInfo, cofactor, new_complex, map, orig_map)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CPDB.only, interaction_input, complex, geneInfo, cofactor, new_complex, map, orig_map)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -2647,77 +2648,77 @@ vertical-align: -.125em;
 <p>Now, we curated the scpeakeRDB in zip format that is CellPhoneDB-compatible.</p>
 <p>Load the revised CellPhoneDB from Part 2 (<code>cellphonedb.zip</code>) input tables for customisation:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/interaction_input.csv&quot;</span>)</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>gene_input        <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/gene_input.csv&quot;</span>)</span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>complex_input     <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/complex_input.csv&quot;</span>)</span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>protein_input     <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/protein_input.csv&quot;</span>)</span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>transcription_factor_input <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/transcription_factor_input.csv&quot;</span>)</span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>uniprot_syn       <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(<span class="st">&quot;../data/sources/uniprot_synonyms.tsv&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/interaction_input.csv&quot;</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>gene_input        <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/gene_input.csv&quot;</span>)</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>complex_input     <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/complex_input.csv&quot;</span>)</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>protein_input     <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/protein_input.csv&quot;</span>)</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>transcription_factor_input <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/transcription_factor_input.csv&quot;</span>)</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>uniprot_syn       <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(<span class="st">&quot;../data/sources/uniprot_synonyms.tsv&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="add-missing-entries-to-uniprot_syn-dataframe" class="level2">
 <h2 class="anchored" data-anchor-id="add-missing-entries-to-uniprot_syn-dataframe">Add missing entries to uniprot_syn dataframe:</h2>
 <p>We isolate CellChat interactions absent from CellPhoneDB and then check which simple protein identifiers are missing from the UniProt synonym table. These missing identifiers are added manually so they can be used in the CellPhoneDB input files.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>CCDB.only <span class="ot">&lt;-</span> CCDB <span class="sc">%&gt;%</span></span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(LR <span class="sc">%in%</span> <span class="fu">setdiff</span>(CCDB<span class="sc">$</span>LR, CPDB<span class="sc">$</span>LR))</span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>CC_simple_ligands <span class="ot">&lt;-</span> CCDB.only <span class="sc">%&gt;%</span></span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> complex_ligand) <span class="sc">%&gt;%</span></span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(ligand)</span>
-<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>CC_simple_receptors <span class="ot">&lt;-</span> CCDB.only <span class="sc">%&gt;%</span></span>
-<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> complex_receptor) <span class="sc">%&gt;%</span></span>
-<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(receptor)</span>
-<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>CC_simple <span class="ot">&lt;-</span> <span class="fu">union</span>(CC_simple_ligands, CC_simple_receptors)</span>
-<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>CC_simple[<span class="fu">which</span>(<span class="sc">!</span> CC_simple <span class="sc">%in%</span> uniprot_syn<span class="sc">$</span>Entry)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>CCDB.only <span class="ot">&lt;-</span> CCDB <span class="sc">%&gt;%</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(LR <span class="sc">%in%</span> <span class="fu">setdiff</span>(CCDB<span class="sc">$</span>LR, CPDB<span class="sc">$</span>LR))</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>CC_simple_ligands <span class="ot">&lt;-</span> CCDB.only <span class="sc">%&gt;%</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> complex_ligand) <span class="sc">%&gt;%</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(ligand)</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>CC_simple_receptors <span class="ot">&lt;-</span> CCDB.only <span class="sc">%&gt;%</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> complex_receptor) <span class="sc">%&gt;%</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(receptor)</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>CC_simple <span class="ot">&lt;-</span> <span class="fu">union</span>(CC_simple_ligands, CC_simple_receptors)</span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>CC_simple[<span class="fu">which</span>(<span class="sc">!</span> CC_simple <span class="sc">%in%</span> uniprot_syn<span class="sc">$</span>Entry)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] &quot;P16619byCCL3L3&quot; &quot;P01562byIFNA13&quot;</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] &quot;P16619byCCL3L3&quot; &quot;P01562byIFNA13&quot;</span></span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>genes.add <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Entry        =</span> <span class="fu">c</span>(<span class="st">&quot;P16619byCCL3L3&quot;</span>, <span class="st">&quot;P01562byIFNA13&quot;</span>),</span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>                        <span class="st">&quot;Entry Name&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;CL3L1_HUMAN&quot;</span>, <span class="st">&quot;IFNA1_HUMAN&quot;</span>),</span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">check.names =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>uniprot_syn <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(uniprot_syn, genes.add)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] &quot;P16619byCCL3L3&quot; &quot;P01562byIFNA13&quot;</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>genes.add <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Entry        =</span> <span class="fu">c</span>(<span class="st">&quot;P16619byCCL3L3&quot;</span>, <span class="st">&quot;P01562byIFNA13&quot;</span>),</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>                        <span class="st">&quot;Entry Name&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;CL3L1_HUMAN&quot;</span>, <span class="st">&quot;IFNA1_HUMAN&quot;</span>),</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">check.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>uniprot_syn <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(uniprot_syn, genes.add)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="add-current-missing-entries-to-gene_input-dataframe" class="level2">
 <h2 class="anchored" data-anchor-id="add-current-missing-entries-to-gene_input-dataframe">Add current missing entries to gene_input dataframe</h2>
 <p>The same manually curated identifiers are also added to <code>gene_input</code>, including their gene symbols and Ensembl identifiers.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>genes.add <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">gene_name   =</span> <span class="fu">c</span>(<span class="st">&quot;CCL3L3&quot;</span>, <span class="st">&quot;IFNA13&quot;</span>),</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">uniprot     =</span> <span class="fu">c</span>(<span class="st">&quot;P16619byCCL3L3&quot;</span>, <span class="st">&quot;P01562byIFNA13&quot;</span>),</span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">hgnc_symbol =</span> <span class="fu">c</span>(<span class="st">&quot;CCL3L3&quot;</span>, <span class="st">&quot;IFNA13&quot;</span>),</span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">ensembl     =</span> <span class="fu">c</span>(<span class="st">&quot;ENSG00000276085&quot;</span>, <span class="st">&quot;ENSG00000233816&quot;</span>))</span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>gene_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(gene_input, genes.add)</span>
-<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CC_simple, CC_simple_ligands, CC_simple_receptors, genes.add)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>genes.add <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">gene_name   =</span> <span class="fu">c</span>(<span class="st">&quot;CCL3L3&quot;</span>, <span class="st">&quot;IFNA13&quot;</span>),</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">uniprot     =</span> <span class="fu">c</span>(<span class="st">&quot;P16619byCCL3L3&quot;</span>, <span class="st">&quot;P01562byIFNA13&quot;</span>),</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">hgnc_symbol =</span> <span class="fu">c</span>(<span class="st">&quot;CCL3L3&quot;</span>, <span class="st">&quot;IFNA13&quot;</span>),</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">ensembl     =</span> <span class="fu">c</span>(<span class="st">&quot;ENSG00000276085&quot;</span>, <span class="st">&quot;ENSG00000233816&quot;</span>))</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>gene_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(gene_input, genes.add)</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CC_simple, CC_simple_ligands, CC_simple_receptors, genes.add)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="compiling-cellchatdb-interactions-to-cellphonedb-format" class="level2">
 <h2 class="anchored" data-anchor-id="compiling-cellchatdb-interactions-to-cellphonedb-format">Compiling CellChatDB interactions to CellPhoneDB format</h2>
 <p>CellChat-only interactions are reshaped into the CellPhoneDB interaction schema. During this conversion, partner names are formatted for CellPhoneDB and UniProt synonym information is used to populate protein-name columns where available.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> CCDB.only <span class="sc">%&gt;%</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ligand_name, <span class="at">partner_a =</span> ligand, receptor_name, <span class="at">partner_b =</span> receptor, version, LR) <span class="sc">%&gt;%</span></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ligand_name =</span> <span class="fu">gsub</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, ligand_name),</span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">receptor_name =</span> <span class="fu">gsub</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, receptor_name),</span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">interactors =</span> <span class="fu">paste</span>(<span class="fu">paste0</span>(<span class="st">&quot;CCDB:&quot;</span>,ligand_name), receptor_name, <span class="at">sep =</span> <span class="st">&quot;-&quot;</span>)) <span class="sc">%&gt;%</span> <span class="co"># create &quot;interactors&quot; column</span></span>
-<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(uniprot_syn <span class="sc">%&gt;%</span> <span class="fu">select</span>(Entry, <span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;partner_a&quot;</span> <span class="ot">=</span> <span class="st">&quot;Entry&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">protein_name_a =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(<span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>), <span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>, <span class="cn">NA</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(uniprot_syn <span class="sc">%&gt;%</span> <span class="fu">select</span>(Entry, <span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;partner_b&quot;</span> <span class="ot">=</span> <span class="st">&quot;Entry&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">protein_name_b =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(<span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>), <span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>, <span class="cn">NA</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ligand_name   =</span> <span class="fu">gsub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, <span class="st">&quot;_&quot;</span>, ligand_name),                   <span class="co"># change format of interaction partners</span></span>
-<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">receptor_name =</span> <span class="fu">gsub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, <span class="st">&quot;_&quot;</span>, receptor_name),</span>
-<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">partner_a =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(protein_name_a), ligand_name,   partner_a),</span>
-<span id="cb48-15"><a href="#cb48-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">partner_b =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(protein_name_b), receptor_name, partner_b)) <span class="sc">%&gt;%</span></span>
-<span id="cb48-16"><a href="#cb48-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(partner_a, partner_b, protein_name_a, protein_name_b, interactors, version, LR)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> CCDB.only <span class="sc">%&gt;%</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ligand_name, <span class="at">partner_a =</span> ligand, receptor_name, <span class="at">partner_b =</span> receptor, version, LR) <span class="sc">%&gt;%</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ligand_name =</span> <span class="fu">gsub</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, ligand_name),</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">receptor_name =</span> <span class="fu">gsub</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, receptor_name),</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">interactors =</span> <span class="fu">paste</span>(<span class="fu">paste0</span>(<span class="st">&quot;CCDB:&quot;</span>,ligand_name), receptor_name, <span class="at">sep =</span> <span class="st">&quot;-&quot;</span>)) <span class="sc">%&gt;%</span> <span class="co"># create &quot;interactors&quot; column</span></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(uniprot_syn <span class="sc">%&gt;%</span> <span class="fu">select</span>(Entry, <span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;partner_a&quot;</span> <span class="ot">=</span> <span class="st">&quot;Entry&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">protein_name_a =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(<span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>), <span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>, <span class="cn">NA</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(uniprot_syn <span class="sc">%&gt;%</span> <span class="fu">select</span>(Entry, <span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;partner_b&quot;</span> <span class="ot">=</span> <span class="st">&quot;Entry&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">protein_name_b =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(<span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>), <span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>, <span class="cn">NA</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ligand_name   =</span> <span class="fu">gsub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, <span class="st">&quot;_&quot;</span>, ligand_name),                   <span class="co"># change format of interaction partners</span></span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">receptor_name =</span> <span class="fu">gsub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">+&quot;</span>, <span class="st">&quot;_&quot;</span>, receptor_name),</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">partner_a =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(protein_name_a), ligand_name,   partner_a),</span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">partner_b =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(protein_name_b), receptor_name, partner_b)) <span class="sc">%&gt;%</span></span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(partner_a, partner_b, protein_name_a, protein_name_b, interactors, version, LR)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="handle-same-duplicated-interaction-in-cpdb" class="level2">
@@ -2725,145 +2726,145 @@ vertical-align: -.125em;
 <p>In the earlier section, we observed that some interaction partners were duplicated after database merger due to inconsistent mapping of UniProt identifiers to gene symbols. To deal with these interactions, we compressed the duplicated ligand/receptor to the canonical gene symbol since the expression matrix from scRNA-seq is unable to distinguish between isoforms or protein products from bicistronic genes. In addition, we remove one duplicated interaction we found here:</p>
 <p>After adding the CellChat-only interactions, duplicated or unsupported partner mappings are removed. The remaining complex-containing interactions are then compared against the existing CellPhoneDB complex table to distinguish genuinely new complexes from equivalent complexes that already exist under a different name.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(interaction_input, tmp) <span class="sc">%&gt;%</span> </span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> (partner_a <span class="sc">==</span> <span class="st">&quot;F7VJQ1&quot;</span> <span class="sc">|</span>                                <span class="co"># APRIO_HUMAN</span></span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>           (partner_a <span class="sc">==</span> <span class="st">&quot;Q9ULB1&quot;</span> <span class="sc">&amp;</span> partner_b <span class="sc">==</span> <span class="st">&quot;O94910&quot;</span>) <span class="sc">|</span>       <span class="co"># NRX1A_HUMAN</span></span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>           (partner_a <span class="sc">==</span> <span class="st">&quot;Q9ULB1&quot;</span> <span class="sc">&amp;</span> partner_b <span class="sc">==</span> <span class="st">&quot;Q14118&quot;</span>) <span class="sc">|</span>       <span class="co"># NRX1A_HUMAN</span></span>
-<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>           (partner_a <span class="sc">==</span> <span class="st">&quot;Q8IZI9&quot;</span> <span class="sc">&amp;</span> partner_b <span class="sc">==</span> <span class="st">&quot;Type_III_IFNR&quot;</span>)) <span class="co"># IL28 receptor = Type_III_IFNR</span></span>
-<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>         )                                                         <span class="co"># 3901 interactions</span></span>
-<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a><span class="do">## Extract new complexes to CPDB</span></span>
-<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>CC_complex_ligand <span class="ot">&lt;-</span> CCDB.only <span class="sc">%&gt;%</span></span>
-<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(complex_ligand) <span class="sc">%&gt;%</span></span>
-<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">complex_name =</span> ligand_name, <span class="at">uniprot =</span> ligand)</span>
-<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>CC_complex_receptor <span class="ot">&lt;-</span> CCDB.only <span class="sc">%&gt;%</span></span>
-<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(complex_receptor) <span class="sc">%&gt;%</span></span>
-<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">complex_name =</span> receptor_name, <span class="at">uniprot =</span> receptor)</span>
-<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a>CC_complex <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(CC_complex_ligand, CC_complex_receptor) <span class="sc">%&gt;%</span></span>
-<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="co"># 100</span></span>
-<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-20"><a href="#cb49-20" aria-hidden="true" tabindex="-1"></a>CP_complex <span class="ot">&lt;-</span> complex_input <span class="sc">%&gt;%</span></span>
-<span id="cb49-21"><a href="#cb49-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(complex_name, <span class="fu">starts_with</span>(<span class="st">&quot;uniprot_&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb49-22"><a href="#cb49-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb49-23"><a href="#cb49-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">uniprot =</span> <span class="fu">paste</span>(<span class="fu">sort</span>(<span class="fu">na.omit</span>(<span class="fu">c</span>(uniprot_1, uniprot_2, uniprot_3, uniprot_4, uniprot_5))), <span class="at">collapse =</span> <span class="st">&quot;_&quot;</span>))</span>
-<span id="cb49-24"><a href="#cb49-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-25"><a href="#cb49-25" aria-hidden="true" tabindex="-1"></a>CC_complex <span class="ot">&lt;-</span> <span class="fu">left_join</span>(CC_complex, CP_complex <span class="sc">%&gt;%</span> <span class="fu">select</span>(complex_name, uniprot),</span>
-<span id="cb49-26"><a href="#cb49-26" aria-hidden="true" tabindex="-1"></a>                        <span class="at">by =</span> <span class="st">&quot;uniprot&quot;</span>, <span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">&quot;_CC&quot;</span>, <span class="st">&quot;_CP&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb49-27"><a href="#cb49-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(complex_name_CP) <span class="sc">|</span> complex_name_CC <span class="sc">!=</span> complex_name_CP) <span class="co"># 77</span></span>
-<span id="cb49-28"><a href="#cb49-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-29"><a href="#cb49-29" aria-hidden="true" tabindex="-1"></a>complex_present <span class="ot">&lt;-</span> CC_complex <span class="sc">%&gt;%</span></span>
-<span id="cb49-30"><a href="#cb49-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> <span class="fu">is.na</span>(complex_name_CP)) <span class="co"># 48</span></span>
-<span id="cb49-31"><a href="#cb49-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-32"><a href="#cb49-32" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CC_complex_ligand, CC_complex_receptor, tmp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(interaction_input, tmp) <span class="sc">%&gt;%</span> </span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> (partner_a <span class="sc">==</span> <span class="st">&quot;F7VJQ1&quot;</span> <span class="sc">|</span>                                <span class="co"># APRIO_HUMAN</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>           (partner_a <span class="sc">==</span> <span class="st">&quot;Q9ULB1&quot;</span> <span class="sc">&amp;</span> partner_b <span class="sc">==</span> <span class="st">&quot;O94910&quot;</span>) <span class="sc">|</span>       <span class="co"># NRX1A_HUMAN</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>           (partner_a <span class="sc">==</span> <span class="st">&quot;Q9ULB1&quot;</span> <span class="sc">&amp;</span> partner_b <span class="sc">==</span> <span class="st">&quot;Q14118&quot;</span>) <span class="sc">|</span>       <span class="co"># NRX1A_HUMAN</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>           (partner_a <span class="sc">==</span> <span class="st">&quot;Q8IZI9&quot;</span> <span class="sc">&amp;</span> partner_b <span class="sc">==</span> <span class="st">&quot;Type_III_IFNR&quot;</span>)) <span class="co"># IL28 receptor = Type_III_IFNR</span></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>         )                                                         <span class="co"># 3901 interactions</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a><span class="do">## Extract new complexes to CPDB</span></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>CC_complex_ligand <span class="ot">&lt;-</span> CCDB.only <span class="sc">%&gt;%</span></span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(complex_ligand) <span class="sc">%&gt;%</span></span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">complex_name =</span> ligand_name, <span class="at">uniprot =</span> ligand)</span>
+<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a>CC_complex_receptor <span class="ot">&lt;-</span> CCDB.only <span class="sc">%&gt;%</span></span>
+<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(complex_receptor) <span class="sc">%&gt;%</span></span>
+<span id="cb48-15"><a href="#cb48-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">complex_name =</span> receptor_name, <span class="at">uniprot =</span> receptor)</span>
+<span id="cb48-16"><a href="#cb48-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-17"><a href="#cb48-17" aria-hidden="true" tabindex="-1"></a>CC_complex <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(CC_complex_ligand, CC_complex_receptor) <span class="sc">%&gt;%</span></span>
+<span id="cb48-18"><a href="#cb48-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="co"># 100</span></span>
+<span id="cb48-19"><a href="#cb48-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-20"><a href="#cb48-20" aria-hidden="true" tabindex="-1"></a>CP_complex <span class="ot">&lt;-</span> complex_input <span class="sc">%&gt;%</span></span>
+<span id="cb48-21"><a href="#cb48-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(complex_name, <span class="fu">starts_with</span>(<span class="st">&quot;uniprot_&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb48-22"><a href="#cb48-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb48-23"><a href="#cb48-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">uniprot =</span> <span class="fu">paste</span>(<span class="fu">sort</span>(<span class="fu">na.omit</span>(<span class="fu">c</span>(uniprot_1, uniprot_2, uniprot_3, uniprot_4, uniprot_5))), <span class="at">collapse =</span> <span class="st">&quot;_&quot;</span>))</span>
+<span id="cb48-24"><a href="#cb48-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-25"><a href="#cb48-25" aria-hidden="true" tabindex="-1"></a>CC_complex <span class="ot">&lt;-</span> <span class="fu">left_join</span>(CC_complex, CP_complex <span class="sc">%&gt;%</span> <span class="fu">select</span>(complex_name, uniprot),</span>
+<span id="cb48-26"><a href="#cb48-26" aria-hidden="true" tabindex="-1"></a>                        <span class="at">by =</span> <span class="st">&quot;uniprot&quot;</span>, <span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">&quot;_CC&quot;</span>, <span class="st">&quot;_CP&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb48-27"><a href="#cb48-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(complex_name_CP) <span class="sc">|</span> complex_name_CC <span class="sc">!=</span> complex_name_CP) <span class="co"># 77</span></span>
+<span id="cb48-28"><a href="#cb48-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-29"><a href="#cb48-29" aria-hidden="true" tabindex="-1"></a>complex_present <span class="ot">&lt;-</span> CC_complex <span class="sc">%&gt;%</span></span>
+<span id="cb48-30"><a href="#cb48-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span> <span class="fu">is.na</span>(complex_name_CP)) <span class="co"># 48</span></span>
+<span id="cb48-31"><a href="#cb48-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-32"><a href="#cb48-32" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CC_complex_ligand, CC_complex_receptor, tmp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Complex names already present in CellPhoneDB are rewritten to the original CellPhoneDB names, while complexes absent from CellPhoneDB are appended to <code>complex_input</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rename newly added complexes to original CPDB complex names</span></span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(complex_present <span class="sc">%&gt;%</span> <span class="fu">select</span>(complex_name_CC, complex_name_CP), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;partner_a&quot;</span> <span class="ot">=</span> <span class="st">&quot;complex_name_CC&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">partner_a =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(complex_name_CP), complex_name_CP, partner_a)) <span class="sc">%&gt;%</span></span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>complex_name_CP) <span class="sc">%&gt;%</span></span>
-<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(complex_present <span class="sc">%&gt;%</span> <span class="fu">select</span>(complex_name_CC, complex_name_CP), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;partner_b&quot;</span> <span class="ot">=</span> <span class="st">&quot;complex_name_CC&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">partner_b =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(complex_name_CP), complex_name_CP, partner_b)) <span class="sc">%&gt;%</span></span>
-<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>complex_name_CP)</span>
-<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Add new complexes to complex_input</span></span>
-<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>complex_new <span class="ot">&lt;-</span> <span class="fu">anti_join</span>(CC_complex, complex_present) <span class="co"># 29</span></span>
-<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>complex_new <span class="ot">&lt;-</span> complex_new <span class="sc">%&gt;%</span></span>
-<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>complex_name_CP) <span class="sc">%&gt;%</span></span>
-<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">complex_name =</span> complex_name_CC) <span class="sc">%&gt;%</span></span>
-<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(uniprot, <span class="at">into =</span> <span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">&quot;uniprot_&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)), <span class="at">fill =</span> <span class="st">&quot;right&quot;</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb50-18"><a href="#cb50-18" aria-hidden="true" tabindex="-1"></a>complex_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(complex_input, complex_new <span class="sc">%&gt;%</span> <span class="fu">select</span>(complex_name, <span class="fu">starts_with</span>(<span class="st">&quot;uniprot_&quot;</span>))) <span class="sc">%&gt;%</span></span>
-<span id="cb50-19"><a href="#cb50-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">version =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(version), <span class="st">&quot;CellPhoneDBcore==5a&quot;</span>, version))</span>
-<span id="cb50-20"><a href="#cb50-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb50-21"><a href="#cb50-21" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CC_complex, complex_new, complex_present, CP_complex)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rename newly added complexes to original CPDB complex names</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(complex_present <span class="sc">%&gt;%</span> <span class="fu">select</span>(complex_name_CC, complex_name_CP), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;partner_a&quot;</span> <span class="ot">=</span> <span class="st">&quot;complex_name_CC&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">partner_a =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(complex_name_CP), complex_name_CP, partner_a)) <span class="sc">%&gt;%</span></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>complex_name_CP) <span class="sc">%&gt;%</span></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(complex_present <span class="sc">%&gt;%</span> <span class="fu">select</span>(complex_name_CC, complex_name_CP), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;partner_b&quot;</span> <span class="ot">=</span> <span class="st">&quot;complex_name_CC&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">partner_b =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(complex_name_CP), complex_name_CP, partner_b)) <span class="sc">%&gt;%</span></span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>complex_name_CP)</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Add new complexes to complex_input</span></span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>complex_new <span class="ot">&lt;-</span> <span class="fu">anti_join</span>(CC_complex, complex_present) <span class="co"># 29</span></span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>complex_new <span class="ot">&lt;-</span> complex_new <span class="sc">%&gt;%</span></span>
+<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>complex_name_CP) <span class="sc">%&gt;%</span></span>
+<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">complex_name =</span> complex_name_CC) <span class="sc">%&gt;%</span></span>
+<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(uniprot, <span class="at">into =</span> <span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">&quot;uniprot_&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)), <span class="at">fill =</span> <span class="st">&quot;right&quot;</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a>complex_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(complex_input, complex_new <span class="sc">%&gt;%</span> <span class="fu">select</span>(complex_name, <span class="fu">starts_with</span>(<span class="st">&quot;uniprot_&quot;</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">version =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(version), <span class="st">&quot;CellPhoneDBcore==5a&quot;</span>, version))</span>
+<span id="cb49-20"><a href="#cb49-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-21"><a href="#cb49-21" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(CC_complex, complex_new, complex_present, CP_complex)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We next identify any proteins from the expanded complex table that are missing from the CellPhoneDB gene or protein tables. These missing entries are manually curated and staged for addition.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract proteins in complex_input NOT in database</span></span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>complex_proteins <span class="ot">&lt;-</span> complex_input <span class="sc">%&gt;%</span></span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">uniprot =</span> <span class="fu">paste</span>(<span class="fu">na.omit</span>(<span class="fu">c</span>(uniprot_1, uniprot_2, uniprot_3, uniprot_4, uniprot_5)), <span class="at">collapse =</span> <span class="st">&quot;_&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(uniprot) <span class="sc">%&gt;%</span></span>
-<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste</span>(<span class="at">collapse =</span> <span class="st">&quot;_&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_split_1</span>(<span class="at">pattern =</span> <span class="st">&quot;_&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span>
-<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a>new_genes    <span class="ot">&lt;-</span> complex_proteins[<span class="fu">which</span>(<span class="sc">!</span> complex_proteins <span class="sc">%in%</span> gene_input<span class="sc">$</span>uniprot)]    <span class="co"># 7</span></span>
-<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>new_proteins <span class="ot">&lt;-</span> complex_proteins[<span class="fu">which</span>(<span class="sc">!</span> complex_proteins <span class="sc">%in%</span> protein_input<span class="sc">$</span>uniprot)] <span class="co"># 11</span></span>
-<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>gene_add <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">gene_name   =</span> <span class="fu">c</span>(<span class="st">&quot;FREM1&quot;</span>, <span class="st">&quot;NPNT&quot;</span>, <span class="st">&quot;FRAS1&quot;</span>, <span class="st">&quot;FREM2&quot;</span>, <span class="st">&quot;SMO&quot;</span>, <span class="st">&quot;HSP90AA1&quot;</span>, <span class="st">&quot;MMP14&quot;</span>),</span>
-<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a>                       <span class="at">uniprot =</span> new_genes,</span>
-<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>                       <span class="at">hgnc_symbol =</span> <span class="fu">c</span>(<span class="st">&quot;FREM1&quot;</span>, <span class="st">&quot;NPNT&quot;</span>, <span class="st">&quot;FRAS1&quot;</span>, <span class="st">&quot;FREM2&quot;</span>, <span class="st">&quot;SMO&quot;</span>, <span class="st">&quot;HSP90AA1&quot;</span>, <span class="st">&quot;MMP14&quot;</span>),</span>
-<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>                       <span class="at">ensembl     =</span> <span class="fu">c</span>(<span class="st">&quot;ENSG00000164946&quot;</span>, <span class="st">&quot;ENSG00000168743&quot;</span>, <span class="st">&quot;ENSG00000138759&quot;</span>,</span>
-<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a>                                       <span class="st">&quot;ENSG00000150893&quot;</span>, <span class="st">&quot;ENSG00000128602&quot;</span>, <span class="st">&quot;ENSG00000080824&quot;</span>,</span>
-<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a>                                       <span class="st">&quot;ENSG00000157227&quot;</span>))</span>
-<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a>protein_add <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">uniprot =</span> new_proteins,</span>
-<span id="cb51-21"><a href="#cb51-21" aria-hidden="true" tabindex="-1"></a>                          <span class="at">protein_name =</span> <span class="fu">c</span>(<span class="st">&quot;FREM1_HUMAN&quot;</span>, <span class="st">&quot;NPNT_HUMAN&quot;</span>,  <span class="st">&quot;FRAS1_HUMAN&quot;</span>, </span>
-<span id="cb51-22"><a href="#cb51-22" aria-hidden="true" tabindex="-1"></a>                                           <span class="st">&quot;FREM2_HUMAN&quot;</span>, <span class="st">&quot;SMO_HUMAN&quot;</span>,   <span class="st">&quot;IL31R_HUMAN&quot;</span>, </span>
-<span id="cb51-23"><a href="#cb51-23" aria-hidden="true" tabindex="-1"></a>                                           <span class="st">&quot;CNTP1_HUMAN&quot;</span>, <span class="st">&quot;CNTN2_HUMAN&quot;</span>, <span class="st">&quot;CNTP2_HUMAN&quot;</span>, </span>
-<span id="cb51-24"><a href="#cb51-24" aria-hidden="true" tabindex="-1"></a>                                           <span class="st">&quot;HS90A_HUMAN&quot;</span>, <span class="st">&quot;MMP14_HUMAN&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract proteins in complex_input NOT in database</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>complex_proteins <span class="ot">&lt;-</span> complex_input <span class="sc">%&gt;%</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">uniprot =</span> <span class="fu">paste</span>(<span class="fu">na.omit</span>(<span class="fu">c</span>(uniprot_1, uniprot_2, uniprot_3, uniprot_4, uniprot_5)), <span class="at">collapse =</span> <span class="st">&quot;_&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(uniprot) <span class="sc">%&gt;%</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste</span>(<span class="at">collapse =</span> <span class="st">&quot;_&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_split_1</span>(<span class="at">pattern =</span> <span class="st">&quot;_&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>new_genes    <span class="ot">&lt;-</span> complex_proteins[<span class="fu">which</span>(<span class="sc">!</span> complex_proteins <span class="sc">%in%</span> gene_input<span class="sc">$</span>uniprot)]    <span class="co"># 7</span></span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>new_proteins <span class="ot">&lt;-</span> complex_proteins[<span class="fu">which</span>(<span class="sc">!</span> complex_proteins <span class="sc">%in%</span> protein_input<span class="sc">$</span>uniprot)] <span class="co"># 11</span></span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>gene_add <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">gene_name   =</span> <span class="fu">c</span>(<span class="st">&quot;FREM1&quot;</span>, <span class="st">&quot;NPNT&quot;</span>, <span class="st">&quot;FRAS1&quot;</span>, <span class="st">&quot;FREM2&quot;</span>, <span class="st">&quot;SMO&quot;</span>, <span class="st">&quot;HSP90AA1&quot;</span>, <span class="st">&quot;MMP14&quot;</span>),</span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>                       <span class="at">uniprot =</span> new_genes,</span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>                       <span class="at">hgnc_symbol =</span> <span class="fu">c</span>(<span class="st">&quot;FREM1&quot;</span>, <span class="st">&quot;NPNT&quot;</span>, <span class="st">&quot;FRAS1&quot;</span>, <span class="st">&quot;FREM2&quot;</span>, <span class="st">&quot;SMO&quot;</span>, <span class="st">&quot;HSP90AA1&quot;</span>, <span class="st">&quot;MMP14&quot;</span>),</span>
+<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a>                       <span class="at">ensembl     =</span> <span class="fu">c</span>(<span class="st">&quot;ENSG00000164946&quot;</span>, <span class="st">&quot;ENSG00000168743&quot;</span>, <span class="st">&quot;ENSG00000138759&quot;</span>,</span>
+<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a>                                       <span class="st">&quot;ENSG00000150893&quot;</span>, <span class="st">&quot;ENSG00000128602&quot;</span>, <span class="st">&quot;ENSG00000080824&quot;</span>,</span>
+<span id="cb50-18"><a href="#cb50-18" aria-hidden="true" tabindex="-1"></a>                                       <span class="st">&quot;ENSG00000157227&quot;</span>))</span>
+<span id="cb50-19"><a href="#cb50-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-20"><a href="#cb50-20" aria-hidden="true" tabindex="-1"></a>protein_add <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">uniprot =</span> new_proteins,</span>
+<span id="cb50-21"><a href="#cb50-21" aria-hidden="true" tabindex="-1"></a>                          <span class="at">protein_name =</span> <span class="fu">c</span>(<span class="st">&quot;FREM1_HUMAN&quot;</span>, <span class="st">&quot;NPNT_HUMAN&quot;</span>,  <span class="st">&quot;FRAS1_HUMAN&quot;</span>, </span>
+<span id="cb50-22"><a href="#cb50-22" aria-hidden="true" tabindex="-1"></a>                                           <span class="st">&quot;FREM2_HUMAN&quot;</span>, <span class="st">&quot;SMO_HUMAN&quot;</span>,   <span class="st">&quot;IL31R_HUMAN&quot;</span>, </span>
+<span id="cb50-23"><a href="#cb50-23" aria-hidden="true" tabindex="-1"></a>                                           <span class="st">&quot;CNTP1_HUMAN&quot;</span>, <span class="st">&quot;CNTN2_HUMAN&quot;</span>, <span class="st">&quot;CNTP2_HUMAN&quot;</span>, </span>
+<span id="cb50-24"><a href="#cb50-24" aria-hidden="true" tabindex="-1"></a>                                           <span class="st">&quot;HS90A_HUMAN&quot;</span>, <span class="st">&quot;MMP14_HUMAN&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The manually curated gene and protein additions are merged into the CellPhoneDB input tables. We then perform another pass over interaction partners to catch any remaining UniProt identifiers absent from <code>gene_input</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Update database with new gene/protein</span></span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>gene_input    <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(gene_input, gene_add)       <span class="co"># 1813</span></span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>protein_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(protein_input, protein_add) <span class="co"># 1368</span></span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(new_genes, new_proteins, gene_add, protein_add, complex_proteins)</span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Checking gene_input table</span></span>
-<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>genes <span class="ot">&lt;-</span> <span class="fu">union</span>( interaction_input<span class="sc">$</span>partner_a[<span class="sc">!</span> <span class="fu">grepl</span>(<span class="st">&quot;[: _a-z]&quot;</span>, interaction_input<span class="sc">$</span>partner_a)],</span>
-<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>                interaction_input<span class="sc">$</span>partner_b[<span class="sc">!</span> <span class="fu">grepl</span>(<span class="st">&quot;[: _a-z]&quot;</span>, interaction_input<span class="sc">$</span>partner_b)])</span>
-<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>not_included <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(genes, gene_input<span class="sc">$</span>uniprot)</span>
-<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a>genes.add <span class="ot">&lt;-</span> uniprot_syn <span class="sc">%&gt;%</span></span>
-<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Entry <span class="sc">%in%</span> not_included) <span class="sc">%&gt;%</span></span>
-<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">gene_name =</span> <span class="st">`</span><span class="at">Gene Names (primary)</span><span class="st">`</span>, <span class="at">uniprot =</span> Entry, <span class="at">hgnc_symbol =</span> <span class="st">`</span><span class="at">Gene Names (primary)</span><span class="st">`</span>)</span>
-<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>gene_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(gene_input, genes.add)</span>
-<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(genes, not_included, genes.add)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Update database with new gene/protein</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>gene_input    <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(gene_input, gene_add)       <span class="co"># 1813</span></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>protein_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(protein_input, protein_add) <span class="co"># 1368</span></span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(new_genes, new_proteins, gene_add, protein_add, complex_proteins)</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Checking gene_input table</span></span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>genes <span class="ot">&lt;-</span> <span class="fu">union</span>( interaction_input<span class="sc">$</span>partner_a[<span class="sc">!</span> <span class="fu">grepl</span>(<span class="st">&quot;[: _a-z]&quot;</span>, interaction_input<span class="sc">$</span>partner_a)],</span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a>                interaction_input<span class="sc">$</span>partner_b[<span class="sc">!</span> <span class="fu">grepl</span>(<span class="st">&quot;[: _a-z]&quot;</span>, interaction_input<span class="sc">$</span>partner_b)])</span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a>not_included <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(genes, gene_input<span class="sc">$</span>uniprot)</span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a>genes.add <span class="ot">&lt;-</span> uniprot_syn <span class="sc">%&gt;%</span></span>
+<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Entry <span class="sc">%in%</span> not_included) <span class="sc">%&gt;%</span></span>
+<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">gene_name =</span> <span class="st">`</span><span class="at">Gene Names (primary)</span><span class="st">`</span>, <span class="at">uniprot =</span> Entry, <span class="at">hgnc_symbol =</span> <span class="st">`</span><span class="at">Gene Names (primary)</span><span class="st">`</span>)</span>
+<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a>gene_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(gene_input, genes.add)</span>
+<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(genes, not_included, genes.add)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Protein names from the newly merged interactions are collected from both ligand and receptor sides, then added to <code>protein_input</code> where they are not already represented.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Adding changes to protein_input table</span></span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>ligand_protein <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
-<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(protein_name_a)) <span class="sc">%&gt;%</span></span>
-<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">uniprot =</span> partner_a, <span class="at">protein_name =</span> protein_name_a) <span class="sc">%&gt;%</span></span>
-<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span>
-<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>receptor_protein <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
-<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(protein_name_b)) <span class="sc">%&gt;%</span></span>
-<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">uniprot =</span> partner_b, <span class="at">protein_name =</span> protein_name_b) <span class="sc">%&gt;%</span></span>
-<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span>
-<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>CP_protein <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(ligand_protein, receptor_protein)</span>
-<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(ligand_protein, receptor_protein)</span>
-<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a>new_protein <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(CP_protein<span class="sc">$</span>uniprot, protein_input<span class="sc">$</span>uniprot)</span>
-<span id="cb53-17"><a href="#cb53-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb53-18"><a href="#cb53-18" aria-hidden="true" tabindex="-1"></a>protein_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(protein_input, CP_protein <span class="sc">%&gt;%</span> <span class="fu">filter</span>(uniprot <span class="sc">%in%</span> new_protein)) <span class="sc">%&gt;%</span></span>
-<span id="cb53-19"><a href="#cb53-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Adding changes to protein_input table</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>ligand_protein <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(protein_name_a)) <span class="sc">%&gt;%</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">uniprot =</span> partner_a, <span class="at">protein_name =</span> protein_name_a) <span class="sc">%&gt;%</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>receptor_protein <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(protein_name_b)) <span class="sc">%&gt;%</span></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">uniprot =</span> partner_b, <span class="at">protein_name =</span> protein_name_b) <span class="sc">%&gt;%</span></span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>CP_protein <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(ligand_protein, receptor_protein)</span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(ligand_protein, receptor_protein)</span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>new_protein <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(CP_protein<span class="sc">$</span>uniprot, protein_input<span class="sc">$</span>uniprot)</span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>protein_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(protein_input, CP_protein <span class="sc">%&gt;%</span> <span class="fu">filter</span>(uniprot <span class="sc">%in%</span> new_protein)) <span class="sc">%&gt;%</span></span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="aligning-gene-and-protein-input-with-interaction_input" class="level2">
 <h2 class="anchored" data-anchor-id="aligning-gene-and-protein-input-with-interaction_input">Aligning gene and protein input with interaction_input</h2>
 <p>The gene and protein tables are checked for consistency so that each UniProt identifier used by one table is represented where CellPhoneDB expects it. The remaining HLA-DQB2 discrepancy is handled manually because its database identifier needs to be aligned to <code>P05538</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(protein_input<span class="sc">$</span>uniprot, gene_input<span class="sc">$</span>uniprot)    <span class="co"># 0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(protein_input<span class="sc">$</span>uniprot, gene_input<span class="sc">$</span>uniprot)    <span class="co"># 0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>character(0)</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(gene_input<span class="sc">$</span>uniprot,    protein_input<span class="sc">$</span>uniprot) <span class="co"># 194</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(gene_input<span class="sc">$</span>uniprot,    protein_input<span class="sc">$</span>uniprot) <span class="co"># 194</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  [1] &quot;P24071&quot;  &quot;Q8N149&quot;  &quot;Q9H5V8&quot;  &quot;O75023&quot;  &quot;Q8NHP6&quot;  &quot;P08195&quot;  &quot;Q9Y5Y7&quot; 
   [8] &quot;Q9NPR2&quot;  &quot;O00481&quot;  &quot;Q96LA6&quot;  &quot;Q8IYS5&quot;  &quot;P12319&quot;  &quot;Q5JPE7&quot;  &quot;Q969P0&quot; 
@@ -2894,57 +2895,57 @@ vertical-align: -.125em;
 [183] &quot;Q9Y466&quot;  &quot;Q9Y5X4&quot;  &quot;P10589&quot;  &quot;P24468&quot;  &quot;P10588&quot;  &quot;P22736&quot;  &quot;P43354&quot; 
 [190] &quot;Q92570&quot;  &quot;Q13285&quot;  &quot;O00482&quot;  &quot;Q15406&quot;  &quot;Q9NYK1&quot; </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>new_protein <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(gene_input<span class="sc">$</span>uniprot, protein_input<span class="sc">$</span>uniprot)</span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>protein_add <span class="ot">&lt;-</span> uniprot_syn <span class="sc">%&gt;%</span></span>
-<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Entry <span class="sc">%in%</span> new_protein) <span class="sc">%&gt;%</span></span>
-<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">uniprot =</span> Entry, <span class="at">protein_name =</span> <span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>)</span>
-<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(new_protein, protein_add<span class="sc">$</span>uniprot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>new_protein <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(gene_input<span class="sc">$</span>uniprot, protein_input<span class="sc">$</span>uniprot)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>protein_add <span class="ot">&lt;-</span> uniprot_syn <span class="sc">%&gt;%</span></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Entry <span class="sc">%in%</span> new_protein) <span class="sc">%&gt;%</span></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">uniprot =</span> Entry, <span class="at">protein_name =</span> <span class="st">`</span><span class="at">Entry Name</span><span class="st">`</span>)</span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(new_protein, protein_add<span class="sc">$</span>uniprot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] &quot;HLADRA&quot;  &quot;HLADRB5&quot; &quot;HLADRB1&quot; &quot;HLADQA1&quot; &quot;HLADQB1&quot; &quot;HLADQA2&quot; &quot;HLADQB2&quot;
  [8] &quot;HLADOB&quot;  &quot;HLADMB&quot;  &quot;HLADMA&quot;  &quot;HLADOA&quot;  &quot;HLADPA1&quot; &quot;HLADPB1&quot;</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] &quot;HLADRA&quot;  &quot;HLADRB5&quot; &quot;HLADRB1&quot; &quot;HLADQA1&quot; &quot;HLADQB1&quot; &quot;HLADQA2&quot; &quot;HLADQB2&quot; &quot;HLADOB&quot;  &quot;HLADMB&quot;  &quot;HLADMA&quot;  &quot;HLADOA&quot;  &quot;HLADPA1&quot; &quot;HLADPB1&quot;</span></span>
-<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>protein_add2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">uniprot =</span> <span class="st">&quot;P05538&quot;</span>,</span>
-<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>                           <span class="at">protein_name =</span> <span class="st">&quot;DQB2_HUMAN&quot;</span>)</span>
-<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>protein_add <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(protein_add, protein_add2)</span>
-<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>protein_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(protein_input, protein_add)</span>
-<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(protein_add, protein_add2, new_protein)</span>
-<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(protein_input<span class="sc">$</span>uniprot, gene_input<span class="sc">$</span>uniprot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] &quot;HLADRA&quot;  &quot;HLADRB5&quot; &quot;HLADRB1&quot; &quot;HLADQA1&quot; &quot;HLADQB1&quot; &quot;HLADQA2&quot; &quot;HLADQB2&quot; &quot;HLADOB&quot;  &quot;HLADMB&quot;  &quot;HLADMA&quot;  &quot;HLADOA&quot;  &quot;HLADPA1&quot; &quot;HLADPB1&quot;</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>protein_add2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">uniprot =</span> <span class="st">&quot;P05538&quot;</span>,</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>                           <span class="at">protein_name =</span> <span class="st">&quot;DQB2_HUMAN&quot;</span>)</span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>protein_add <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(protein_add, protein_add2)</span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>protein_input <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(protein_input, protein_add)</span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(protein_add, protein_add2, new_protein)</span>
+<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(protein_input<span class="sc">$</span>uniprot, gene_input<span class="sc">$</span>uniprot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] &quot;P05538&quot;</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] &quot;P05538&quot;</span></span>
-<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>gene_input <span class="ot">&lt;-</span> gene_input <span class="sc">%&gt;%</span></span>
-<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">uniprot =</span> <span class="fu">ifelse</span>(gene_name <span class="sc">==</span> <span class="st">&quot;HLA-DQB2&quot;</span>, <span class="st">&quot;P05538&quot;</span>, uniprot))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] &quot;P05538&quot;</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>gene_input <span class="ot">&lt;-</span> gene_input <span class="sc">%&gt;%</span></span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">uniprot =</span> <span class="fu">ifelse</span>(gene_name <span class="sc">==</span> <span class="st">&quot;HLA-DQB2&quot;</span>, <span class="st">&quot;P05538&quot;</span>, uniprot))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="final-edit" class="level2">
 <h2 class="anchored" data-anchor-id="final-edit">Final edit</h2>
 <p>Before export, newly added interactions are labelled with the user-curated annotation strategy. The CellPhoneDB interaction-to-LR map is also reconstructed and joined with the CellChat map to create a shared lookup table for downstream analyses.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
-<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">annotation_strategy =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(annotation_strategy), <span class="st">&quot;user_curated&quot;</span>, annotation_strategy))</span>
-<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>orig_map <span class="ot">&lt;-</span> CPDB <span class="sc">%&gt;%</span></span>
-<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">partner =</span> <span class="fu">paste</span>(partner_a, partner_b, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(partner, LR)</span>
-<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>cpdb_map <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
-<span id="cb63-9"><a href="#cb63-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">partner =</span> <span class="fu">paste</span>(partner_a, partner_b, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb63-10"><a href="#cb63-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(partner, LR) <span class="sc">%&gt;%</span></span>
-<span id="cb63-11"><a href="#cb63-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(orig_map, <span class="at">by =</span> <span class="st">&quot;partner&quot;</span>, <span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">&quot;_new&quot;</span>, <span class="st">&quot;_orig&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb63-12"><a href="#cb63-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">LR_new =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(LR_orig), LR_orig, LR_new)) <span class="sc">%&gt;%</span></span>
-<span id="cb63-13"><a href="#cb63-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(partner, <span class="at">LR =</span> LR_new)</span>
-<span id="cb63-14"><a href="#cb63-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb63-15"><a href="#cb63-15" aria-hidden="true" tabindex="-1"></a>cpdb_map <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">annotation_strategy =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(annotation_strategy), <span class="st">&quot;user_curated&quot;</span>, annotation_strategy))</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>orig_map <span class="ot">&lt;-</span> CPDB <span class="sc">%&gt;%</span></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">partner =</span> <span class="fu">paste</span>(partner_a, partner_b, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(partner, LR)</span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>cpdb_map <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span></span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">partner =</span> <span class="fu">paste</span>(partner_a, partner_b, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(partner, LR) <span class="sc">%&gt;%</span></span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(orig_map, <span class="at">by =</span> <span class="st">&quot;partner&quot;</span>, <span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">&quot;_new&quot;</span>, <span class="st">&quot;_orig&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">LR_new =</span> <span class="fu">ifelse</span>(<span class="sc">!</span> <span class="fu">is.na</span>(LR_orig), LR_orig, LR_new)) <span class="sc">%&gt;%</span></span>
+<span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(partner, <span class="at">LR =</span> LR_new)</span>
+<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-15"><a href="#cb62-15" aria-hidden="true" tabindex="-1"></a>cpdb_map <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 2
   partner                      LR                  
@@ -2959,12 +2960,12 @@ vertical-align: -.125em;
 </div>
 <p>The CellPhoneDB interaction-to-LR mapping is saved for downstream use when the database is built locally.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(cpdb_map, <span class="at">file =</span> <span class="st">&quot;../data/cpdb_map.rda&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(cpdb_map, <span class="at">file =</span> <span class="st">&quot;../data/cpdb_map.rda&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>db_map <span class="ot">&lt;-</span> <span class="fu">full_join</span>(ccdb_map, cpdb_map)</span>
-<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>db_map <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>db_map <span class="ot">&lt;-</span> <span class="fu">full_join</span>(ccdb_map, cpdb_map)</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>db_map <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     interaction_name                   LR                  partner
 1 TGFB1_TGFBR1_TGFBR2 P01137|P36897_P37173 P01137|TGFbeta_receptor1
@@ -2974,40 +2975,40 @@ vertical-align: -.125em;
 5 TGFB1_ACVR1C_TGFBR2 P01137|P37173_Q8NER5     P01137|ACVR1C_TGFbR2
 6 TGFB2_ACVR1B_TGFBR2 P61812|P36896_P37173     P61812|ACVR1B_TGFbR2</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>db_map <span class="sc">%&gt;%</span> <span class="fu">dim</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>db_map <span class="sc">%&gt;%</span> <span class="fu">dim</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 3901    3</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(db_map, <span class="at">file =</span> <span class="st">&quot;../data/db_map.rda&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(db_map, <span class="at">file =</span> <span class="st">&quot;../data/db_map.rda&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span> LR)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>interaction_input <span class="ot">&lt;-</span> interaction_input <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span> LR)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="create-scpeakerdb-for-cellphonedb-analysis---scpeakerdb_cp.zip" class="level2">
 <h2 class="anchored" data-anchor-id="create-scpeakerdb-for-cellphonedb-analysis---scpeakerdb_cp.zip">Create scpeakerDB for CellPhoneDB analysis - scpeakerDB_CP.zip</h2>
 <p>The finalized CellPhoneDB-compatible input tables can be written to a local database directory and passed to CellPhoneDB’s database creation utility.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span> <span class="fu">dir.exists</span>(<span class="st">&quot;scpeaker_cp/data&quot;</span>)) <span class="fu">sapply</span>(<span class="fu">c</span>(<span class="st">&quot;scpeaker_cp/data&quot;</span>, <span class="st">&quot;scpeaker_cp/data/sources&quot;</span>), dir.create, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Save input files to data dir</span></span>
-<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(interaction_input, <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/interaction_input.csv&quot;</span>)</span>
-<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(gene_input,        <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/gene_input.csv&quot;</span>)</span>
-<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(complex_input,     <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/complex_input.csv&quot;</span>)</span>
-<span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(protein_input,     <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/protein_input.csv&quot;</span>)</span>
-<span id="cb72-8"><a href="#cb72-8" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(transcription_factor_input, <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/transcription_factor_input.csv&quot;</span>)</span>
-<span id="cb72-9"><a href="#cb72-9" aria-hidden="true" tabindex="-1"></a><span class="fu">write_tsv</span>(uniprot_syn, <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/sources/uniprot_synonyms.tsv&quot;</span>)</span>
-<span id="cb72-10"><a href="#cb72-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-11"><a href="#cb72-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating customised CPDB</span></span>
-<span id="cb72-12"><a href="#cb72-12" aria-hidden="true" tabindex="-1"></a><span class="fu">use_condaenv</span>(<span class="st">&quot;scpeaker&quot;</span>)</span>
-<span id="cb72-13"><a href="#cb72-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-14"><a href="#cb72-14" aria-hidden="true" tabindex="-1"></a>db_create <span class="ot">&lt;-</span> <span class="fu">import</span>(<span class="st">&quot;cellphonedb.utils.db_utils&quot;</span>)</span>
-<span id="cb72-15"><a href="#cb72-15" aria-hidden="true" tabindex="-1"></a>db_create<span class="sc">$</span><span class="fu">create_db</span>(<span class="st">&quot;scpeaker_cp/data&quot;</span>)</span>
-<span id="cb72-16"><a href="#cb72-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Created scpeaker_cp/data\cellphonedb_02_02_2026_133643.zip successfully</span></span>
-<span id="cb72-17"><a href="#cb72-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-18"><a href="#cb72-18" aria-hidden="true" tabindex="-1"></a><span class="fu">file.rename</span>(<span class="at">from =</span> <span class="st">&quot;scpeaker_cp/data/cellphonedb_02_02_2026_133643.zip&quot;</span>, <span class="at">to =</span> <span class="st">&quot;scpeaker_cp/data/scpeakerDB_CP.zip&quot;</span>) <span class="co"># Saved customised CellPhoneDB .zip file to  CCCtools GitHub</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span> <span class="fu">dir.exists</span>(<span class="st">&quot;scpeaker_cp/data&quot;</span>)) <span class="fu">sapply</span>(<span class="fu">c</span>(<span class="st">&quot;scpeaker_cp/data&quot;</span>, <span class="st">&quot;scpeaker_cp/data/sources&quot;</span>), dir.create, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Save input files to data dir</span></span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(interaction_input, <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/interaction_input.csv&quot;</span>)</span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(gene_input,        <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/gene_input.csv&quot;</span>)</span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(complex_input,     <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/complex_input.csv&quot;</span>)</span>
+<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(protein_input,     <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/protein_input.csv&quot;</span>)</span>
+<span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(transcription_factor_input, <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/transcription_factor_input.csv&quot;</span>)</span>
+<span id="cb71-9"><a href="#cb71-9" aria-hidden="true" tabindex="-1"></a><span class="fu">write_tsv</span>(uniprot_syn, <span class="at">file =</span> <span class="st">&quot;scpeaker_cp/data/sources/uniprot_synonyms.tsv&quot;</span>)</span>
+<span id="cb71-10"><a href="#cb71-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-11"><a href="#cb71-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating customised CPDB</span></span>
+<span id="cb71-12"><a href="#cb71-12" aria-hidden="true" tabindex="-1"></a><span class="fu">use_condaenv</span>(<span class="st">&quot;scpeaker&quot;</span>)</span>
+<span id="cb71-13"><a href="#cb71-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-14"><a href="#cb71-14" aria-hidden="true" tabindex="-1"></a>db_create <span class="ot">&lt;-</span> <span class="fu">import</span>(<span class="st">&quot;cellphonedb.utils.db_utils&quot;</span>)</span>
+<span id="cb71-15"><a href="#cb71-15" aria-hidden="true" tabindex="-1"></a>db_create<span class="sc">$</span><span class="fu">create_db</span>(<span class="st">&quot;scpeaker_cp/data&quot;</span>)</span>
+<span id="cb71-16"><a href="#cb71-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Created scpeaker_cp/data\cellphonedb_02_02_2026_133643.zip successfully</span></span>
+<span id="cb71-17"><a href="#cb71-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-18"><a href="#cb71-18" aria-hidden="true" tabindex="-1"></a><span class="fu">file.rename</span>(<span class="at">from =</span> <span class="st">&quot;scpeaker_cp/data/cellphonedb_02_02_2026_133643.zip&quot;</span>, <span class="at">to =</span> <span class="st">&quot;scpeaker_cp/data/scpeakerDB_CP.zip&quot;</span>) <span class="co"># Saved customised CellPhoneDB .zip file to  CCCtools GitHub</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
