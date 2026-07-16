@@ -79,7 +79,7 @@ running these tools on your dataset:
 ``` r
 # Run this ONCE to create conda environment
 config <- file.path(pacman::p_path("scpeakeR"), "data/scpeaker.yaml")
-conda_create(envname = "scpeaker", environment = config)
+conda_create(envname = "scpeakeR", environment = config)
 ```
 
 ``` r
