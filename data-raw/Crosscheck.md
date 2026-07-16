@@ -37,7 +37,7 @@ CellChat and CellPhoneDB as such:
 
 ``` r
 library(scpeakeR)
-use_condaenv("scpeaker")
+use_condaenv("scpeakeR")
 
 data(seu.NL)
 

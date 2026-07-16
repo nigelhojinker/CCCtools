@@ -26,7 +26,7 @@ We provide a function `crosscheck()` that takes as input both the CellChat objec
 
 ```{r, eval = FALSE}
 library(scpeakeR)
-use_condaenv("scpeaker")
+use_condaenv("scpeakeR")
 
 data(seu.NL)
 
