@@ -1,6 +1,6 @@
 Comparing CellChat and CellPhoneDB results
 ================
-2025-01-05
+2026-07-16
 
 # Crosscheck function
 
@@ -36,27 +36,28 @@ CellChat and CellPhoneDB as such:
   CellPhoneDB but not significant in CellChat
 
 ``` r
+library(scpeakeR)
+use_condaenv("scpeaker")
+
 data(seu.NL)
 
 cellchat <- scpeaker(seu.NL, labels = "labels", method = "cellchat")
-
-# After setting up python env
-cpdb <- scpeaker(seu.NL, labels = "labels", method = "cellphonedb")
+cpdb     <- scpeaker(seu.NL, labels = "labels", method = "cellphonedb")
 
 combine <- crosscheck(obj1 = cellchat, obj2 = cpdb)
 # Joining with `by = join_by(interaction_name)`
 # Joining with `by = join_by(id_cp_interaction)`
 # Comparative analysis done successfully for p-value 0.05 
 #  scpeakeR summary: 
-#            CellPhoneDB
-# CellChat      Sig Not_Sig Not_Found   Sum
-#   Sig         843       2         0   845
-#   Not_Sig      39   83260         0 83299
-#   Not_Found   513     735         0  1248
-#   Sum        1395   83997         0 85392
+#          CellPhoneDB
+# CellChat    Sig Not_Sig   Sum
+#   Sig       844       1   845
+#   Not_Sig   552   83995 84547
+#   Sum      1396   83996 85392
+# Matthew's Correlation Coefficient: 0.7745385
 
 combine %>% names()
-# [1] "result"       "summary"
+# [1] "result"  "summary" "mcc"
 ```
 
 ## Comparative analysis within tools
@@ -90,21 +91,17 @@ cellchat.LS <- scpeaker(seu.LS, labels = "labels", method = "cellchat")
 combine <- crosscheck(obj1 = cellchat.LS, obj2 = cellchat.NL, comp.type = "CC_CC")
 # Joining with `by = join_by(interaction_name)`
 # Joining with `by = join_by(interaction_name)`
-# Joining with `by = join_by(source, target, interaction_name, interaction_name_2, pathway_name, ligand, receptor, annotation,
-# evidence, LR, unique_int)`
-# Joining with `by = join_by(source, target, interaction_name, interaction_name_2, pathway_name, ligand, receptor, annotation,
-# evidence, LR, unique_int)`
 # Comparative analysis done successfully for p-value 0.05 
-#  scpeakeR summary: 
-#            cellchat.NL
-# cellchat.LS   Sig Not_Sig Not_Found   Sum
-#   Sig         623     409       232  1264
-#   Not_Sig     222   82602      1016 83840
-#   Not_Found     0     288         0   288
-#   Sum         845   83299      1248 85392
+# scpeakeR summary: 
+#           cellchat.NL
+# cellchat.LS   Sig Not_Sig   Sum
+#    Sig       623     641  1264
+#    Not_Sig   222   83906 84128
+#    Sum       845   84547 85392
+# Matthew's Correlation Coefficient: 0.5981029
 
 combine %>% names()
-# [1] "result"       "summary"
+# [1] [1] "result"  "summary" "mcc"    
 ```
 
 ### Comparing two CellPhoneDB objects
@@ -117,19 +114,15 @@ cpdb.LS <- scpeaker(seu.LS, labels = "labels", method = "cellphonedb")
 combine <- crosscheck(obj1 = cpdb.LS, obj2 = cpdb.NL, comp.type = "CP_CP")
 # Joining with `by = join_by(id_cp_interaction)`
 # Joining with `by = join_by(id_cp_interaction)`
-# Joining with `by = join_by(id_cp_interaction, interacting_pair, partner_a, partner_b, gene_a, gene_b, secreted, receptor_a,
-# receptor_b, annotation_strategy, is_integrin, directionality, classification, source, target, LR, unique_int)`
-# Joining with `by = join_by(id_cp_interaction, interacting_pair, partner_a, partner_b, gene_a, gene_b, secreted, receptor_a,
-# receptor_b, annotation_strategy, is_integrin, directionality, classification, source, target, LR, unique_int)`
 # Comparative analysis done successfully for p-value 0.05 
 #  scpeakeR summary: 
-#            cpdb.NL
-# cpdb.LS       Sig Not_Sig Not_Found   Sum
-#   Sig         893     400         0  1293
-#   Not_Sig     502   83597         0 84099
-#   Not_Found     0       0         0     0
-#   Sum        1395   83997         0 85392
+#          cpdb.NL
+# cpdb.LS     Sig Not_Sig   Sum
+#   Sig       892     399  1291
+#   Not_Sig   503   83598 84101
+#   Sum      1395   83997 85392
+# Matthew's Correlation Coefficient: 0.6593372
 
 combine %>% names()
-# [1] "result"       "summary"
+# [1] "result"  "summary" "mcc"    
 ```
