@@ -79,13 +79,13 @@ This is done **only once**, and typically takes a few minutes to complete:
 ```{r, eval = FALSE}
 config <- file.path( pacman::p_path("scpeakeR"), "data/scpeaker.yaml" )
 
-conda_create(envname = "scpeaker", environment = config)
+conda_create(envname = "scpeakeR", environment = config)
 ```
 
 Once the cpdb environment has been created, we have to select its python interpreter:
 
 ```{r, eval = FALSE}
-use_condaenv("scpeaker")
+use_condaenv("scpeakeR")
 ```
 
 # Running CellPhoneDB
@@ -112,9 +112,7 @@ seu.NL@meta.data %>% head()
 Minimally, `scpeaker()` takes in a Seurat object, the metadata column name corresponding to the annotated cell types and the cell-cell communication method (in this case cellphonedb). It creates a temporary directory (by default) that stores input files required to run CellPhoneDB, as well as the output .txt files from the analysis. Users may make a copy of the temporary directory for future use of the data if necessary. We implemented the triMean gene expression averaging strategy within CellPhoneDB, which is the default averaging method with `scpeaker()`.
 
 ```{r, eval = FALSE}
-
 cpdb <- scpeaker(obj = seu.NL, labels = "labels", method = "cellphonedb")
-
 # Running cell-cell communication analysis with database: scpeakerDB
 # use_dir is NULL. Creating temp directory for file creation and storage.
 # Creating input and output files to directory: C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj 
@@ -165,7 +163,7 @@ cpdb <- scpeaker(seu.NL,
                  type = "thresholdedMean",
                  iterations = 123,
                  threshold = 0.2,
-                 threads = 5,
+                 threads = 1,
                  debug_seed = 42,
                  result_precision = 5,
                  score_interactions = TRUE)

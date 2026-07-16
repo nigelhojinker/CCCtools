@@ -104,14 +104,14 @@ once**, and typically takes a few minutes to complete:
 ``` r
 config <- file.path( pacman::p_path("scpeakeR"), "data/scpeaker.yaml" )
 
-conda_create(envname = "scpeaker", environment = config)
+conda_create(envname = "scpeakeR", environment = config)
 ```
 
 Once the cpdb environment has been created, we have to select its python
 interpreter:
 
 ``` r
-use_condaenv("scpeaker")
+use_condaenv("scpeakeR")
 ```
 
 # Running CellPhoneDB
@@ -170,7 +170,6 @@ within CellPhoneDB, which is the default averaging method with
 
 ``` r
 cpdb <- scpeaker(obj = seu.NL, labels = "labels", method = "cellphonedb")
-
 # Running cell-cell communication analysis with database: scpeakerDB
 # use_dir is NULL. Creating temp directory for file creation and storage.
 # Creating input and output files to directory: C:\Users\Admin\AppData\Local\Temp\Rtmpknehon/obj 
@@ -223,7 +222,7 @@ cpdb <- scpeaker(seu.NL,
                  type = "thresholdedMean",
                  iterations = 123,
                  threshold = 0.2,
-                 threads = 5,
+                 threads = 1,
                  debug_seed = 42,
                  result_precision = 5,
                  score_interactions = TRUE)
