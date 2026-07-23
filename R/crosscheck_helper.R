@@ -45,6 +45,8 @@ crosscheck_CC_CPDB <- function(cellchat, cellphonedb, p.cutoff = 0.05, return.al
     tn <- summary[6] + summary[7] + summary[10]
     fn <- summary[2] + summary[3]
 
+    nsig_both <- tp
+    jaccard   <- tp / (summary[13] + summary[4] - tp)
     mcc <- (tp * tn - fp * fn) / ( (tp + fp) * (tp + fn) * (tn + fp) * (tn + fn) )**0.5
 
   } else {
@@ -74,6 +76,8 @@ crosscheck_CC_CPDB <- function(cellchat, cellphonedb, p.cutoff = 0.05, return.al
     tn <- summary[5]
     fn <- summary[2]
 
+    nsig_both <- tp
+    jaccard   <- tp / (summary[7] + summary[3] - tp)
     mcc <- (tp * tn - fp * fn) / ( (tp + fp) * (tp + fn) * (tn + fp) * (tn + fn) )**0.5
   }
 
@@ -85,8 +89,12 @@ crosscheck_CC_CPDB <- function(cellchat, cellphonedb, p.cutoff = 0.05, return.al
   cat("Comparative analysis done successfully for p-value",
       p.cutoff, "\n", "scpeakeR summary: \n")
   print(summary)
-  cat("Matthew's Correlation Coefficient:", mcc)
-  return(list(result = res, summary = summary, mcc = mcc))
+  cat("Number of significant interactions in both CellChat and CellPhoneDB:", nsig_both, "\n")
+  cat("Jaccard Index:", jaccard, "\n")
+  cat("Matthew's Correlation Coefficient:", mcc, "\n")
+
+  return(list(result = res, summary = summary,
+              nsig_both = nsig_both, jaccard = jaccard, mcc = mcc))
 
 }
 
@@ -160,6 +168,8 @@ crosscheck_CC_CC <- function(cellchat1, cellchat2, name1, name2, p.cutoff = 0.05
     tn <- summary[6] + summary[7] + summary[10]
     fn <- summary[2] + summary[3]
 
+    nsig_both <- tp
+    jaccard   <- tp / (summary[13] + summary[4] - tp)
     mcc <- (tp * tn - fp * fn) / ( (tp + fp) * (tp + fn) * (tn + fp) * (tn + fn) )**0.5
 
   } else {
@@ -204,6 +214,8 @@ crosscheck_CC_CC <- function(cellchat1, cellchat2, name1, name2, p.cutoff = 0.05
     tn <- summary[5]
     fn <- summary[2]
 
+    nsig_both <- tp
+    jaccard   <- tp / (summary[7] + summary[3] - tp)
     mcc <- (tp * tn - fp * fn) / ( (tp + fp) * (tp + fn) * (tn + fp) * (tn + fn) )**0.5
 
   }
@@ -216,8 +228,12 @@ crosscheck_CC_CC <- function(cellchat1, cellchat2, name1, name2, p.cutoff = 0.05
   cat("Comparative analysis done successfully for p-value", p.cutoff, "\n",
       "scpeakeR summary: \n")
   print(summary)
-  cat("Matthew's Correlation Coefficient:", mcc)
-  return(list(result = res, summary = summary, mcc = mcc))
+  cat("Number of significant interactions in both CellChat and CellPhoneDB:", nsig_both, "\n")
+  cat("Jaccard Index:", jaccard, "\n")
+  cat("Matthew's Correlation Coefficient:", mcc, "\n")
+
+  return(list(result = res, summary = summary,
+              nsig_both = nsig_both, jaccard = jaccard, mcc = mcc))
 }
 
 #' Internal helpers for comparative analysis between CellPhoneDB objects in crosscheck()
@@ -298,6 +314,8 @@ crosscheck_CPDB_CPDB <- function(cellphonedb1, cellphonedb2, name1, name2, p.cut
     tn <- summary[6] + summary[7] + summary[10]
     fn <- summary[2] + summary[3]
 
+    nsig_both <- tp
+    jaccard   <- tp / (summary[13] + summary[4] - tp)
     mcc <- (tp * tn - fp * fn) / ( (tp + fp) * (tp + fn) * (tn + fp) * (tn + fn) )**0.5
 
   } else {
@@ -350,6 +368,8 @@ crosscheck_CPDB_CPDB <- function(cellphonedb1, cellphonedb2, name1, name2, p.cut
     tn <- summary[5]
     fn <- summary[2]
 
+    nsig_both <- tp
+    jaccard   <- tp / (summary[7] + summary[3] - tp)
     mcc <- (tp * tn - fp * fn) / ( (tp + fp) * (tp + fn) * (tn + fp) * (tn + fn) )**0.5
 
   }
@@ -362,6 +382,10 @@ crosscheck_CPDB_CPDB <- function(cellphonedb1, cellphonedb2, name1, name2, p.cut
   cat("Comparative analysis done successfully for p-value", p.cutoff, "\n",
       "scpeakeR summary: \n")
   print(summary)
-  cat("Matthew's Correlation Coefficient:", mcc)
-  return(list(result = res, summary = summary, mcc = mcc))
+  cat("Number of significant interactions in both CellChat and CellPhoneDB:", nsig_both, "\n")
+  cat("Jaccard Index:", jaccard, "\n")
+  cat("Matthew's Correlation Coefficient:", mcc, "\n")
+
+  return(list(result = res, summary = summary,
+              nsig_both = nsig_both, jaccard = jaccard, mcc = mcc))
 }
