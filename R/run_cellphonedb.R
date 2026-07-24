@@ -118,7 +118,14 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, type = NULL, database = N
 
   ## Create AnnData object
   adata <- ad$AnnData(X = Matrix::t(normcounts), obs = barcode, var = genes)
-  adata$write_h5ad(file.path(prefix, "input.h5ad"))
+
+  h5ad_path <- file.path(prefix, "input.h5ad")
+
+  if (file.exists(h5ad_path)) {
+    unlink(h5ad_path)
+  }
+
+  adata$write_h5ad(h5ad_path)
 
   cat("input.h5ad file created and saved to:", prefix, "\n")
 
@@ -128,7 +135,7 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, type = NULL, database = N
   cpdb <- do.call(cpdb.analysis$call, c(dots, list(
     cpdb_file_path = cpdbPath,
     meta_file_path = file.path(prefix, "input_meta.tsv"),
-    counts_file_path = file.path(prefix, "input.h5ad"),
+    counts_file_path = h5ad_path,
     counts_data = counts_data,
     active_tfs_file_path = active_tfs_file_path,
     microenvs_file_path = microenvs_file_path,
