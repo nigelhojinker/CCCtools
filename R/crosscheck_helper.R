@@ -228,7 +228,7 @@ crosscheck_CC_CC <- function(cellchat1, cellchat2, name1, name2, p.cutoff = 0.05
   cat("Comparative analysis done successfully for p-value", p.cutoff, "\n",
       "scpeakeR summary: \n")
   print(summary)
-  cat("Number of significant interactions in both CellChat and CellPhoneDB:", nsig_both, "\n")
+  cat("Number of significant interactions in both CellChat analyses:", nsig_both, "\n")
   cat("Jaccard Index:", jaccard, "\n")
   cat("Matthew's Correlation Coefficient:", mcc, "\n")
 
@@ -382,7 +382,7 @@ crosscheck_CPDB_CPDB <- function(cellphonedb1, cellphonedb2, name1, name2, p.cut
   cat("Comparative analysis done successfully for p-value", p.cutoff, "\n",
       "scpeakeR summary: \n")
   print(summary)
-  cat("Number of significant interactions in both CellChat and CellPhoneDB:", nsig_both, "\n")
+  cat("Number of significant interactions in both CellPhoneDB analyses:", nsig_both, "\n")
   cat("Jaccard Index:", jaccard, "\n")
   cat("Matthew's Correlation Coefficient:", mcc, "\n")
 
