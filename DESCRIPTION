@@ -1,4 +1,4 @@
-Package: scpeakeR
+Package: scpeaker
 Type: Package
 Title: Single-cell cell-cell communication tool integrating both CellChat and CellPhoneDB in R 
 Version: 0.1.1
@@ -18,6 +18,6 @@ Depends:
 Remotes:
     jinworks/CellChat
 Imports:
-URL: https://github.com/nigelhojinker/scpeakeR
-BugReports: https://github.com/nigelhojinker/scpeakeR/issues
+URL: https://github.com/nigelhojinker/scpeaker
+BugReports: https://github.com/nigelhojinker/scpeaker/issues
 Config/roxygen2/version: 8.0.0
