@@ -52,17 +52,10 @@ generated](data-raw/demo_data.md).
 
 ``` r
 pacman::p_load_gh("nigelhojinker/scpeaker")
-#> Warning in p_install_gh(package, dependencies, ...): The following may have incorrect capitalization specification:
-#> 
-#> scpeaker
-#> Warning in pacman::p_load_gh("nigelhojinker/scpeaker"): 
-#> Failed to install/load:
-#> nigelhojinker/scpeaker
 
 data(seu.NL)
 
 seu.NL
-#> Loading required namespace: SeuratObject
 #> An object of class Seurat 
 #> 10353 features across 2233 samples within 1 assay 
 #> Active assay: RNA (10353 features, 0 variable features)
