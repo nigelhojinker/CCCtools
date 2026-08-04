@@ -1,13 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# scpeakeR
+# scpeaker
 
 <!-- badges: start -->
 
 <!-- badges: end -->
 
-The goal of scpeakeR is to provide functions to run [CellChat
+The goal of scpeaker is to provide functions to run [CellChat
 (v2)](https://github.com/jinworks/CellChat) and [CellPhoneDB
 (v5)](https://github.com/ventolab/CellphoneDB/tree/master) as well as
 compare their outputs.
@@ -16,7 +16,7 @@ compare their outputs.
 
 ### Prerequisites
 
-Before installing **scpeakeR**, be sure to install the below packages
+Before installing **scpeaker**, be sure to install the below packages
 via Bioconductor, as they are dependencies of CellChat:
 
 ``` r
@@ -36,11 +36,11 @@ if (length(missing_pkgs) > 0) {
 
 ### Download package
 
-Now, you are ready to install the development version of scpeakeR:
+Now, you are ready to install the development version of scpeaker:
 
 ``` r
 if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
-pacman::p_load_gh("nigelhojinker/scpeakeR")
+pacman::p_load_gh("nigelhojinker/scpeaker")
 ```
 
 ## Example data
@@ -51,11 +51,18 @@ tutorials for CellChat. See this [script for how the data was
 generated](data-raw/demo_data.md).
 
 ``` r
-pacman::p_load_gh("nigelhojinker/scpeakeR")
+pacman::p_load_gh("nigelhojinker/scpeaker")
+#> Warning in p_install_gh(package, dependencies, ...): The following may have incorrect capitalization specification:
+#> 
+#> scpeaker
+#> Warning in pacman::p_load_gh("nigelhojinker/scpeaker"): 
+#> Failed to install/load:
+#> nigelhojinker/scpeaker
 
 data(seu.NL)
 
 seu.NL
+#> Loading required namespace: SeuratObject
 #> An object of class Seurat 
 #> 10353 features across 2233 samples within 1 assay 
 #> Active assay: RNA (10353 features, 0 variable features)
@@ -64,7 +71,7 @@ seu.NL
 
 ## Functions
 
-In **scpeakeR**, we provide the `scpeaker()` function to perform
+In **scpeaker**, we provide the `scpeaker()` function to perform
 CellChat and CellPhoneDB (method 2) analysis directly on their processed
 Seurat object.
 
@@ -74,17 +81,17 @@ running these tools on your dataset:
 ### Perform CellPhoneDB on Seurat object
 
 - [Running CellChat on Seurat
-  object](https://github.com/nigelhojinker/scpeakeR/blob/main/data-raw/Run_CellChat.md)
+  object](https://github.com/nigelhojinker/scpeaker/blob/main/data-raw/Run_CellChat.md)
 
 ``` r
 # Run this ONCE to create conda environment
-config <- file.path(pacman::p_path("scpeakeR"), "data/scpeaker.yaml")
-conda_create(envname = "scpeakeR", environment = config)
+config <- file.path(pacman::p_path("scpeaker"), "data/scpeaker.yaml")
+conda_create(envname = "scpeaker", environment = config)
 ```
 
 ``` r
 # Run this each R session when performing CellPhoneDB analysis
-use_condaenv("scpeakeR")
+use_condaenv("scpeaker")
 
 # CellPhoneDB analysis -- minimal example
 cellphonedb <- scpeaker(seu.NL, labels = "labels", method = "cellphonedb")
@@ -93,7 +100,7 @@ cellphonedb <- scpeaker(seu.NL, labels = "labels", method = "cellphonedb")
 ### Perform CellChat on Seurat object
 
 - [Running CellPhoneDB on Seurat
-  object](https://github.com/nigelhojinker/scpeakeR/blob/main/data-raw/Run_CellPhoneDB.md)
+  object](https://github.com/nigelhojinker/scpeaker/blob/main/data-raw/Run_CellPhoneDB.md)
 
 ``` r
 # CellChat analysis -- minimal example
@@ -109,7 +116,7 @@ Please refer to the link below on how to compare CellChat and
 CellPhoneDB results on your dataset:
 
 - [Comparing CellChat and CellPhoneDB
-  results](https://github.com/nigelhojinker/scpeakeR/blob/main/data-raw/Crosscheck.md)
+  results](https://github.com/nigelhojinker/scpeaker/blob/main/data-raw/Crosscheck.md)
 
 ``` r
 combine <- crosscheck(cellchat, cellphonedb)
@@ -125,7 +132,8 @@ containing only the filtered interactions from cross-method analysis. We
 leverage the abundant resource for visualising and conducting network
 analysis using CellChat.
 
-Users may refer to the full CellChat vignette
+Users may refer to the full CellChat vignette for analysing a single
+CellChat object
 [here](https://htmlpreview.github.io/?https://github.com/jinworks/CellChat/blob/master/tutorial/CellChat-vignette.html).
 
 ``` r
@@ -142,27 +150,27 @@ that uniprot-based identifier to compare interactions from both CCC
 tools.
 
 After we harmonized both databases, we compiled all unique interactions
-from both CellChat and CellPhoneDB which we coined **scpeakeRDB**, which
-contains 3,901 interactions. By default, scpeakeRDB is the database used
+from both CellChat and CellPhoneDB which we coined **scpeakerDB**, which
+contains 3,901 interactions. By default, scpeakerDB is the database used
 for all cell-cell communication inference in this package. However, we
 provide users with the flexible to run their analysis with
 CellChat/CellPhoneDB-only interactions.
 
 For the full code implementation of from the mapping of interactions in
-CellChat and CellPhoneDB, to the final creation of scpeakeRDB, you may
+CellChat and CellPhoneDB, to the final creation of scpeakerDB, you may
 visit the links below:
 
 - [Aligning CellChat and CellPhoneDB interaction databases - Part
-  1](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part1.html)
+  1](https://nigelhojinker.github.io/scpeaker/data-raw/Database_harmonisation_part1.html)
 - [Implementing changes reconstructing CellChatDB.human and CellPhoneDB
   database - Part
-  2](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part2.html)
-- [Creating scpeakeRDB after database harmonisation - Part
-  3](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part3.html)
+  2](https://nigelhojinker.github.io/scpeaker/data-raw/Database_harmonisation_part2.html)
+- [Creating scpeakerDB after database harmonisation - Part
+  3](https://nigelhojinker.github.io/scpeaker/data-raw/Database_harmonisation_part3.html)
 
 # Final notes
 
-If you have used scpeakeR and any of its related functionalities, please
+If you have used scpeaker and any of its related functionalities, please
 consider citing our paper:
 
 - Link to upcoming paper
