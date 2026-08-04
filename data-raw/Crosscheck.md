@@ -19,21 +19,12 @@ We provide a function `crosscheck()` that takes as input both the
 CellChat object from `scpeaker(obj, labels, method = "cellchat")` and
 the list from `scpeaker(obj, labels, method = "cellphonedb")`, as well
 as an optional `threshold` argument should users wish to adjust the
-p-value (default: 0.05). `crosscheck()` returns a list of two elements:
+p-value (default: 0.05). `crosscheck()` returns a list of five elements:
 (1) Comparative analysis result (2) 2x2 contingency table of interaction
-types in both CellChat and CellPhoneDB. We categorise interactions in
-the filtered result in terms of the agreement (and lack thereof) between
-CellChat and CellPhoneDB as such:
-
-- Sig_Both: Interaction is significant in both CellChat and CellPhoneDB
-- Sig_CellChat_Not_Found_CellPhoneDB: Interaction is found only in
-  CellChat, and p-value \< threshold
-- Sig_CellPhoneDB_Not_Found_CellChat: Interaction is found only in
-  CellPhoneDB, and p-value \< threshold
-- Sig_CellChat_Not_Sig_CellPhoneDB: Interaction is significant in
-  CellChat but not significant in CellPhoneDB
-- Sig_CellPhoneDB_Not_Sig_CellChat: Interaction is significant in
-  CellPhoneDB but not significant in CellChat
+types in both CellChat and CellPhoneDB (3) Number of significant
+interactions from both analyses (4) Jaccard Index for significant
+interactions inferred (5) Matthew’s Correlation Coefficient to quantify
+agreement.
 
 ``` r
 library(scpeaker)

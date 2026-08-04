@@ -27,7 +27,7 @@ crosscheck(
 \item{expand}{Logical value to highlight if interaction is found from cross-database analyses. This is used when comparing outputs using different databases (default = FALSE).}
 }
 \value{
-A list of five elements: (1) Comparative analysis result (2) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB (3) Number of significant interactions from both analyses (4) Jaccard Index for significant interactions inferred (5) Matthew's Correlation Coefficient to quantify agreement
+A list of five elements: (1) Comparative analysis result (2) 2x2 contingency table of interaction types in both CellChat and CellPhoneDB (3) Number of significant interactions from both analyses (4) Jaccard Index for significant interactions inferred (5) Matthew's Correlation Coefficient to quantify agreement
 }
 \description{
 Comparing CellChat and CellPhoneDB results
