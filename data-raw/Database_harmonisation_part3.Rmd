@@ -1,5 +1,5 @@
 ---
-title: "scpeakeRDB creation - Part 3"
+title: "scpeakerDB creation - Part 3"
 author: "Ho Jin Ker Nigel, Adaikalavan Ramasamy, Gokce Oguz"
 description: >
   scpeakerDB creation via convergence of CellChatDB and CellPhoneDB
@@ -17,16 +17,16 @@ execute:
   warning: false
 ---
 
-# Creating scpeakeRDB
+# Creating scpeakerDB
 
-In this document, we outline the process undergone to develop scpeakeRDB, first by identifying interactions not present in each of the databases. We then manually input the mandatory fields required for each package before constructing the databases in a format compatible with their original tools. If you have not viewed "Database customisation by scpeakeR - Part 2", you may refer [here](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part2.html). To read "Database harmonisation by scpeakeR - Part 1", you may visit the link [here](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part1.html).
+In this document, we outline the process undergone to develop scpeakerDB, first by identifying interactions not present in each of the databases. We then manually input the mandatory fields required for each package before constructing the databases in a format compatible with their original tools. If you have not viewed "Database customisation by scpeaker - Part 2", you may refer [here](https://nigelhojinker.github.io/scpeaker/data-raw/Database_harmonisation_part2.html). To read "Database harmonisation by scpeaker - Part 1", you may visit the link [here](https://nigelhojinker.github.io/scpeaker/data-raw/Database_harmonisation_part1.html).
 
 ## Load required packages & databases
 
 We first load the package dependencies and the two curated source databases used throughout this harmonisation workflow. Clearing the workspace helps ensure that subsequent objects are created only from the inputs shown in this document.
 
 ```{r}
-pacman::p_load(scpeakeR)
+pacman::p_load(scpeaker)
 setwd(this.path::here())
 rm(list = ls())
 
@@ -35,7 +35,7 @@ data(CCDB, CPDB)
 
 # scpeakerDB_CC
 
-We start with the scpeakeRDB-CellChat (scpeakeRDB_CC) database creation. CellChatDB has interactions annotated with pathways in their original structure, and we preserve that same structure for newly added interactions from CellPhoneDB. We made a named mapping vector `pathway_map` with the pathways as the values and the ligands involved in the pathway as the names.
+We start with the scpeakerDB-CellChat (scpeakerDB_CC) database creation. CellChatDB has interactions annotated with pathways in their original structure, and we preserve that same structure for newly added interactions from CellPhoneDB. We made a named mapping vector `pathway_map` with the pathways as the values and the ligands involved in the pathway as the names.
 
 ```{r}
 pathway_map <- CCDB %>%
@@ -174,7 +174,7 @@ CPDB.only <- CPDB.only %>%
 CPDB.only
 ```
 
-Now all CellPhoneDB interactions have a pathway_name and a pathway annotation. We begin constructing scpeakeRDB_CC by first recalling the previously constructed `CellChatDB.human.new` from Part 2 that contains our implemented changes after database harmonisation:
+Now all CellPhoneDB interactions have a pathway_name and a pathway annotation. We begin constructing scpeakerDB_CC by first recalling the previously constructed `CellChatDB.human.new` from Part 2 that contains our implemented changes after database harmonisation:
 
 ### Load CellChatDB.human.new
 
@@ -369,7 +369,7 @@ scpeakerDB_CC$cofactor    <- cofactor
 scpeakerDB_CC$geneInfo    <- geneInfo
 ```
 
-The complete CellChat-compatible scpeakeR database object can then be saved as an R data file.
+The complete CellChat-compatible scpeaker database object can then be saved as an R data file.
 
 ```{r, eval = FALSE}
 save(scpeakerDB_CC, file = "../data/scpeakerDB_CC.rda")
@@ -381,9 +381,9 @@ Temporary objects from the CellChat construction step are removed before startin
 rm(CPDB.only, interaction_input, complex, geneInfo, cofactor, new_complex, map, orig_map)
 ```
 
-# scpeakeRDB_CP.zip
+# scpeakerDB_CP.zip
 
-Now, we curated the scpeakeRDB in zip format that is CellPhoneDB-compatible.
+Now, we curated the scpeakerDB in zip format that is CellPhoneDB-compatible.
 
 Load the revised CellPhoneDB from Part 2 (`cellphonedb.zip`) input tables for customisation:
 

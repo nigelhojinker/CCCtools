@@ -1,5 +1,5 @@
 ---
-title: "Database customisation by scpeakeR - Part 2"
+title: "Database customisation by scpeaker - Part 2"
 author: "Ho Jin Ker Nigel, Adaikalavan Ramasamy, Gokce Oguz"
 description: >
   Database customisation of CellChatDB.human(v2.2.0) and CellPhoneDB (V5.0) with the proposed changes in Part 1
@@ -19,7 +19,7 @@ execute:
 
 # Customising CCDB and CPDB
 
-In this document, we implement the corrections identified in "Database harmonisation by scpeakeR - Part 1". If you have not read Part 1, you may proceed to that document [here](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part1.html).
+In this document, we implement the corrections identified in "Database harmonisation by scpeaker - Part 1". If you have not read Part 1, you may proceed to that document [here](https://nigelhojinker.github.io/scpeaker/data-raw/Database_harmonisation_part1.html).
 
 ## Load required packages
 
@@ -295,7 +295,7 @@ CPDB <- CPDB.int %>%
 ```
 
 ```{r, echo = FALSE}
-pacman::p_load(scpeakeR)
+pacman::p_load(scpeaker)
 ```
 
 ```{r, eval = FALSE}
@@ -330,11 +330,11 @@ CPDB %>% glimpse()
 CPDB %>% glimpse()
 ```
 
-## Save CCDB and CPDB as R objects to scpeakeR GitHub
+## Save CCDB and CPDB as R objects to scpeaker GitHub
 
 ```{r, eval = FALSE}
 save(CCDB, file = "data/CCDB.rda")
 save(CPDB, file = "data/CPDB.rda")
 ```
 
-This concludes the process performed in **Part 2** of the Database customisation conducted. In **Part 3**, we outline the full convergence of the harmonized databases, providing users with a single merged database comprising of interactions from both CellChat and CellPhoneDB. You may refer to **Part 3** [here](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part3.html).
+This concludes the process performed in **Part 2** of the Database customisation conducted. In **Part 3**, we outline the full convergence of the harmonized databases, providing users with a single merged database comprising of interactions from both CellChat and CellPhoneDB. You may refer to **Part 3** [here](https://nigelhojinker.github.io/scpeaker/data-raw/Database_harmonisation_part3.html).

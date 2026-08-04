@@ -14,18 +14,18 @@ CellPhoneDB is a popular **Python** package developed by [Teichmann Lab](https:/
 
 A key feature of CellPhoneDB is its inherent function of accounting for heteromeric complexes by decomplexifying to their subunits and ensuring that expression of all subunits have to be non-zero and above a user-defined threshold to be considered present in the interaction. This accurately recapitulates how interactions can occur in vivo. As such, we thought to incorporate CellPhoneDB with another popular cell-cell communication tool, CellChat, that shares the same feature.
 
-We forked the original CellPhoneDB repository and implement an additional change to allow triMean as a method for computing the average gene expression per cell type cluster like CellChat. We direct the installation of the [fork repository](https://github.com/nigelhojinker/scpeaker-CellphoneDB) with the changes in the .yaml file mentioned in the section below. triMean is the default method used in scpeakeR for calculating the average gene expression per cell cluster. Users may switch to the CellPhoneDB-default method by setting `type = "thresholdedMean`. 
+We forked the original CellPhoneDB repository and implement an additional change to allow triMean as a method for computing the average gene expression per cell type cluster like CellChat. We direct the installation of the [fork repository](https://github.com/nigelhojinker/scpeaker-CellphoneDB) with the changes in the .yaml file mentioned in the section below. triMean is the default method used in scpeaker for calculating the average gene expression per cell cluster. Users may switch to the CellPhoneDB-default method by setting `type = "thresholdedMean`. 
 
 # Setting up required environment
 
-As mentioned in the **Introduction**, CellPhoneDB is a Python package and currently, does not have an R equivalent. Here, we provide a wrapper function `scpeaker()` for running CellPhoneDB completely within R. To do this, we require the use of the `reticulate` package (a dependency in scpeakeR) and provide users with the `scpeaker.yaml` file for creating the CellPhoneDB python environment in R.
+As mentioned in the **Introduction**, CellPhoneDB is a Python package and currently, does not have an R equivalent. Here, we provide a wrapper function `scpeaker()` for running CellPhoneDB completely within R. To do this, we require the use of the `reticulate` package (a dependency in scpeaker) and provide users with the `scpeaker.yaml` file for creating the CellPhoneDB python environment in R.
 
 ## CellPhoneDB conda environment in R
 
 ### R set-up
 
 ```{r}
-pacman::p_load_gh("nigelhojinker/scpeakeR")
+pacman::p_load_gh("nigelhojinker/scpeaker")
 setwd(this.path::here())
 rm(list = ls())
 ```
@@ -77,15 +77,15 @@ Next, we have to create the CellPhoneDB conda environment with the necessary Pyt
 This is done **only once**, and typically takes a few minutes to complete:
 
 ```{r, eval = FALSE}
-config <- file.path( pacman::p_path("scpeakeR"), "data/scpeaker.yaml" )
+config <- file.path( pacman::p_path("scpeaker"), "data/scpeaker.yaml" )
 
-conda_create(envname = "scpeakeR", environment = config)
+conda_create(envname = "scpeaker", environment = config)
 ```
 
 Once the cpdb environment has been created, we have to select its python interpreter:
 
 ```{r, eval = FALSE}
-use_condaenv("scpeakeR")
+use_condaenv("scpeaker")
 ```
 
 # Running CellPhoneDB

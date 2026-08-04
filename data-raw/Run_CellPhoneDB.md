@@ -26,7 +26,7 @@ gene expression per cell type cluster like CellChat. We direct the
 installation of the [fork
 repository](https://github.com/nigelhojinker/scpeaker-CellphoneDB) with
 the changes in the .yaml file mentioned in the section below. triMean is
-the default method used in scpeakeR for calculating the average gene
+the default method used in scpeaker for calculating the average gene
 expression per cell cluster. Users may switch to the CellPhoneDB-default
 method by setting `type = "thresholdedMean`.
 
@@ -36,7 +36,7 @@ As mentioned in the **Introduction**, CellPhoneDB is a Python package
 and currently, does not have an R equivalent. Here, we provide a wrapper
 function `scpeaker()` for running CellPhoneDB completely within R. To do
 this, we require the use of the `reticulate` package (a dependency in
-scpeakeR) and provide users with the `scpeaker.yaml` file for creating
+scpeaker) and provide users with the `scpeaker.yaml` file for creating
 the CellPhoneDB python environment in R.
 
 ## CellPhoneDB conda environment in R
@@ -44,7 +44,7 @@ the CellPhoneDB python environment in R.
 ### R set-up
 
 ``` r
-pacman::p_load_gh("nigelhojinker/scpeakeR")
+pacman::p_load_gh("nigelhojinker/scpeaker")
 setwd(this.path::here())
 rm(list = ls())
 ```
@@ -102,16 +102,16 @@ necessary Python modules for running the analysis. This is done **only
 once**, and typically takes a few minutes to complete:
 
 ``` r
-config <- file.path( pacman::p_path("scpeakeR"), "data/scpeaker.yaml" )
+config <- file.path( pacman::p_path("scpeaker"), "data/scpeaker.yaml" )
 
-conda_create(envname = "scpeakeR", environment = config)
+conda_create(envname = "scpeaker", environment = config)
 ```
 
 Once the cpdb environment has been created, we have to select its python
 interpreter:
 
 ``` r
-use_condaenv("scpeakeR")
+use_condaenv("scpeaker")
 ```
 
 # Running CellPhoneDB

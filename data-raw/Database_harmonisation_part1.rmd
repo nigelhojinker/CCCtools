@@ -1,5 +1,5 @@
 ---
-title: "Database harmonisation by scpeakeR - Part 1"
+title: "Database harmonisation by scpeaker - Part 1"
 author: "Ho Jin Ker Nigel, Adaikalavan Ramasamy, Gokce Oguz"
 description: >
   Database harmonisation between CellChatDB.human(v2.2.0) and CellPhoneDB (V5.0.1)
@@ -21,12 +21,12 @@ execute:
 
 In this document, we outline the database harmonisation steps taken to determine the degree of overlap between CellChat and CellPhoneDB, which are listed as:
 
--   Step 1: Converting gene symbols to Uniprot ID format in CellChatDB
--   Step 2: Identifying duplicates, missing or invalid entries in CellChatDB and CellPhoneDB
--   Step 3: Convert complexes in CellPhoneDB to Uniprot ID format
--   Step 4: Sorting protein subunits of complexes in both databases
--   Step 5: Swapping ligand-receptor pairs to identify missed overlaps
--   Step 6: Partial mapping of complexes
+- Step 1: Converting gene symbols to Uniprot ID format in CellChatDB
+- Step 2: Identifying duplicates, missing or invalid entries in CellChatDB and CellPhoneDB
+- Step 3: Convert complexes in CellPhoneDB to Uniprot ID format
+- Step 4: Sorting protein subunits of complexes in both databases
+- Step 5: Swapping ligand-receptor pairs to identify missed overlaps
+- Step 6: Partial mapping of complexes
 
 Additionally, we describe the process to customize CellChatDB and CellPhoneDB with the revised changes implemented.
 
@@ -640,4 +640,4 @@ Finally, we have a overlap of **2,239** interactions across CCDB and CPDB:
 ggvenn::ggvenn(list(CellChat = CC.int$LR, CellPhoneDB = CPDB.int$LR))
 ```
 
-This concludes the process performed in **Part 1** of the Database harmonisation conducted. In **Part 2**, we outline the customization of the CellChatDB and CellPhoneDB with the proposed changes above. You may refer to **Part 2** [here](https://nigelhojinker.github.io/scpeakeR/data-raw/Database_harmonisation_part2.html).
+This concludes the process performed in **Part 1** of the Database harmonisation conducted. In **Part 2**, we outline the customization of the CellChatDB and CellPhoneDB with the proposed changes above. You may refer to **Part 2** [here](https://nigelhojinker.github.io/scpeaker/data-raw/Database_harmonisation_part2.html).

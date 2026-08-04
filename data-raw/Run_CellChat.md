@@ -39,7 +39,7 @@ and including `filterCommunication()`. For further downstream analyses,
 please see the [CellChat vignette for a single
 dataset](https://htmlpreview.github.io/?https://github.com/jinworks/CellChat/blob/master/tutorial/CellChat-vignette.html)
 for the full tutorial. Note that CellChat is already installed when
-users install scpeakeR, therefore, users may immediately run CellChat
+users install scpeaker, therefore, users may immediately run CellChat
 functions used in the tutorial(s).
 
 \*: **Q1** First quartile; **M** Median; **Q3** Third quartile
@@ -49,7 +49,7 @@ functions used in the tutorial(s).
 R set-up and data input ([example data](../demo_data.md))
 
 ``` r
-pacman::p_load_gh("nigelhojinker/scpeakeR")
+pacman::p_load_gh("nigelhojinker/scpeaker")
 setwd(this.path::here())
 rm(list = ls())
 
