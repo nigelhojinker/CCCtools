@@ -137,7 +137,7 @@ Cell-cell communication inference results from the chosen method (CellChat objec
 \description{
 This function takes as input a Seurat object that has been processed and contains annotated cell type labels in its meta.data.
 
-It uses scpeakerDB which contains interactions from both CellChat and CellPhoneDB as the default database, but users may customize the resource to CellChat/CellPhoneDB only interactions.
+It uses scpeakerDB which contains interactions from both CellChat and CellPhoneDB as the default database, but users may customize the resource to CellChat/CellPhoneDB only interactions. Note that the databases used are post-harmonized and slightly differ in the format of their respective original versions.
 }
 \section{CellChat arguments}{
 

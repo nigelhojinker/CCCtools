@@ -3,7 +3,7 @@
 #' @description
 #' This function takes as input a Seurat object that has been processed and contains annotated cell type labels in its meta.data.
 #' @description
-#' It uses scpeakerDB which contains interactions from both CellChat and CellPhoneDB as the default database, but users may customize the resource to CellChat/CellPhoneDB only interactions.
+#' It uses scpeakerDB which contains interactions from both CellChat and CellPhoneDB as the default database, but users may customize the resource to CellChat/CellPhoneDB only interactions. Note that the databases used are post-harmonized and slightly differ in the format of their respective original versions.
 #'
 #' @param obj Seurat object
 #' @param labels Metadata column name for the cell type labels
@@ -89,7 +89,7 @@ scpeaker <- function(obj, labels, method = c("cellchat", "cellphonedb"), databas
   if (method == "cellchat"){
     if (fast.mode){
       # Rcpp compiled functions
-      Rcpp::sourceCpp(file.path(pacman::p_path("scpeakeR"), "data/fast_group_summary.cpp"))
+      Rcpp::sourceCpp(file.path(pacman::p_path("scpeaker"), "data/fast_group_summary.cpp"))
 
       return(run_cellchat_fast(obj, labels = labels, assay = assay, database = database,
                           subsetDB = subsetDB, search = search, key = key, non_protein = non_protein, type = type, threshold = threshold,

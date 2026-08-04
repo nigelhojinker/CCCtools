@@ -1,7 +1,7 @@
 #' Run CellPhoneDB version 5 in R
 #'
 #' @description
-#' Runs CellPhoneDBv5 on a Seurat object using the customized cellphonedbv5a database containing additional interactions from CellChat.
+#' Runs CellPhoneDB (v5.0.0) statistical analysis on a Seurat object.
 #'
 #' @param obj Seurat object with normalized counts in the data layer of the RNA assay
 #' @param labels Metadata column name of cell type annotations
@@ -29,7 +29,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' ## Runs CellPhoneDB method 2 with all default parameters
+#' ## Runs CellPhoneDB statistical analysis with all default parameters
 #' run_cellphonedb(
 #'   obj = seu.NL,
 #'   labels = "labels")
@@ -62,11 +62,11 @@ run_cellphonedb <- function(obj = NULL, labels = NULL, type = NULL, database = N
 
   # Database selection
   if (database == "scpeakerDB") {
-    cpdbPath <- file.path(pacman::p_path("scpeakeR"), "data/scpeakerDB_CP.zip")
+    cpdbPath <- file.path(pacman::p_path("scpeaker"), "data/scpeakerDB_CP.zip")
   } else if (database == "CCDB") {
-    cpdbPath <- file.path(pacman::p_path("scpeakeR"), "data/cellchat.zip")
+    cpdbPath <- file.path(pacman::p_path("scpeaker"), "data/cellchat.zip")
   } else if (database == "CPDB") {
-    cpdbPath <- file.path(pacman::p_path("scpeakeR"), "data/cellphonedb.zip")
+    cpdbPath <- file.path(pacman::p_path("scpeaker"), "data/cellphonedb.zip")
   }
 
   # Use use_dir if provided, else use tempdir with deparse

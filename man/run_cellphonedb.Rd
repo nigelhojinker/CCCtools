@@ -65,11 +65,11 @@ Folder path to CellPhoneDB analysis outputs and result as a list of the outputs 
 For arguments from counts_data to output_suffix, please refer to https://github.com/ventolab/CellphoneDB/blob/master/notebooks/T1_Method2.ipynb
 }
 \description{
-Runs CellPhoneDBv5 on a Seurat object using the customized cellphonedbv5a database containing additional interactions from CellChat.
+Runs CellPhoneDB (v5.0.0) statistical analysis on a Seurat object.
 }
 \examples{
 \dontrun{
-## Runs CellPhoneDB method 2 with all default parameters
+## Runs CellPhoneDB statistical analysis with all default parameters
 run_cellphonedb(
   obj = seu.NL,
   labels = "labels")

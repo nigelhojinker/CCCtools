@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_cellchat.R
 \name{run_cellchat}
 \alias{run_cellchat}
-\title{Run CellChat v2 in R}
+\title{Run CellChat (v2.2.0) in R}
 \usage{
 run_cellchat(
   obj,
@@ -97,7 +97,7 @@ cellchat@net$prob is a 3-dimensional array consisting of the source(sender cell)
 cellchat@net$pval consists of the corresponding p-values computed for each interaction.
 }
 \description{
-This function takes as input a Seurat object that has been processed and contains annotated cell type labels in its meta.data. It uses the customized CellChatDB.human.v2a database containing additional interactions from CellPhoneDB.
+This function takes as input a Seurat object that has been processed and contains annotated cell type labels in its meta.data.
 
 It runs functions from the CellChat package, namely: createCellChat(), subsetDB(), subsetData(), identifyOverExpressedGenes(),
 identifyOverExpressedInteractions(), computeCommunProb() and filterCommunication(). run_cellchat() allows users to input

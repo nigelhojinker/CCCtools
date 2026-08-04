@@ -11,7 +11,7 @@
 #' \dontrun{
 #' ## After setting up conda env
 #' cpdb     <- scpeaker(seurat_obj, method = "cellphonedb", ...)
-#' cellchat <- scpeajer(seurat_obj, method = "cellchat",    ...)
+#' cellchat <- scpeaker(seurat_obj, method = "cellchat",    ...)
 #'
 #' combine <- crosscheck(cellchat = cellchat, cellphonedb = cpdb)
 #'
