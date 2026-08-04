@@ -7,7 +7,7 @@
 #' @param return.all Logical value to determine whether to return the full comparative analysis results (including non-significant interactions).
 #' @param expand Logical value to highlight if interaction is found from cross-database analyses. This is used when comparing outputs using different databases (default = FALSE).
 #'
-#' @returns A list of three elements: (1) Comparative analysis result (2) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB (3) Matthew's Correlation Coefficient to quantify agreement.
+#' @returns A list of five elements: (1) Comparative analysis result (2) 3x3 contingency table of interaction types in both CellChat and CellPhoneDB (3) Number of significant interactions from both analyses (4) Jaccard Index for significant interactions inferred (5) Matthew's Correlation Coefficient to quantify agreement
 #' @export
 #'
 #' @examples
