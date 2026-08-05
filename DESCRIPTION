@@ -4,8 +4,8 @@ Title: Single-cell cell-cell communication tool integrating both CellChat and Ce
 Version: 0.1.1
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com",
+      "Ho Jin Ker", "Nigel",
+      email = "nigelho23@gmail.com",
       role = c("aut", "cre")
     )
   )
@@ -18,6 +18,10 @@ Depends:
 Remotes:
     jinworks/CellChat
 Imports:
-URL: https://github.com/nigelhojinker/scpeaker
+URL: https://github.com/nigelhojinker/scpeaker, https://nigelhojinker.github.io/scpeaker
 BugReports: https://github.com/nigelhojinker/scpeaker/issues
 Config/roxygen2/version: 8.0.0
+Suggests:
+    kntir,
+    rmarkdown
+VignetteBuilder: knitr
