@@ -125,13 +125,16 @@ containing only the filtered interactions from cross-method analysis. We
 leverage the abundant resource for visualising and conducting network
 analysis using CellChat.
 
-Users may refer to the full CellChat vignette for analysing a single
-CellChat object
-[here](https://htmlpreview.github.io/?https://github.com/jinworks/CellChat/blob/master/tutorial/CellChat-vignette.html).
-
 ``` r
 cellchat_new <- filter_cellchat(cellchat, combine)
 ```
+
+Users may refer to the full CellChat vignette for analysing a single
+CellChat object
+[here](https://htmlpreview.github.io/?https://github.com/jinworks/CellChat/blob/master/tutorial/CellChat-vignette.html).
+With the `cellchat_new` CellChat object, users may proceed directly to
+**“Part III: Visualization of cell-cell communication network”** of the
+vignette.
 
 ## Database harmonisation
 
