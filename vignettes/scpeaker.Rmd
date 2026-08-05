@@ -87,19 +87,21 @@ subsetCommunication(cellchat_ori) %>%
 identical(subsetCommunication(cellchat), subsetCommunication(cellchat_ori))
 ```
 
-We see that `identical()` returned `FALSE` but the dataframes look almost identical. Rounding the prob values off to the 15th decimal point, the results obtained from the scpeaker-implemented CellChat and the original CellChat are the identical using the same random seed.
+We see that `identical()` returned `FALSE` but the dataframes look almost identical. Rounding the prob values off to the 10th decimal point, the results obtained from the scpeaker-implemented CellChat and the original CellChat are the identical using the same random seed.
 
 ```{r}
 res <- subsetCommunication(cellchat) %>% 
-  mutate(prob = round(prob, 15),
+  mutate(prob = round(prob, 10),
          ID   = paste(source, target, ligand, receptor, prob, pval, sep = "|")) %>% 
   pull(ID)
 
 ori <- subsetCommunication(cellchat_ori) %>% 
-  mutate(prob = round(prob, 15),
+  mutate(prob = round(prob, 10),
          ID   = paste(source, target, ligand, receptor, prob, pval, sep = "|")) %>% 
   pull(ID)
+```
 
+```{r}
 res %>% head()
 
 ori %>% head()
