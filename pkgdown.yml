@@ -1,0 +1,9 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  scpeaker: scpeaker.html
+last_built: 2026-08-05T02:03Z
+urls:
+  reference: https://nigelhojinker.github.io/scpeaker/reference
+  article: https://nigelhojinker.github.io/scpeaker/articles
