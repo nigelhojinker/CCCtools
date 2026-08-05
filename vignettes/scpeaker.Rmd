@@ -1,0 +1,277 @@
+---
+title: "Getting started with scpeaker"
+description: >
+  Learn how to get started with the basics of scpeaker set-up & functionalities.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with scpeaker}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+The goal of scpeaker is to provide a harmonised and reproducible framework for cell-cell communication (CCC) inference involving single-cell RNA sequencing (scRNA-seq) data. We employ the two most established tools CellChat (R-based) and CellPhoneDB (Python-based) due to their innate similarity in predicting CCC, which includes an in-built ligand-receptor prior knowledge, the handling of heteromeric protein complexes and statistical analysis via random shuffling of cell type labels.
+
+scpeaker takes as input a **processed Seurat object with cell type annotations** for the respective analyses.
+
+## Load package & example data
+
+```{r}
+pacman::p_load(scpeaker)
+```
+
+We use the `seu.NL` example dataset as described in the homepage. The full script on how the data was processed and generated may be viewed [here](https://nigelhojinker.github.io/scpeaker/data-raw/demo_data.md).
+
+```{r}
+data(seu.NL)
+
+seu.NL@meta.data %>% 
+  head() %>% 
+  knitr::kable()
+
+seu.NL@meta.data %>% 
+  tabyl(labels) %>% 
+  arrange(desc(n)) %>% 
+  knitr::kable()
+```
+
+## CCC analysis
+
+Within the scpeaker package, we provide the general `scpeaker()` function to perform **BOTH** CellChat and CellPhoneDB analyses on your Seurat object. Importantly, scpeaker does not modify the innate framework that these tools provide, and returns the original predictions that they infer. By harmonising the ligand-receptor databases, gene expression averaging strategy and output format that both tools generate, scpeaker allows you to extract the interactions significantly tested in CellChat and CellPhoneDB. Additionally, scpeaker accomodates all arguments used in the statistical analysis of CellChat and CellPhoneDB within the `scpeaker()` function. 
+
+We harmonised both the human ligand-receptor databases of CellChat and CellPhoneDB, providing scpeakerDB which contains 3,901 non-redundant interactions that have been manually curated by the original authors. Further, we provide the triMean gene expression averaging strategy for CellPhoneDB to match that of CellChat, allowing both methods to use the same robust mean method.
+
+Finally, to optimise the computational efficiency of CellChat's analysis, we sped up the `computeCommunProb()` function used in CellChat, by reimplementing the repeated calculating of gene expression averages in C++. You may still opt to execute the original CellChat implemetation by using `fast.mode = FALSE`.
+
+### CellChat analysis
+
+#### scpeaker-optimised
+
+```{r}
+start_time <- Sys.time()
+cellchat <- scpeaker(seu.NL,                  # Seurat object
+                     labels   = "labels",     # Cell type label in object's meta data
+                     method   = "cellchat",   # CCC method to use
+                     type     = "triMean",    # Gene expression averaging strategy (default = triMean)
+                     database = "scpeakerDB") # Ligand-receptor prior knowledge to use (default = scpeakerDB)
+end_time <- Sys.time()
+print(end_time - start_time)
+```
+
+#### Original CellChat implementation
+
+```{r}
+start_time <- Sys.time()
+cellchat_ori <- scpeaker(seu.NL,               # Seurat object
+                     labels    = "labels",     # Cell type label in object's meta data
+                     method    = "cellchat",   #   CCC method to use
+                     type      = "triMean",    # Gene expression averaging strategy (default = triMean)
+                     database  = "scpeakerDB", # Ligand-receptor prior knowledge to use (default = scpeakerDB)
+                     fast.mode = FALSE)        # Original CellChat implementation
+end_time <- Sys.time()
+print(end_time - start_time)
+```
+
+Now that we observe that the runtime in the scpeaker-implemented CellChat is shorter, how do their results compare? We can utilise the `subsetCommunication()` function in CellChat to extract all interactions predicted, alongside their communicaiton probability scores and p-values.
+
+```{r}
+subsetCommunication(cellchat) %>% 
+  head() %>% 
+  knitr::kable()
+
+subsetCommunication(cellchat_ori) %>% 
+  head() %>% 
+  knitr::kable()
+
+identical(subsetCommunication(cellchat), subsetCommunication(cellchat_ori))
+```
+
+We see that `identical()` returned `FALSE` but the dataframes look almost identical. Rounding the prob values off to the 15th decimal point, the results obtained from the scpeaker-implemented CellChat and the original CellChat are the identical using the same random seed.
+
+```{r}
+res <- subsetCommunication(cellchat) %>% 
+  mutate(prob = round(prob, 15),
+         ID   = paste(source, target, ligand, receptor, prob, pval, sep = "|")) %>% 
+  pull(ID)
+
+ori <- subsetCommunication(cellchat_ori) %>% 
+  mutate(prob = round(prob, 15),
+         ID   = paste(source, target, ligand, receptor, prob, pval, sep = "|")) %>% 
+  pull(ID)
+
+res %>% head()
+
+ori %>% head()
+
+identical(res, ori)
+```
+
+```{r}
+rm(res, cellchat_ori, ori, start_time, end_time)
+```
+
+### CellPhoneDB analysis
+
+As CellPhoneDB is originally a Python package, we leverage the `reticulate` package to interface with Python within R. We provide a scpeaker.yaml file with contains the necessary dependencies to build the required conda environment.
+
+```{r, eval = FALSE}
+# Run this once for first conda environment set up
+config <- file.path(pacman::p_path("scpeaker"), "data/scpeaker.yaml")
+conda_create(envname = "scpeaker", environment = config)
+```
+
+```{r}
+# Run this each R session when conducting CellPhoneDB analysis 
+use_condaenv("scpeaker")
+```
+
+We are now ready to perform CellPhoneDB statistical analysis:
+
+```{r}
+cpdb <- scpeaker(seu.NL,                   # Seurat object
+                 labels   = "labels",      # Cell type label in object's meta data
+                 method   = "cellphonedb", # CCC method to use
+                 type     = "triMean",     # Gene expression averaging strategy (default = triMean)
+                 database = "scpeakerDB")  # Ligand-receptor prior knowledge to use (default = scpeakerDB)
+```
+
+Note: The Python numpy random.seed implementation is NOT thread-safe. To set a random seed for reproducibility purposes, run:
+
+```{r, eval = FALSE}
+cpdb <- scpeaker(seu.NL,                     # Seurat object
+                 labels     = "labels",      # Cell type label in object's meta data
+                 method     = "cellphonedb", # CCC method to use
+                 type       = "triMean",     # Gene expression averaging strategy (default = triMean)
+                 database   = "scpeakerDB",  # Ligand-receptor prior knowledge to use (default = scpeakerDB)
+                 threads    = 1,             # Set number of threads to 1
+                 debug_seed = 42)            # Your random seed
+```
+
+## Crosscheck analysis
+
+After conducting both CellChat and CellPhoneDB analyses, scpeaker can determine which interactions are significantly inferred by both tools. Additionally, we provide functions to filter only these concordant interactions to a new CellChat object to leverage the extensive downstream visualisation and network analysis functions already available in CellChat.
+
+**NOTE:** The filter CellChat object after `filter_cellchat()` is a processed CellChat object with only interactions significant in both CellChat and CellPhoneDB. We then ran `computeCommunProbPathway()`, `aggregateNet()` and `netAnalysis_computeCentrality(slot.name = "netP")` on the filter object.
+
+```{r}
+# Compare CellChat and CellPhoneDB results
+crosscheck <- crosscheck(cellchat, cpdb)
+
+# Filter interactions significant in both analyses and return new CellChat object
+cellchat_new <- filter_cellchat(cellchat, crosscheck)
+```
+
+## Downstream analysis on a single CellChat object
+
+Following cross-method analysis, we highly recommend users leverage the extensive functions for downstream analysis and visualisations provided by CellChat. All functions for this pursuit may be found with full detailed explanation at the official CellChat vignette [here](https://htmlpreview.github.io/?https://github.com/jinworks/CellChat/blob/master/tutorial/CellChat-vignette.html#calculate-the-aggregated-cell-cell-communication-network).
+
+**Note:** This step is only applicable to analyses involving **CellChat**. Analyses performed exclusively with **CellPhoneDB** do not generate a CellChat object, as results are returned only in tabular format. Consequently, this step cannot be applied to compare two CellPhoneDB-method analyses. 
+
+```{r, echo = FALSE}
+knitr::knit_exit()
+```
+
+
+
+
+We simply showcase standard outputs users may obtain from the filtered CellChat object following cross-method analysis with CellPhoneDB.
+
+### Calculate the aggregated CCC network
+
+```{r}
+groupSize <- as.numeric(table(cellchat.new@idents))
+par(mfrow = c(1,2), xpd=TRUE)
+netVisual_circle(cellchat.new@net$count, vertex.weight = groupSize, weight.scale = T, label.edge= F, title.name = "Number of interactions")
+netVisual_circle(cellchat.new@net$weight, vertex.weight = groupSize, weight.scale = T, label.edge= F, title.name = "Interaction weights/strength")
+```
+
+```{r}
+mat <- cellchat.new@net$weight
+par(mfrow = c(3,4), xpd=TRUE)
+for (i in 1:nrow(mat)) {
+  mat2 <- matrix(0, nrow = nrow(mat), ncol = ncol(mat), dimnames = dimnames(mat))
+  mat2[i, ] <- mat[i, ]
+  netVisual_circle(mat2, vertex.weight = groupSize, weight.scale = T, edge.weight.max = max(mat), title.name = rownames(mat)[i])
+}
+```
+
+### Visualise CCC networks
+
+```{r}
+pathways.show <- c("CXCL") 
+# Hierarchy plot
+# Here we define `vertex.receive` so that the left portion of the hierarchy plot shows signaling to fibroblast and the right portion shows signaling to immune cells 
+vertex.receiver = seq(1,4) # a numeric vector. 
+netVisual_aggregate(cellchat.new, signaling = pathways.show,  vertex.receiver = vertex.receiver)
+# Circle plot
+par(mfrow=c(1,1))
+netVisual_aggregate(cellchat.new, signaling = pathways.show, layout = "circle")
+```
+
+```{r}
+# Chord diagram
+par(mfrow=c(1,1))
+netVisual_aggregate(cellchat.new, signaling = pathways.show, layout = "chord")
+```
+
+```{r}
+# Heatmap
+par(mfrow=c(1,1))
+netVisual_heatmap(cellchat.new, signaling = pathways.show, color.heatmap = "Reds")
+#> Do heatmap based on a single object
+```
+
+```{r}
+netAnalysis_contribution(cellchat.new, signaling = pathways.show)
+```
+
+```{r}
+pairLR.CXCL <- extractEnrichedLR(cellchat.new, signaling = pathways.show, geneLR.return = FALSE)
+LR.show <- pairLR.CXCL[1,] # show one ligand-receptor pair
+# Hierarchy plot
+vertex.receiver = seq(1,4) # a numeric vector
+netVisual_individual(cellchat.new, signaling = pathways.show,  pairLR.use = LR.show, vertex.receiver = vertex.receiver)
+#> [[1]]
+# Circle plot
+netVisual_individual(cellchat.new, signaling = pathways.show, pairLR.use = LR.show, layout = "circle")
+```
+
+```{r}
+# Chord diagram
+netVisual_individual(cellchat.new, signaling = pathways.show, pairLR.use = LR.show, layout = "chord")
+```
+
+### Visualise CCC across multiple ligand-receptors or signalling pathways
+
+```{r}
+# (1) show all the significant interactions (L-R pairs) from some cell groups (defined by 'sources.use') to other cell groups (defined by 'targets.use')
+netVisual_bubble(cellchat.new, sources.use = 4, targets.use = c(5:11), remove.isolate = FALSE)
+#> Comparing communications on a single object
+```
+
+```{r}
+# (2) show all the significant interactions (L-R pairs) associated with certain signaling pathways
+netVisual_bubble(cellchat.new, sources.use = 4, targets.use = c(5:11), signaling = c("CCL","CXCL"), remove.isolate = FALSE)
+#> Comparing communications on a single object
+```
+
+```{r}
+# (3) show all the significant interactions (L-R pairs) based on user's input (defined by `pairLR.use`)
+pairLR.use <- extractEnrichedLR(cellchat.new, signaling = c("CCL","CXCL","FGF"))
+netVisual_bubble(cellchat.new, sources.use = c(3,4), targets.use = c(5:8), pairLR.use = pairLR.use, remove.isolate = TRUE)
+#> Comparing communications on a single object
+```
+
+```{r, eval = FALSE}
+# set the order of interacting cell pairs on x-axis
+# (4) Default: first sort cell pairs based on the appearance of sources in levels(object@idents), and then based on the appearance of targets in levels(object@idents)
+# (5) sort cell pairs based on the targets.use defined by users
+netVisual_bubble(cellchat.new, targets.use = c("LC","Inflam. DC","cDC2","CD40LG+ TC"), pairLR.use = pairLR.use, remove.isolate = TRUE, sort.by.target = T)
+# (6) sort cell pairs based on the sources.use defined by users
+netVisual_bubble(cellchat.new, sources.use = c("FBN1+ FIB","APOE+ FIB","Inflam. FIB"), pairLR.use = pairLR.use, remove.isolate = TRUE, sort.by.source = T)
+# (7) sort cell pairs based on the sources.use and then targets.use defined by users
+netVisual_bubble(cellchat.new, sources.use = c("FBN1+ FIB","APOE+ FIB","Inflam. FIB"), targets.use = c("LC","Inflam. DC","cDC2","CD40LG+ TC"), pairLR.use = pairLR.use, remove.isolate = TRUE, sort.by.source = T, sort.by.target = T)
+# (8) sort cell pairs based on the targets.use and then sources.use defined by users
+netVisual_bubble(cellchat.new, sources.use = c("FBN1+ FIB","APOE+ FIB","Inflam. FIB"), targets.use = c("LC","Inflam. DC","cDC2","CD40LG+ TC"), pairLR.use = pairLR.use, remove.isolate = TRUE, sort.by.source = T, sort.by.target = T, sort.by.source.priority = FALSE)
+```
